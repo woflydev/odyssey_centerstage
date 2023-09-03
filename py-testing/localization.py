@@ -106,7 +106,7 @@ def triangulate_pose(tags, K):
 detector = Detector(families='tag36h11')
 
 # Use cv2.CAP_DSHOW as the capture backend (adjust the camera index as needed)
-cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+cap = cv2.VideoCapture(0)
 
 config = configparser.ConfigParser()
 
