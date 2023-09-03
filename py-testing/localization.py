@@ -5,9 +5,12 @@ import configparser
 from pupil_apriltags import Detector
 
 # Replace the camera matrix with your provided values
-K = np.array([[1.51717086e+03, 0.00000000e+00, 1.00740748e+03],
-              [0.00000000e+00, 1.52168781e+03, 5.40380046e+02],
+K = np.array([[1.91086092e+03, 0.00000000e+00, 6.30917488e+02],
+              [0.00000000e+00, 1.90780998e+03, 4.98104766e+02],
               [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+# K = np.array([[1.51717086e+03, 0.00000000e+00, 1.00740748e+03],
+#              [0.00000000e+00, 1.52168781e+03, 5.40380046e+02],
+#              [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]) # enoch home values
 
 axis_length = 50 # in pixels
 tag_size = 0.168 # in metres
@@ -83,7 +86,7 @@ def triangulate_pose(tags, K):
         # Check if the determinant of each rotation matrix is greater than zero
         if np.all(np.linalg.det(R) > 0):
             # Calculate Euler angles from the rotation matrix
-            euler_angles = rotation_matrix_to_euler_angles(R)
+            euler_angles = rotation_matrix_to_euler_angles(R)   
             yaw, pitch, roll = euler_angles
 
             # Calculate the distance to the tag using the known tag size and the detected tag size in pixels
