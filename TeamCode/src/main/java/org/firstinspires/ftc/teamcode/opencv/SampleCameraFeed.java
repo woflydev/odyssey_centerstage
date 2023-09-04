@@ -1,8 +1,8 @@
 package org.firstinspires.ftc.teamcode.opencv;
 import android.annotation.SuppressLint;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.Camera;
@@ -18,7 +18,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-@TeleOp
+@Autonomous
 public class SampleCameraFeed extends LinearOpMode {
 
     private boolean viewportPaused;
