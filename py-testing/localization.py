@@ -7,14 +7,16 @@ from pupil_apriltags import Detector
 # Replace the camera matrix with your provided values
 K = np.array([[1.91086092e+03, 0.00000000e+00, 6.30917488e+02],
               [0.00000000e+00, 1.90780998e+03, 4.98104766e+02],
-              [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
+              [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]) # logitech bad camera
 # K = np.array([[1.51717086e+03, 0.00000000e+00, 1.00740748e+03],
 #              [0.00000000e+00, 1.52168781e+03, 5.40380046e+02],
 #              [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]) # enoch home values
 
 axis_length = 50 # in pixels
-tag_size = 0.168 # in metres
-camera_fov = 90 # in degrees
+#tag_size = 0.168 # in metres | for enoch house
+tag_size = 0.168
+#camera_fov = 90 # in degrees | for enoch cam
+camera_fov = 70
 
 def create_ema_filter(alpha=0.035):
     """Create an Exponential Moving Average (EMA) filter with a given smoothing factor (alpha)."""
