@@ -2,6 +2,9 @@ package org.firstinspires.ftc.teamcode.opencv;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 
@@ -9,8 +12,6 @@ import android.annotation.SuppressLint;
 import android.util.Size;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
@@ -18,8 +19,6 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.vision.apriltag.AprilTagGameDatabase;
 import org.firstinspires.ftc.vision.tfod.TfodProcessor;
-import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 
 @Autonomous(name = "Concept: AprilTag", group = "Concept")
 public class AprilTagOdometry extends LinearOpMode {
@@ -71,63 +70,67 @@ public class AprilTagOdometry extends LinearOpMode {
         if (opModeIsActive()) {
             while (opModeIsActive()) {
                 List<AprilTagDetection> myAprilTagDetections = processor.getDetections();
+                List<Transform> transforms = new ArrayList<>();
                 for (AprilTagDetection detection : myAprilTagDetections) {
                     if (detection.metadata != null) {
+                        transforms.add(TagOdometry(detection));
                     }
                 }
+                currentTransform = Transform.smoothAvg(transforms);
+                TransformTelemetry(currentTransform);
             }
         }
     }
 
     public Transform TagOdometry(AprilTagDetection detection) {
-        Vector<Double> relPos;
-        Vector<Double> relRot;
-        //TODO: Calculations
+        Transform currentTransform = locations.locate(detection.id);
+
+        Vector<Double> relPos = new Vector<>();
+        Vector<Double> relRot = new Vector<>();
+
+        Collections.addAll(relPos, (double) 0, detection.ftcPose.range, (double) 0);
+        // Negative signs because it is from the tag to the camera
+        Collections.addAll(relRot, -detection.ftcPose.roll, -detection.ftcPose.pitch, 180-detection.ftcPose.yaw);
+
+        Transform.Matrix rotationFromTagToCamera = Transform.Matrix.multiply(
+                Transform.Matrix.rotationMatrix(detection.ftcPose.pitch - detection.ftcPose.elevation, 0, 0),
+                Transform.Matrix.rotationMatrix(detection.ftcPose.bearing - detection.ftcPose.yaw, 0, 0)
+        );
+
+        // This relative position is from the april tag to the camera when the April tag is facing forwards (the y-axis) and at the origin
+        relPos = Transform.Matrix.apply(rotationFromTagToCamera, relPos);
+
+        Vector<Double> realPos = new Vector<>();
+        Vector<Double> realRot = new Vector<>();
+
+        Transform.Matrix rotationFromTagToField = Transform.Matrix.rotationMatrix(currentTransform.rot.get(0), currentTransform.rot.get(1), currentTransform.rot.get(2));
+
+        realPos = Transform.Matrix.apply(rotationFromTagToField, relPos);
+        realPos = Transform.add(realPos, currentTransform.pos);
+
+        // Note: This is probably not accurate, as rotations are non-commutative and need special calculations, will test later
+        realRot = Transform.add(relRot, currentTransform.rot);
+
+        return new Transform(realPos, realRot);
     }
 
     @SuppressLint("DefaultLocale")
     public void TagTelemetry(AprilTagDetection detection) {
         AprilTagPoseFtc pose = detection.ftcPose;
-        telemetry.addLine(String.format("X: %.2f, Y: %.2f, Z: %.2f", pose.x, pose.y, pose.z));
-        telemetry.addLine(String.format("Roll: %.2f, Pitch: %.2f, Yaw: %.2f", pose.roll, pose.pitch, pose.yaw));
+        telemetry.addLine(String.format("X: %.2f m, Y: %.2f m, Z: %.2f m", pose.x, pose.y, pose.z));
+        telemetry.addLine(String.format("Roll: %.2f rad, Pitch: %.2f rad, Yaw: %.2f rad", pose.roll, pose.pitch, pose.yaw));
+        telemetry.addLine(String.format("Range: %.2f m, Bearing: %.2f rad, Elevation: %.2f rad", pose.range, pose.bearing, pose.elevation));
         telemetry.update();
     }
 
-    // Positions are in metres, rotations are in radians
-    public class Transform {
-        public Vector<Double> pos;
-        public Vector<Double> rot;
-        public int dim;
-        public Transform(Vector<Double> p, Vector<Double> r) {
-            if (p.size() == r.size()) {
-                this.pos = p;
-                this.rot = r;
-                this.dim = p.size();
-            } else {
-                throw new IllegalArgumentException();
-            }
-        }
-
-        // Calculates Euclidean distance for any two transforms between the one which the function is
-        // called on, as well as another one as an argument
-        public double distance(Transform t) {
-            if (this.dim != t.dim) {
-                // Not of right dimensions
-                return 0;
-            }
-            float diffSum = 0;
-            for (int i = 0; i < t.dim; i++) {
-                diffSum += Math.pow(this.pos.get(i) - t.pos.get(i),2);
-            }
-            return Math.sqrt(diffSum);
-        }
-
-        public Transform smoothAvg(Transform[] arr) {
-            // TODO: Smooth out multiple April tag transforms
-        }
+    @SuppressLint("DefaultLocale")
+    public void TransformTelemetry(Transform t) {
+        telemetry.addLine(String.format("X: %.2f m, Y: %.2f m, Z: %.2f m", t.pos.get(0), t.pos.get(1), t.pos.get(2)));
+        telemetry.addLine(String.format("Roll: %.2f rad, Pitch: %.2f rad, Yaw: %.2f rad", t.rot.get(0), t.rot.get(1), t.rot.get(2)));
+        telemetry.update();
     }
 
-    public class AprilTagLocations {
+    public static class AprilTagLocations {
         public int[] idArray;
         public Transform[] transformArray;
         public int l;
@@ -158,13 +161,238 @@ public class AprilTagOdometry extends LinearOpMode {
             double minDistance = 0;
             int minIndex = -1;
             for (int i = 0; i < l; i++) {
-                double currentDistance = t.distance(transformArray[i]);
+                double currentDistance = Transform.distance(t, transformArray[i]);
                 if (minIndex == -1 || currentDistance < minDistance) {
                     minDistance = currentDistance;
                     minIndex = i;
                 }
             }
             return idArray[minIndex];
+        }
+    }
+
+    public static class Transform {
+        public Vector<Double> pos;
+        public Vector<Double> rot;
+        public int dim;
+        public Transform(Vector<Double> p, Vector<Double> r) {
+            if (p.size() == r.size()) {
+                this.pos = p;
+                this.rot = r;
+                this.dim = p.size();
+            } else {
+                throw new IllegalArgumentException();
+            }
+        }
+
+        // Calculates Euclidean distance for any two transforms between the one which the function is
+        // called on, as well as another one as an argument
+        public static double distance(Transform t1, Transform t2) {
+            if (t1.dim != t2.dim) {
+                // Not of right dimensions
+                return 0;
+            }
+            float diffSum = 0;
+            for (int i = 0; i < t1.dim; i++) {
+                diffSum += Math.pow(t1.pos.get(i) - t2.pos.get(i),2);
+            }
+            return Math.sqrt(diffSum);
+        }
+        // Calculates v1 + v2
+
+        public static Vector<Double> add(Vector<Double> v1, Vector<Double> v2) {
+            if (v1.size() != v2.size()) {
+                throw new IllegalArgumentException();
+            }
+            Vector<Double> tmpV = new Vector<>();
+            for (int i = 0; i < v1.size(); i++) {
+                tmpV.add(v1.get(i) + v2.get(i));
+            }
+            return tmpV;
+        }
+
+
+        // Calculates v1 - v2
+        public static Vector<Double> subtract(Vector<Double> v1, Vector<Double> v2) {
+            if (v1.size() != v2.size()) {
+                throw new IllegalArgumentException();
+            }
+            Vector<Double> tmpV = new Vector<>();
+            for (int i = 0; i < v1.size(); i++) {
+                tmpV.add( v1.get(i) - v2.get(i));
+            }
+            return tmpV;
+        }
+
+        public static Vector<Double> scale(Vector<Double> v, double c) {
+            Vector<Double> tmpV = new Vector<>();
+            for (int i = 0; i < v.size(); i++) {
+                tmpV.add(v.get(i) * c);
+            }
+            return tmpV;
+        }
+
+        public static Transform smoothAvg(List<Transform> arr) {
+            Vector<Double> zeroVector = new Vector<>();
+            Collections.addAll(zeroVector, (double) 0, (double) 0, (double) 0);
+            Transform currentTransform = new Transform(zeroVector, zeroVector);
+            for (Transform t : arr) {
+                currentTransform.pos = Transform.add(currentTransform.pos, Transform.scale(t.pos, 1 / (double) arr.size()));
+                currentTransform.rot = Transform.add(currentTransform.rot, Transform.scale(t.rot, 1 / (double) arr.size()));
+            }
+            return currentTransform;
+        }
+
+        public static class Matrix {
+            double[][] values;
+            int rows;
+            int columns;
+
+            public Matrix(double [][] data) {
+                int dim = data[0].length;
+                for (double[] value : data) {
+                    if (value.length != dim) {
+                        // Non-contiguous matrix
+                        throw new IllegalArgumentException();
+                    }
+                }
+                this.values = data;
+                this.rows = data.length;
+                this.columns = dim;
+            }
+
+            public static Matrix add(Matrix m1, Matrix m2) {
+                if (m1.rows == m2.rows && m1.columns == m2.columns) {
+                    double[][] tmpValues = new double[m1.rows][m1.columns];
+                    for (int i = 0; i < m1.rows; i++) {
+                        for (int j = 0; j < m1.columns; j++) {
+                            tmpValues[i][j] = m1.values[i][j] + m2.values[i][j];
+                        }
+                    }
+                    return new Matrix(tmpValues);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+
+            public static Matrix scale(Matrix m, double f) {
+                double[][] tmpValues = new double[m.rows][m.columns];
+                for (int i = 0; i < m.rows; i++) {
+                    for (int j = 0; j < m.columns; j++) {
+                        tmpValues[i][j] = m.values[i][j] * f;
+                    }
+                }
+                return new Matrix(tmpValues);
+            }
+            public static Vector<Double> apply(Matrix m, Vector<Double> v) {
+                if (v.size() == m.columns) {
+                    Vector<Double> tmpV = new Vector<>();
+                    for (int i = 0; i < m.rows; i++) {
+                        double sum = 0;
+                        for (int j = 0; j < v.size(); j++) {
+                            sum += m.values[i][j] * v.get(j);
+                        }
+                        tmpV.add(sum);
+                    }
+                    return tmpV;
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+
+            // This performs m1 * m2
+            public static Matrix multiply(Matrix m1, Matrix m2) {
+                if (m1.columns == m2.rows) {
+                    double[][] tmpValues = new double[m1.rows][m2.columns];
+                    for (int i = 0; i < m1.rows; i++) {
+                        for (int j = 0; j < m2.columns; j++) {
+                            double sum = 0;
+                            for (int k = 0; k < m1.columns; k++) {
+                                sum += m1.values[i][k] * m2.values[k][j];
+                            }
+                            tmpValues[i][j] = sum;
+                        }
+                    }
+                    return new Matrix(tmpValues);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+
+            // This performs it element wise
+            public static Matrix dot(Matrix m1, Matrix m2) {
+                if (m1.rows == m2.rows && m1.columns == m2.columns) {
+                    double[][] tmpValues = new double[m1.rows][m1.columns];
+                    for (int i = 0; i < m1.rows; i++) {
+                        for (int j = 0; j < m1.columns; j++) {
+                            tmpValues[i][j] = m1.values[i][j] * m2.values[i][j];
+                        }
+                    }
+                    return new Matrix(tmpValues);
+                } else {
+                    throw new IllegalArgumentException();
+                }
+            }
+
+            public static Matrix Zeros(int s) {
+                double[][] tmpValues = new double[s][s];
+                for (int i = 0; i < s; i++) {
+                    for (int j = 0; j < s; j++) {
+                        tmpValues[i][j] = 0;
+                    }
+                }
+                return new Matrix(tmpValues);
+            }
+
+            public static Matrix Ones(int s) {
+                double[][] tmpValues = new double[s][s];
+                for (int i = 0; i < s; i++) {
+                    for (int j = 0; j < s; j++) {
+                        tmpValues[i][j] = 1;
+                    }
+                }
+                return new Matrix(tmpValues);
+            }
+
+            public static Matrix Identity(int s) {
+                double[][] tmpValues = new double[s][s];
+                for (int i = 0; i < s; i++) {
+                    for (int j = 0; j < s; j++) {
+                        if (i != j) {
+                            tmpValues[i][j] = 0;
+                        } else {
+                            tmpValues[i][j] = 1;
+                        }
+                    }
+                }
+                return new Matrix(tmpValues);
+            }
+
+            // Note, angles are in radians here and will go from x to y to z (roll, pitch, yaw)
+            public static Matrix rotationMatrix(double...angles) {
+                Matrix rollMatrix = new Matrix(new double[][]
+                        {
+                                {1, 0, 0},
+                                {0, Math.cos(angles[0]), -Math.sin(angles[0])},
+                                {0, Math.sin(angles[0]), Math.cos(angles[0])}
+                        }
+                );
+                Matrix pitchMatrix = new Matrix(new double[][]
+                        {
+                                {Math.cos(angles[0]), 0, Math.sin(angles[0])},
+                                {0, 1, 0},
+                                {-Math.sin(angles[0]), 0, Math.cos(angles[0])}
+                        }
+                );
+                Matrix yawMatrix = new Matrix(new double[][]
+                        {
+                                {Math.cos(angles[0]), -Math.sin(angles[0]), 0},
+                                {Math.sin(angles[0]), Math.cos(angles[0]), 0},
+                                {0, 0, 1}
+                        }
+                );
+                return Matrix.multiply(yawMatrix, Matrix.multiply(pitchMatrix, rollMatrix));
+            }
         }
     }
 }
