@@ -22,19 +22,41 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 @Autonomous(name = "Concept: AprilTag", group = "Concept")
 public class AprilTagOdometry extends LinearOpMode {
+    // All units in metres or radians
+    double FIELD_LENGTH = 3.58;
+    double CAMERA_HEIGHT = 0.313;
+    double YAW_ANGLE = Math.PI / 2;
+
     AprilTagProcessor processor;
     TfodProcessor tfProcessor;
 
     VisionPortal portal;
     AprilTagLocations locations;
     int[] idList = {};
-    Transform[] transformList = {};
+
+    Vector<Double>[] positionList;
+    Vector<Double>[] rotationList;
+
+    Transform[] transformList;
     Transform currentTransform;
+
 
     // Processor implements the EOCV pipeline that processes the frames, the builder builds it with custom parameters,
     // and the vision portal connects that pipeline to the camera and hardware
 
     public void runOpMode() {
+        // Four sides of the field
+        for (int a = 0; a < positionList.length; a++) {
+            positionList[a] = new Vector<>();
+            rotationList[a] = new Vector<>();
+            Collections.addAll(positionList[a], Math.sin(YAW_ANGLE * a) * FIELD_LENGTH / 2, -Math.cos(YAW_ANGLE * a) * FIELD_LENGTH / 2,CAMERA_HEIGHT);
+            Collections.addAll(rotationList[a], (double) 0, (double) 0, YAW_ANGLE * a);
+        }
+
+        for (int x = 0; x < positionList.length; x++) {
+            transformList[x] = new Transform(positionList[x], rotationList[x]);
+        }
+
         AprilTagProcessor.Builder builder;
         VisionPortal.Builder portalBuilder = new VisionPortal.Builder();
 
