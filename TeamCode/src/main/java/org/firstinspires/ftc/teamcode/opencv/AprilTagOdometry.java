@@ -32,7 +32,7 @@ public class AprilTagOdometry extends LinearOpMode {
 
     VisionPortal portal;
     AprilTagLocations locations;
-    int[] idList = {};
+    int[] idList = {1, 3, 2, 0};
 
     Vector<Double>[] positionList;
     Vector<Double>[] rotationList;
