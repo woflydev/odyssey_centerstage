@@ -27,10 +27,21 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvInternalCamera;
+import org.openftc.easyopencv.OpenCvPipeline;
+
+
 @TeleOp(name = "Concept: AprilTagWithRoadRunner", group = "Concept")
 public class AprilTagRoadRunner extends LinearOpMode {
 
-    private static final boolean USE_WEBCAM = true;  // true for webcam, false for phone camera
+    private static final boolean USE_VIEWPORT = true;
+
+    private static String FRONT_CAMERA = "Webcam 1";
+    private static String BACK_CAMERA = "Webcam 2";
+
     private static double FIELD_LENGTH = 3.58;
     private static double CAMERA_HEIGHT = 0.313;
 
@@ -39,6 +50,8 @@ public class AprilTagRoadRunner extends LinearOpMode {
     private static int ACQUISITION_TIME = 10;
 
     private static int SLEEP_TIME = 20;
+
+    private static int STARTUP_TIME = 5000;
 
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
@@ -77,18 +90,29 @@ public class AprilTagRoadRunner extends LinearOpMode {
                     (float) Math.sin(-YAW_ANGLE / 2), ACQUISITION_TIME))
     };
 
+    private List<AprilTagDetection> currentDetections;
+
     private VectorF previousPosition;
 
     private VectorF currentPosition;
 
     private VectorF currentVelocity;
 
+    private double currentHeading;
+
     private Pose2d currentPose;
 
     private long blindTime = 0;
     private boolean isBlind = false;
+
+    private OpenCvCamera frontCamera;
+    private OpenCvCamera backCamera;
+
     @SuppressLint("DefaultLocale")
     public void runOpMode() {
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         currentPosition = new VectorF(0, 0, (float)CAMERA_HEIGHT);
         previousPosition = new VectorF(0, 0, (float)CAMERA_HEIGHT);
@@ -101,16 +125,23 @@ public class AprilTagRoadRunner extends LinearOpMode {
         telemetry.update();
 
         initAprilTag();
+        while (elapsedTime.time() < STARTUP_TIME) {
+            analyseDetections();
+        }
+        tagTelemetry(currentDetections);
+
+        initCameras(new FieldPipeline(), new FieldPipeline());
 
         waitForStart();
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                List<AprilTagDetection> detections = analyseDetections();
-                tagTelemetry(detections);
+                analyseDetections();
+                tagTelemetry(currentDetections);
+
+                drive.setPoseEstimate(currentPose);
 
                 telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, z: %.2f", currentPosition.get(0), currentPosition.get(1), currentPosition.get(1)));
-
                 // Push telemetry to the Driver Station.
                 telemetry.update();
 
@@ -120,6 +151,9 @@ public class AprilTagRoadRunner extends LinearOpMode {
                 } else if (gamepad1.dpad_up) {
                     visionPortal.resumeStreaming();
                 }
+
+                if (isStopRequested()) return;
+
 
                 // Share the CPU.
                 sleep(SLEEP_TIME);
@@ -160,11 +194,7 @@ public class AprilTagRoadRunner extends LinearOpMode {
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
         // Set the camera (webcam vs. built-in RC phone camera).
-        if (USE_WEBCAM) {
-            builder.setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"));
-        } else {
-            builder.setCamera(BuiltinCameraDirection.BACK);
-        }
+        builder.setCamera(hardwareMap.get(WebcamName.class, FRONT_CAMERA));
 
         // Choose a camera resolution. Not all cameras support all resolutions.
         builder.setCameraResolution(new Size(1280, 720));
@@ -190,8 +220,69 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     }   // end method initAprilTag()
 
-    public List<AprilTagDetection> analyseDetections() {
-        List<AprilTagDetection> currentDetections = aprilTag.getDetections();
+    private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
+        if (USE_VIEWPORT) {
+            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, FRONT_CAMERA),
+                    cameraMonitorViewId
+            );
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, BACK_CAMERA),
+                    cameraMonitorViewId
+            );
+        } else {
+            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, FRONT_CAMERA)
+            );
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, BACK_CAMERA)
+            );
+        }
+
+        frontCamera.openCameraDeviceAsync(
+                new OpenCvCamera.AsyncCameraOpenListener() {
+                    @Override
+                    public void onOpened()
+                    {
+                        // Usually this is where you'll want to start streaming from the camera (see section 4)
+                        frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        frontCamera.setPipeline(frontPipeline);
+                    }
+                    @Override
+                    public void onError(int errorCode)
+                    {
+                        /*
+                         * This will be called if the camera could not be opened
+                         */
+                        telemetry.addLine("Front camera could not be opened.");
+                        telemetry.update();
+                    }
+                }
+        );
+        backCamera.openCameraDeviceAsync(
+                new OpenCvCamera.AsyncCameraOpenListener() {
+                    @Override
+                    public void onOpened()
+                    {
+                        // Usually this is where you'll want to start streaming from the camera (see section 4)
+                        backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        backCamera.setPipeline(backPipeline);
+                    }
+                    @Override
+                    public void onError(int errorCode)
+                    {
+                        /*
+                         * This will be called if the camera could not be opened
+                         */
+                        telemetry.addLine("Back camera could not be opened.");
+                        telemetry.update();
+                    }
+                }
+        );
+    }
+    public void analyseDetections() {
+        currentDetections = aprilTag.getDetections();
         telemetry.addData("# AprilTags Detected", currentDetections.size());
 
         VectorF smoothPos = new VectorF(0, 0, 0);
@@ -209,11 +300,10 @@ public class AprilTagRoadRunner extends LinearOpMode {
         previousPosition = currentPosition;
 
         if (notNullTags > 0) {
-            smoothHeading /= notNullTags;
 
             currentPosition = smoothPos.multiplied(1 / (float) notNullTags);
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
-            currentPose = new Pose2d(smoothPos.get(0), smoothPos.get(1), smoothHeading);
+            currentHeading = smoothHeading / notNullTags;
             isBlind = false;
         } else {
             // Assumes constant velocity if no April tags can be seen
@@ -223,8 +313,7 @@ public class AprilTagRoadRunner extends LinearOpMode {
             }
             currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
-
-        return currentDetections;
+        currentPose = new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
     }
 
     @SuppressLint("DefaultLocale")
