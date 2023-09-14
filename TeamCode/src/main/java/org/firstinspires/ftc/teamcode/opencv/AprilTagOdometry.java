@@ -83,7 +83,7 @@ public class AprilTagOdometry extends LinearOpMode {
         portalBuilder.enableCameraMonitoring(true);      // Enable LiveView (RC preview).
         portalBuilder.setAutoStopLiveView(true);     // Automatically stop LiveView (RC preview) when all vision processors are disabled.
 
-        portal = portalBuilder.build();
+        portal = portalBuilder.build();s
 
         telemetry.addLine("Processor and portal have been initialised");
         telemetry.update();
