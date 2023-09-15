@@ -1,7 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive;
 
 import android.annotation.SuppressLint;
-import android.util.Size;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
@@ -10,19 +9,12 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.MatrixF;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
-import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
-import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
-import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvInternalCamera;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 
@@ -39,8 +30,8 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     private static final boolean USE_VIEWPORT = true;
 
-    private static String FRONT_CAMERA = "Webcam 1";
-    private static String BACK_CAMERA = "Webcam 2";
+    public static String FRONT_CAMERA = "Webcam 1";
+    public static String BACK_CAMERA = "Webcam 2";
 
     private static double FIELD_LENGTH = 3.58;
     private static double CAMERA_HEIGHT = 0.313;
@@ -51,23 +42,13 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     private static int SLEEP_TIME = 20;
 
-    private static int STARTUP_TIME = 5000;
 
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
-    /**
-     * {@link #aprilTag} is the variable to store our instance of the AprilTag processor.
-     */
-    private AprilTagProcessor aprilTag;
-
-    /**
-     * {@link #visionPortal} is the variable to store our instance of the vision portal.
-     */
-    private VisionPortal visionPortal;
 
     // This assumes the april tag starts facing along the y-axis, may change later
-    private AprilTagMetadata[] tagArray = {
+    public static AprilTagMetadata[] tagArray = {
             new AprilTagMetadata(0, "Forward", 0.1,
                     new VectorF(0, (float) FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
@@ -92,43 +73,27 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     private List<AprilTagDetection> currentDetections;
 
-    private VectorF previousPosition;
-
-    private VectorF currentPosition;
-
-    private VectorF currentVelocity;
-
-    private double currentHeading;
-
-    private Pose2d currentPose;
-
-    private long blindTime = 0;
-    private boolean isBlind = false;
-
     private OpenCvCamera frontCamera;
     private OpenCvCamera backCamera;
 
     @SuppressLint("DefaultLocale")
     public void runOpMode() {
         SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        CameraLocalizer localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray);
 
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        currentPosition = new VectorF(0, 0, (float)CAMERA_HEIGHT);
-        previousPosition = new VectorF(0, 0, (float)CAMERA_HEIGHT);
-        currentVelocity = new VectorF(0, 0, 0);
-        currentPose = new Pose2d(0, 0, 0);
+
 
         // Wait for the DS start button to be touched.
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch Play to start OpMode");
         telemetry.update();
 
-        initAprilTag();
-        while (elapsedTime.time() < STARTUP_TIME) {
-            analyseDetections();
-        }
+        localizer.update();
+        currentDetections = localizer.currentDetections;
         tagTelemetry(currentDetections);
+        drive.setPoseEstimate(localizer.poseEstimate);
 
         initCameras(new FieldPipeline(), new FieldPipeline());
 
@@ -136,20 +101,19 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
         if (opModeIsActive()) {
             while (opModeIsActive()) {
-                analyseDetections();
+                localizer.update();
+                // Add trajectories with drive.followTrajectory
                 tagTelemetry(currentDetections);
 
-                drive.setPoseEstimate(currentPose);
-
-                telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, z: %.2f", currentPosition.get(0), currentPosition.get(1), currentPosition.get(1)));
+                telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
                 // Push telemetry to the Driver Station.
                 telemetry.update();
 
                 // Save CPU resources; can resume streaming when needed.
                 if (gamepad1.dpad_down) {
-                    visionPortal.stopStreaming();
+                    localizer.visionPortal.stopStreaming();
                 } else if (gamepad1.dpad_up) {
-                    visionPortal.resumeStreaming();
+                    localizer.visionPortal.resumeStreaming();
                 }
 
                 if (isStopRequested()) return;
@@ -161,64 +125,8 @@ public class AprilTagRoadRunner extends LinearOpMode {
         }
 
         // Save more CPU resources when camera is no longer needed.
-        visionPortal.close();
+        localizer.visionPortal.close();
     }
-
-    private void initAprilTag() {
-
-        AprilTagLibrary.Builder b = new AprilTagLibrary.Builder();
-        for (AprilTagMetadata tag : tagArray) {
-            b.addTag(tag);
-        }
-
-        AprilTagLibrary library = b.build();
-
-        // Create the AprilTag processor.
-        aprilTag = new AprilTagProcessor.Builder()
-                //.setDrawAxes(false)
-                //.setDrawCubeProjection(false)
-                .setDrawTagOutline(true)
-                .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
-                .setTagLibrary(library)
-                .setOutputUnits(DistanceUnit.METER, AngleUnit.DEGREES)
-
-                // == CAMERA CALIBRATION ==
-                // If you do not manually specify calibration parameters, the SDK will attempt
-                // to load a predefined calibration for your camera.
-                .setLensIntrinsics(1389.80870649, 1389.80870649, 663.268596171, 399.045042197)
-                // ... these parameters are fx, fy, cx, cy.
-
-                .build();
-
-        // Create the vision portal by using a builder.
-        VisionPortal.Builder builder = new VisionPortal.Builder();
-
-        // Set the camera (webcam vs. built-in RC phone camera).
-        builder.setCamera(hardwareMap.get(WebcamName.class, FRONT_CAMERA));
-
-        // Choose a camera resolution. Not all cameras support all resolutions.
-        builder.setCameraResolution(new Size(1280, 720));
-
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        builder.enableCameraMonitoring(true);
-
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        //builder.setStreamFormat(VisionPortal.StreamFormat.YUY2);
-
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        //builder.setAutoStopLiveView(false);
-
-        // Set and enable the processor.
-        builder.addProcessor(aprilTag);
-
-        // Build the Vision Portal, using the above settings.
-        visionPortal = builder.build();
-        // Disable or re-enable the aprilTag processor at any time.
-        //visionPortal.setProcessorEnabled(aprilTag, true);
-
-    }   // end method initAprilTag()
 
     private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
         if (USE_VIEWPORT) {
@@ -243,15 +151,14 @@ public class AprilTagRoadRunner extends LinearOpMode {
         frontCamera.openCameraDeviceAsync(
                 new OpenCvCamera.AsyncCameraOpenListener() {
                     @Override
-                    public void onOpened()
-                    {
+                    public void onOpened() {
                         // Usually this is where you'll want to start streaming from the camera (see section 4)
                         frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                         frontCamera.setPipeline(frontPipeline);
                     }
+
                     @Override
-                    public void onError(int errorCode)
-                    {
+                    public void onError(int errorCode) {
                         /*
                          * This will be called if the camera could not be opened
                          */
@@ -263,15 +170,14 @@ public class AprilTagRoadRunner extends LinearOpMode {
         backCamera.openCameraDeviceAsync(
                 new OpenCvCamera.AsyncCameraOpenListener() {
                     @Override
-                    public void onOpened()
-                    {
+                    public void onOpened() {
                         // Usually this is where you'll want to start streaming from the camera (see section 4)
                         backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                         backCamera.setPipeline(backPipeline);
                     }
+
                     @Override
-                    public void onError(int errorCode)
-                    {
+                    public void onError(int errorCode) {
                         /*
                          * This will be called if the camera could not be opened
                          */
@@ -280,40 +186,6 @@ public class AprilTagRoadRunner extends LinearOpMode {
                     }
                 }
         );
-    }
-    public void analyseDetections() {
-        currentDetections = aprilTag.getDetections();
-        telemetry.addData("# AprilTags Detected", currentDetections.size());
-
-        VectorF smoothPos = new VectorF(0, 0, 0);
-        double smoothHeading = 0;
-        int notNullTags = 0;
-
-        // Step through the list of detections and display info for each one.
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
-                smoothPos.add(vectorFromPose(detection));
-                smoothHeading += yawFromPose(detection);
-                notNullTags++;
-            }
-        }
-        previousPosition = currentPosition;
-
-        if (notNullTags > 0) {
-
-            currentPosition = smoothPos.multiplied(1 / (float) notNullTags);
-            currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
-            currentHeading = smoothHeading / notNullTags;
-            isBlind = false;
-        } else {
-            // Assumes constant velocity if no April tags can be seen
-            if (!isBlind) {
-                blindTime = elapsedTime.time(timeUnit);
-                isBlind = true;
-            }
-            currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
-        }
-        currentPose = new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
     }
 
     @SuppressLint("DefaultLocale")
@@ -328,48 +200,5 @@ public class AprilTagRoadRunner extends LinearOpMode {
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
             }
         }
-    }
-
-    public VectorF vectorFromPose(AprilTagDetection detection) {
-        AprilTagPoseFtc pose = detection.ftcPose;
-        MatrixF rotationM = rotationMatrix(pose.pitch + pose.elevation, 0, 0)
-                .multiplied(rotationMatrix(0, 0, pose.bearing - pose.yaw));
-        VectorF relativeVector = rotationM.multiplied(new VectorF(0, 1, 0));
-        MatrixF fieldRotation = detection.metadata.fieldOrientation.toMatrix();
-        return fieldRotation.multiplied(relativeVector).added(detection.metadata.fieldPosition);
-    }
-
-    // Assumes pitch and roll are negligible
-    public double yawFromPose(AprilTagDetection detection) {
-        AprilTagPoseFtc pose = detection.ftcPose;
-        return pose.bearing - pose.yaw + Math.acos(detection.metadata.fieldOrientation.w);
-    }
-
-    // All are in radians
-    public MatrixF rotationMatrix(double pitch, double roll, double yaw) {
-        MatrixF pitchM = MatrixF.identityMatrix(3);
-        MatrixF rollM = MatrixF.identityMatrix(3);
-        MatrixF yawM = MatrixF.identityMatrix(3);
-
-        pitchM.add(new float[] {
-                0, 0, 0,
-                0, (float) (1 - Math.cos(pitch)), (float) -Math.sin(pitch),
-                0, (float) Math.sin(pitch), (float) (1 - Math.cos(pitch))
-        });
-
-        rollM.add(new float[] {
-                (float)(1 - Math.cos(roll)), 0, (float) Math.sin(roll),
-                0, 0, 0,
-                (float) (- Math.sin(roll)), 0, (float) (1 - Math.cos(roll))
-        });
-
-        yawM.add(new float[] {
-                (float)(1 - Math.cos(yaw)), (float) (-Math.sin(yaw)), 0,
-                (float) (Math.sin(yaw)), (float)(1 - Math.cos(yaw)), 0,
-                0, 0, 0
-        });
-
-        // Euler angles, pitch, then roll than yaw
-        return yawM.multiplied(rollM.multiplied(pitchM));
     }
 }
