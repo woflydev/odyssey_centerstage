@@ -13,6 +13,7 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -32,10 +33,41 @@ public class FieldPipeline extends OpenCvPipeline {
     };
 
     public static int PIXEL_THRESHOLD = 1000;
+    // Distance from opposite edges of the pixel in metres
+    public static double PIXEL_EDGE_TO_EDGE = 0.0762;
+    public static double PIXEL_CORNER_TO_CORNER = PIXEL_EDGE_TO_EDGE * 2 / Math.sqrt(3);
+    public static double PIXEL_SIDE_LENGTH = PIXEL_CORNER_TO_CORNER / 2;
+
+    public static int SCORE_PER_BACKDROP_PIXEL = 5;
+
+    public static int ROWS_PER_LINE = 3;
+    public static int ROWS_FOR_FIRST = 3;
+    public static int SCORE_PER_LINE = 10;
+    public static int MAXIMUM_LINE_SCORE = 30;
+
+    public static int SCORE_PER_MOSAIC = 10;
+
     public static int HEXAGON = 6;
+
+    public static int SPIKE_BACKDROP_COLOUR = 2;
+    // This assumes team prop, use 10 if using white pixel
+    public static int SCORE_SPIKE_BACKDROP = 20;
+
+    public static int APRIL_TAG_BACKDROP_SPACING = 2;
+    public static int FIRST_APRIL_TAG_LOCATION = 0;
+
+
+    public int spikeMark;
 
     public Mat processFrame (Mat input) {
         return input;
+    }
+
+    // Given a backdrop image, this function approximates the score that
+    public static int scoreOnBackdrop(Mat input) {
+        Pixel[] pixels = recognisePixels(input);
+        Pixel.Backdrop backdrop = new Pixel.Backdrop(pixels);
+        return backdrop.score();
     }
 
     public static Pixel[] recognisePixels(Mat input) {
@@ -52,8 +84,9 @@ public class FieldPipeline extends OpenCvPipeline {
             Imgproc.findContours(masked, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             for (MatOfPoint contour : contours) {
+                double contourArea = Imgproc.contourArea(contour);
                 // If the shape is a hexagon and is big enough
-                if (Imgproc.contourArea(contour) > PIXEL_THRESHOLD && contour.size(0) == HEXAGON) {
+                if (contourArea > PIXEL_THRESHOLD && contour.size(0) == HEXAGON) {
                     Moments M = Imgproc.moments(contour);
                     long cX = Math.round(M.m10 / M.m00);
                     long cY = Math.round(M.m01 / M.m00);
@@ -73,7 +106,9 @@ public class FieldPipeline extends OpenCvPipeline {
                     double heading = Math.atan2(points[highest].y - points[lowest].y,
                                                 points[highest].x - points[lowest].x) - Math.PI / 2;
 
-                    currentPixels.add(new Pixel(new Pose2d(cX, cY, heading), i));
+                    double estimatedSideLength = Math.sqrt(2 * contourArea / HEXAGON / Math.tan(2 * Math.PI / HEXAGON));
+
+                    currentPixels.add(new Pixel(new Pose2d(cX, cY, heading), i, estimatedSideLength));
                 }
             }
         }
@@ -82,6 +117,7 @@ public class FieldPipeline extends OpenCvPipeline {
         return currentPixels.toArray(tmpArray);
     }
 
+    // Finds the index of the element with the highest sort value
     public static <T> int maxOfArr(T[] points, Function<T, Double> sort) {
         int maxIndex = -1;
         double maxValue = 0;
@@ -95,14 +131,81 @@ public class FieldPipeline extends OpenCvPipeline {
         return maxIndex;
     }
 
+    // Finds the index of the element with the highest sort value, unless reverse is true, in which case
+    // it does the opposite
+    public static <T> int maxOfArr(T[] points, Function<T, Double> sort, boolean reverse) {
+        int maxIndex = -1;
+        double maxValue = 0;
+        for (int i = 0; i < points.length; i++) {
+            double newValue = sort.apply(points[i]);
+            if (maxIndex == -1 || ((newValue > maxValue && !reverse) ||(newValue < maxValue && reverse))) {
+                maxValue = newValue;
+                maxIndex = i;
+            }
+        }
+        return maxIndex;
+    }
+
     public static class Pixel {
         public Pose2d pose;
+        public double sideLength;
         // Refers to the index of PIXEL_BOUNDS or PIXEL_COLOURS
         public int colour;
 
-        public Pixel(Pose2d p, int i) {
+        public Pixel(Pose2d p, int i, double s) {
             this.pose = p;
             this.colour = i;
+            this.sideLength = s;
+        }
+
+        public static class Backdrop {
+            public ArrayList<Pixel>[] pixels;
+            public int pixelNum;
+            public int rows;
+            // This is in pixels
+            public double rowHeight;
+            // Creates a backdrop object from a list of pixels
+            // Note, the height difference in each of the rows of pixels is 1.5 * sidelength
+            // The sidelength can be estimated from the average contour area of the pixels and
+            // assuming it is a perfect hexagon
+            public Backdrop(Pixel[] p) {
+
+                // The number of rows must be given because the pixels' positions on the camera changes with distance
+                Function<Pixel, Double> height = (Pixel a) -> {return a.pose.getY();};
+
+                int highestIndex = maxOfArr(p, height, false);
+                int lowestIndex = maxOfArr(p, height, false);
+
+                double highY = p[highestIndex].pose.getY();
+                double lowY = p[lowestIndex].pose.getY();
+
+                double averageSideLength = 0;
+                for (Pixel pixel : p) {
+                    averageSideLength += pixel.sideLength / p.length;
+                }
+
+                this.rows = (int) Math.floor((highY - lowY) / averageSideLength);
+                this.rowHeight = (highY - lowY) / this.rows;
+                this.pixelNum = p.length;
+
+                pixels = new ArrayList[rows];
+
+                for (Pixel pixel : p) {
+                    int row = (int) Math.floor((pixel.pose.getY() - lowY) / this.rowHeight);
+                    this.pixels[row].add(pixel);
+                }
+
+                for (int i = 0; i < rows; i++) {
+                    this.pixels[i].sort((Pixel a, Pixel b) -> (int) Math.round(a.pose.getX() - b.pose.getX()));
+                }
+            }
+            public int score() {
+                int baseScore = SCORE_PER_BACKDROP_PIXEL * this.pixelNum;
+                // Change this later because we need more information
+                int bonusFromRandomisation = 0;
+
+                return baseScore + bonusFromRandomisation;
+            }
         }
     }
 }
