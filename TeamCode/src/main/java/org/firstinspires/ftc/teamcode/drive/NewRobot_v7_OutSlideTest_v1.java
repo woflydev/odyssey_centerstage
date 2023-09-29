@@ -22,8 +22,8 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
     private DcMotorEx backRM = null;
     private DcMotorEx frontLM = null;
     private DcMotorEx frontRM = null;
-    private DcMotorEx armL = null;
     private DcMotorEx armR = null;
+    private DcMotorEx armL = null;
     private IMU imu = null;
     //private Servo claw = null;
 
@@ -50,13 +50,14 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
     private static final String FRONT_RIGHT = "frontR";
     private static final String BACK_LEFT = "backL";
     private static final String BACK_RIGHT = "backR";
-    private static final String ARM_MOTOR = "armMotor";
+    private static final String ARM_R = "armR";
+    private static final String ARM_L = "armL";
     private static final String HUB_IMU = "imu";
 
-    private static final int MAX_ARM_HEIGHT = 3250;
+    private static final int MAX_ARM_HEIGHT = 4200;
     private static final int MIN_ARM_HEIGHT = 0;
 
-    private static final int ARM_ADJUSTMENT_INCREMENT = 45;
+    private static final int ARM_ADJUSTMENT_INCREMENT = 20;
     private static final int ARM_BOOST_MODIFIER = 1;
     private static final int ARM_RESET_TIMEOUT = 3;
 
@@ -125,7 +126,25 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
 
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            if ((gamepad1.right_trigger >= 0.6 || gamepad2.right_trigger >= 0.5) && armL.getCurrentPosition() < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT) {
+            if (gamepad1.right_trigger >= 0.6 && ((armL.getCurrentPosition() < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetArmPosition < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT) {
+                    targetArmPosition += ARM_ADJUSTMENT_INCREMENT;
+                    NewUpdateOuttake(false);
+                }
+            } else if (gamepad1.left_trigger >= 0.6 && ((armL.getCurrentPosition() > MIN_ARM_HEIGHT + ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > MIN_ARM_HEIGHT + ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetArmPosition > MIN_ARM_HEIGHT + ARM_ADJUSTMENT_INCREMENT) {
+                    targetArmPosition -= ARM_ADJUSTMENT_INCREMENT;
+                    NewUpdateOuttake(false);
+                }
+            } else if (gamepad1.dpad_down) {
+                targetArmPosition = 30;
+                NewUpdateOuttake(true);
+            } else if (gamepad1.right_bumper || gamepad1.left_bumper) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            }
+
+            /*if ((gamepad1.right_trigger >= 0.6 || gamepad2.right_trigger >= 0.5) && armL.getCurrentPosition() < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT) {
                 targetArmPosition += ARM_ADJUSTMENT_INCREMENT;
                 NewUpdateArm(false);
             }
@@ -143,7 +162,7 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
             else if (gamepad1.dpad_up || gamepad2.dpad_up) { // high junction
                 targetArmPosition = JUNCTION_HIGH;
                 NewUpdateArm(false);
-            }
+            }*/
         }
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
@@ -350,10 +369,12 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
         Delay(50);
     }
 
-    private void NewUpdateArm(boolean reset) { // test new function
+    private void NewUpdateOuttake(boolean reset) { // test new function
+        armR.setTargetPosition(targetArmPosition);
         armL.setTargetPosition(targetArmPosition);
 
         if (reset) {
+            armR.setTargetPosition(30);
             armL.setTargetPosition(30);
             targetArmPosition = 30;
             armRuntime.reset();
@@ -366,7 +387,8 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
                 }
             }*/
 
-            if (armL.getCurrentPosition() <= 50 || armRuntime.seconds() >= ARM_RESET_TIMEOUT) {
+            if ((armL.getCurrentPosition() <= 50 || armR.getCurrentPosition() <= 50) || armRuntime.seconds() >= ARM_RESET_TIMEOUT) {
+                armR.setVelocity(0);
                 armL.setVelocity(0);
             }
 
@@ -375,13 +397,15 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
 
         else {
             armRuntime.reset();
-            armL.setVelocity((double)2500 / 3); // velocity used to be 1800
+            armR.setVelocity((double)2000);
+            armL.setVelocity((double)2800); // velocity used to be 1800
         }
     }
 
     // TODO: NOT UPDATED FOR NEW TWO-SLIDE SETUP
     private void PassiveArmResetCheck() {
-        if (armL.getCurrentPosition() <= 50 && targetArmPosition <= 50) {
+        if ((armL.getCurrentPosition() <= 50 && armR.getCurrentPosition() <= 50) && targetArmPosition <= 50) {
+            armR.setVelocity(0);
             armL.setVelocity(0);
             resetTimer.reset();
         }
@@ -392,7 +416,7 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
     private void InitializeBlock() {
         driveSpeedModifier = BASE_DRIVE_SPEED_MODIFIER;
 
-        backLM = hardwareMap.get(DcMotorEx.class, BACK_LEFT);
+        /*backLM = hardwareMap.get(DcMotorEx.class, BACK_LEFT);
         backRM = hardwareMap.get(DcMotorEx.class, BACK_RIGHT);
 
         frontLM = hardwareMap.get(DcMotorEx.class, FRONT_LEFT);
@@ -414,13 +438,21 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
         frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRM.setDirection(DcMotorSimple.Direction.REVERSE);
+        backRM.setDirection(DcMotorSimple.Direction.REVERSE);*/
 
-        armL = hardwareMap.get(DcMotorEx.class, ARM_MOTOR);
-        armL.setMode(DcMotor.RunMode.RUN_USING_ENCODER); // change back to pos
-        armL.setDirection(DcMotorSimple.Direction.FORWARD);
-        //armM.setTargetPosition(0);
+        armR = hardwareMap.get(DcMotorEx.class, ARM_R);
+        armL = hardwareMap.get(DcMotorEx.class, ARM_L);
+        armR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armR.setTargetPosition(0);
+        armL.setTargetPosition(0);
+        armR.setMode(DcMotor.RunMode.RUN_TO_POSITION); // TODO: CHANGE BACK TO RUN_TO_POS
+        armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armR.setDirection(DcMotorSimple.Direction.FORWARD);
+        armL.setDirection(DcMotorSimple.Direction.REVERSE);
+
         //armM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         armL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // -------------------------------------------------------------- IMU INIT
@@ -459,16 +491,16 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
 
         RuntimeConfig();
         //PassiveArmResetCheck();
-        Mecanum();
+        //Mecanum();
 
         // -------------------------------------------------------------- TELEMETRY
 
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
-        telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
+        /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
-        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());
+        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
 
         telemetry.addData("Target Arm Position: ", targetArmPosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
