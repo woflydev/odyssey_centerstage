@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
 
 @TeleOp()
 public class NewRobot_v7_TransferServoTest_v1 extends OpMode {
@@ -82,6 +83,8 @@ public class NewRobot_v7_TransferServoTest_v1 extends OpMode {
     private static final int JUNCTION_MID = 2700;
     private static final int JUNCTION_STANDBY = 3200;
     private static final int JUNCTION_HIGH = 4000;
+
+    private static final RobotConstants robitVars = new RobotConstants();
 
     // -------------------------------------------------------------- ROBOT OPERATION
 
