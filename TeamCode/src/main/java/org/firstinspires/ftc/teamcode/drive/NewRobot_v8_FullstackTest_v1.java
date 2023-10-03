@@ -156,7 +156,7 @@ public class NewRobot_v8_FullstackTest_v1 extends OpMode {
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
 
-        telemetry.addData("Target Arm Position: ", r.targetOuttakePosition);
+        telemetry.addData("Target Outtake Position: ", r.targetOuttakePosition);
         telemetry.addData("Adjustment Allowed: ", r.adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", r.fieldCentricRed ? "RED" : "BLUE");
         telemetry.addData("Current Speed Mode: ", r.driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
