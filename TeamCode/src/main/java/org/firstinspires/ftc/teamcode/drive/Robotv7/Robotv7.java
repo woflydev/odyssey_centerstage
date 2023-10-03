@@ -73,7 +73,7 @@ public class Robotv7 extends OpMode {
         Delay(50);
     }
 
-    private void InitializeBlock() {
+    public void InitializeBlock() {
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
         /*backLM = hardwareMap.get(DcMotorEx.class, BACK_LEFT);
@@ -140,12 +140,11 @@ public class Robotv7 extends OpMode {
 
         InitializeBlock();
 
-        telemetry.setAutoClear(false);
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
         telemetry.update();
     }
 
     public void loop() {
-
+        // yes
     }
 }
