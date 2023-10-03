@@ -5,6 +5,9 @@ import android.annotation.SuppressLint;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
+import com.acmerobotics.roadrunner.trajectory.TrajectoryMarker;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -45,6 +48,8 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
+
+    private Trajectory pixelToBackdrop;
 
 
     // This assumes the april tag starts facing along the y-axis, may change later
@@ -95,6 +100,10 @@ public class AprilTagRoadRunner extends LinearOpMode {
         tagTelemetry(currentDetections);
         drive.setPoseEstimate(localizer.poseEstimate);
 
+        // TODO: Add directions to go from pixels to backdrop
+        pixelToBackdrop = drive.trajectoryBuilder(new Pose2d())
+                        .build();
+
         initCameras(new FieldPipeline(), new FieldPipeline());
 
         waitForStart();
@@ -103,6 +112,7 @@ public class AprilTagRoadRunner extends LinearOpMode {
             while (opModeIsActive()) {
                 localizer.update();
                 // Add trajectories with drive.followTrajectory
+
                 tagTelemetry(currentDetections);
 
                 telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
