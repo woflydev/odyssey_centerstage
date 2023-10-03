@@ -40,30 +40,30 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7 {
             }*/
 
             if (gamepad1.square) {
-                targetClawPosition -= 0.05;
+                targetClawPosition -= 0.02;
                 servoClaw.setPosition(targetClawPosition);
                 Delay(50);
             } else if (gamepad1.circle) {
-                targetClawPosition += 0.05;
+                targetClawPosition += 0.02;
                 servoClaw.setPosition(targetClawPosition);
                 Delay(50);
             }
 
             if (gamepad1.right_bumper) {
-                targetWristPosition += 0.05;
+                targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
             } else if (gamepad1.left_bumper) {
-                targetWristPosition -= 0.05;
+                targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
             }
 
             if (gamepad1.triangle) {
-                targetElbowPosition += 0.05;
+                targetElbowPosition += 0.02;
                 MoveElbow(targetElbowPosition);
             } else if (gamepad1.cross) {
-                targetElbowPosition -= 0.05;
+                targetElbowPosition -= 0.02;
                 MoveElbow(targetElbowPosition);
             }
         }
@@ -154,7 +154,8 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7 {
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
-
+        telemetry.addData("Target Wrist Position: ", targetWristPosition);
+        telemetry.addData("Target Elbow Position: ", targetElbowPosition);
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");

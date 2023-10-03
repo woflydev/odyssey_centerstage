@@ -23,7 +23,7 @@ public class RobotConstants {
 
     public static final double CLAW_CLOSE = 0;
     public static final double CLAW_OPEN = 0.2;
-    public static final double WRIST_STANDBY = 0.5;
+    public static final double WRIST_STANDBY = 0.3;
     public static final double WRIST_ACTIVE = 1.0;
     public static final double ELBOW_STANDBY = 0.5;
     public static final double ELBOW_ACTIVE = 0.5;
