@@ -74,6 +74,27 @@ public class NewRobot_v8_FullstackTest_v1 extends OpMode {
         }
     }
 
+    private void Macros() {
+        // test transfer stage macro
+        if (gamepad1.cross) {
+            if (!r.transferStageActive) {
+                r.transferStageActive = true;
+                r.servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                r.Delay(600);
+                r.servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                r.servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+
+            } else {
+                r.transferStageActive = false;
+                r.servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                r.Delay(200);
+                r.servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                r.servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+            }
+            r.Delay(200);
+        }
+    }
+
     private void NewUpdateOuttake(boolean reset) { // test new function
         r.armR.setTargetPosition(r.targetOuttakePosition);
         r.armL.setTargetPosition(r.targetOuttakePosition);
@@ -113,7 +134,7 @@ public class NewRobot_v8_FullstackTest_v1 extends OpMode {
 
     public void loop() {
         RuntimeConfig();
-
+        Macros();
 
         // TELEMETRY
         telemetry.addData("Arm Left: ", r.armL.getCurrentPosition());
