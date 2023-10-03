@@ -15,39 +15,6 @@ import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7;
 
 @TeleOp()
 public class NewRobot_v8_FullstackTest_v1 extends Robotv7 {
-    public DcMotorEx backLM = null;
-    public DcMotorEx backRM = null;
-    public DcMotorEx frontLM = null;
-    public DcMotorEx frontRM = null;
-    public Servo servoClaw = null;
-    public Servo servoWrist = null;
-    public Servo servoElbowR = null;
-    public Servo servoElbowL = null;
-    public DcMotorEx armR = null;
-    public DcMotorEx armL = null;
-    public IMU imu = null;
-
-    public final ElapsedTime encoderRuntime = new ElapsedTime();
-    public final ElapsedTime armRuntime = new ElapsedTime();
-    public final ElapsedTime resetTimer = new ElapsedTime();
-
-    public double targetClawPosition = 0.4;
-    public double targetWristPosition = 0.5;
-    public double targetElbowPosition = 0.5;
-    public boolean clawOpen = false;
-    public boolean wristActive = false;
-    public boolean elbowActive = false;
-
-    public double current_v1 = 0;
-    public double current_v2 = 0;
-    public double current_v3 = 0;
-    public double current_v4 = 0;
-
-    public double driveSpeedModifier = 1;
-    public boolean adjustmentAllowed = true;
-    public boolean fieldCentricRed = true;
-    public int targetOuttakePosition = 0;
-
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
