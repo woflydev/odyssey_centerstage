@@ -67,6 +67,12 @@ public class Robotv7 extends OpMode {
         return rot;
     }
 
+    public void MoveElbow(double targetPos) {
+        servoElbowR.setPosition(targetPos);
+        servoElbowL.setPosition(Math.abs(targetPos - 1)); // servos are mounted facing each other
+        Delay(50);
+    }
+
     private void InitializeBlock() {
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 

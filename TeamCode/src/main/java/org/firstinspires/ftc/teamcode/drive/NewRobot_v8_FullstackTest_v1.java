@@ -61,14 +61,10 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7 {
 
             if (gamepad1.triangle) {
                 targetElbowPosition += 0.05;
-                servoElbowR.setPosition(targetElbowPosition);
-                servoElbowL.setPosition(targetElbowPosition);
-                Delay(50);
+                MoveElbow(targetElbowPosition);
             } else if (gamepad1.cross) {
                 targetElbowPosition -= 0.05;
-                servoElbowR.setPosition(targetElbowPosition);
-                servoElbowL.setPosition(targetElbowPosition);
-                Delay(50);
+                MoveElbow(targetElbowPosition);
             }
         }
 
