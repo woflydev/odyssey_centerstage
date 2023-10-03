@@ -102,6 +102,35 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
             }
             Delay(200);
         }
+
+        if (gamepad1.square && gamepad1.left_bumper) {
+            if (!transferStageDeployed) {
+                transferStageDeployed = true;
+                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                Delay(500);
+                // TODO: test if this reinforcement actually works
+                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+
+                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
+                MoveElbow(RobotConstants.ELBOW_ACTIVE);
+
+                Delay(100);
+
+                UpdateOuttake(false);
+            } else {
+                transferStageDeployed = false;
+                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                Delay(300);
+
+                MoveElbow(RobotConstants.ELBOW_STANDBY);
+
+                targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT + 10;
+                UpdateOuttake(false);
+
+                servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+            }
+        }
     }
 
     private void UpdateOuttake(boolean reset) { // test new function

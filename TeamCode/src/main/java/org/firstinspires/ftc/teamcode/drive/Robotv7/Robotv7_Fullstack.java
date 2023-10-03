@@ -39,6 +39,7 @@ public class Robotv7_Fullstack extends OpMode {
     public boolean clawOpen = false;
     public boolean wristActive = false;
     public boolean elbowActive = false;
+    public boolean transferStageDeployed = false;
 
     public double current_v1 = 0;
     public double current_v2 = 0;
@@ -120,6 +121,7 @@ public class Robotv7_Fullstack extends OpMode {
         clawOpen = true;
         wristActive = false;
         elbowActive = false;
+        transferStageDeployed = false;
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         servoElbowR.setPosition(RobotConstants.ELBOW_STANDBY);
