@@ -20,6 +20,8 @@ public class Robotv7 extends OpMode {
     public DcMotorEx frontRM = null;
     public Servo servoClaw = null;
     public Servo servoWrist = null;
+    public Servo servoElbowR = null;
+    public Servo servoElbowL = null;
     public DcMotorEx armR = null;
     public DcMotorEx armL = null;
     public IMU imu = null;
@@ -31,7 +33,8 @@ public class Robotv7 extends OpMode {
     public double targetClawPosition = 0.4;
     public double targetWristPosition = 0;
     public boolean clawOpen = false;
-    public boolean transferStageActive = false;
+    public boolean wristActive = false;
+    public boolean elbowActive = false;
 
     public double current_v1 = 0;
     public double current_v2 = 0;
@@ -88,13 +91,21 @@ public class Robotv7 extends OpMode {
         frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
         backRM.setDirection(DcMotorSimple.Direction.REVERSE);*/
 
+        armR = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_R);
+        armL = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_L);
+
+        servoElbowR = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_R);
+        servoElbowL = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_L);
         servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
         servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
 
         clawOpen = true;
-        transferStageActive = false;
+        wristActive = false;
+        elbowActive = false;
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        servoElbowR.setPosition(RobotConstants.ELBOW_STANDBY);
+        servoElbowL.setPosition(RobotConstants.ELBOW_ACTIVE);
 
         // -------------------------------------------------------------- IMU INIT
 
@@ -111,7 +122,7 @@ public class Robotv7 extends OpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
-        Delay(1000);
+        Delay(500);
     }
 
     public void init() {

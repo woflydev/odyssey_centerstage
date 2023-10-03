@@ -77,15 +77,15 @@ public class NewRobot_v8_FullstackTest_v1 extends OpMode {
     private void Macros() {
         // test transfer stage macro
         if (gamepad1.cross) {
-            if (!r.transferStageActive) {
-                r.transferStageActive = true;
+            if (!r.wristActive) {
+                r.wristActive = true;
                 r.servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                 r.Delay(600);
                 r.servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                 r.servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
             } else {
-                r.transferStageActive = false;
+                r.wristActive = false;
                 r.servoClaw.setPosition(RobotConstants.CLAW_OPEN);
                 r.Delay(200);
                 r.servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
