@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7;
 import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7_TestingOpMode;
 
 @TeleOp()

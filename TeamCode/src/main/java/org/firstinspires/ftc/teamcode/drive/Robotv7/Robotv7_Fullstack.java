@@ -5,6 +5,7 @@ import static java.lang.Thread.sleep;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -15,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @TeleOp()
-public class Robotv7 extends OpMode {
+public class Robotv7_Fullstack extends OpMode {
     public DcMotorEx backLM = null;
     public DcMotorEx backRM = null;
     public DcMotorEx frontLM = null;
@@ -69,13 +70,14 @@ public class Robotv7 extends OpMode {
 
     public void MoveElbow(double targetPos) {
         servoElbowR.setPosition(targetPos);
-        servoElbowL.setPosition(Math.abs(targetPos - 1)); // servos are mounted facing each other
+        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
         Delay(50);
     }
 
     public void InitializeBlock() {
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
+        // TODO: drivetrain stuff doesn't exist yet
         /*backLM = hardwareMap.get(DcMotorEx.class, BACK_LEFT);
         backRM = hardwareMap.get(DcMotorEx.class, BACK_RIGHT);
 
@@ -102,6 +104,13 @@ public class Robotv7 extends OpMode {
 
         armR = hardwareMap.get(DcMotorEx.class, "armR");
         armL = hardwareMap.get(DcMotorEx.class, "armL");
+
+        armR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armR.setTargetPosition(0);
+        armL.setTargetPosition(0);
+        armR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         servoElbowR = hardwareMap.get(Servo.class, "elbowR");
         servoElbowL = hardwareMap.get(Servo.class, "elbowL");

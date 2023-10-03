@@ -2,39 +2,33 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import static java.lang.Thread.sleep;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7;
+import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7_Fullstack;
 
 @TeleOp()
-public class NewRobot_v8_FullstackTest_v1 extends Robotv7 {
+public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            /*if (gamepad1.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+            if (gamepad1.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    NewUpdateOuttake(false);
+                    UpdateOuttake(false);
                 }
             } else if (gamepad1.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    NewUpdateOuttake(false);
+                    UpdateOuttake(false);
                 }
             } else if (gamepad1.dpad_down) {
                 targetOuttakePosition = 30;
-                NewUpdateOuttake(true);
+                UpdateOuttake(true);
             } else if (gamepad1.dpad_up) {
                 targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
-                NewUpdateOuttake(false);
-            } else if (gamepad1.right_bumper || gamepad1.left_bumper) {
+                UpdateOuttake(false);
+            } /*else if (gamepad1.right_bumper || gamepad1.left_bumper) {
                 armR.setVelocity(0);
                 armL.setVelocity(0);
             }*/
@@ -110,7 +104,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7 {
         }
     }
 
-    private void NewUpdateOuttake(boolean reset) { // test new function
+    private void UpdateOuttake(boolean reset) { // test new function
         armR.setTargetPosition(targetOuttakePosition);
         armL.setTargetPosition(targetOuttakePosition);
 
