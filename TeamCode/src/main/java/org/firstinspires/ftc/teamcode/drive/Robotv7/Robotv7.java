@@ -4,6 +4,7 @@ import static java.lang.Thread.sleep;
 
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
@@ -13,6 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
+@TeleOp()
 public class Robotv7 extends OpMode {
     public DcMotorEx backLM = null;
     public DcMotorEx backRM = null;
@@ -92,13 +94,13 @@ public class Robotv7 extends OpMode {
         frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
         backRM.setDirection(DcMotorSimple.Direction.REVERSE);*/
 
-        armR = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_R);
-        armL = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_L);
+        armR = hardwareMap.get(DcMotorEx.class, "armR");
+        armL = hardwareMap.get(DcMotorEx.class, "armL");
 
-        servoElbowR = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_R);
-        servoElbowL = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_L);
-        servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
-        servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
+        servoElbowR = hardwareMap.get(Servo.class, "elbowR");
+        servoElbowL = hardwareMap.get(Servo.class, "elbowL");
+        servoClaw = hardwareMap.get(Servo.class, "claw");
+        servoWrist = hardwareMap.get(Servo.class, "wrist");
 
         clawOpen = true;
         wristActive = false;
