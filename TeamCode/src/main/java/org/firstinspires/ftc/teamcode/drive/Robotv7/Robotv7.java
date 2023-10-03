@@ -9,38 +9,56 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+
 public class Robotv7 extends OpMode {
+    public DcMotorEx backLM = null;
+    public DcMotorEx backRM = null;
+    public DcMotorEx frontLM = null;
+    public DcMotorEx frontRM = null;
+    public Servo servoClaw = null;
+    public Servo servoWrist = null;
+    public DcMotorEx armR = null;
+    public DcMotorEx armL = null;
+    public IMU imu = null;
 
-    private DcMotorEx backLM = null;
-    private DcMotorEx backRM = null;
-    private DcMotorEx frontLM = null;
-    private DcMotorEx frontRM = null;
-    private Servo servoClaw = null;
-    private Servo servoWrist = null;
-    private IMU imu = null;
+    public final ElapsedTime encoderRuntime = new ElapsedTime();
+    public final ElapsedTime armRuntime = new ElapsedTime();
+    public final ElapsedTime resetTimer = new ElapsedTime();
 
-    private final ElapsedTime encoderRuntime = new ElapsedTime();
-    private final ElapsedTime armRuntime = new ElapsedTime();
-    private final ElapsedTime resetTimer = new ElapsedTime();
+    public double targetClawPosition = 0.4;
+    public double targetWristPosition = 0;
+    public boolean clawOpen = false;
+    public boolean transferStageActive = false;
 
-    private double targetClawPosition = 0.4;
-    private double targetWristPosition = 0;
-    private boolean clawOpen = false;
-    private boolean transferStageActive = false;
+    public double current_v1 = 0;
+    public double current_v2 = 0;
+    public double current_v3 = 0;
+    public double current_v4 = 0;
 
-    private double current_v1 = 0;
-    private double current_v2 = 0;
-    private double current_v3 = 0;
-    private double current_v4 = 0;
+    public double driveSpeedModifier = 1;
+    public boolean adjustmentAllowed = true;
+    public boolean fieldCentricRed = true;
+    public int targetOuttakePosition = 0;
 
-    private double driveSpeedModifier = 1;
-
-    private boolean adjustmentAllowed = true;
-
-    private boolean fieldCentricRed = true;
-
-    private void Delay(double time) {
+    public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
+    }
+
+    public static boolean IsPositive(double d) { return !(Double.compare(d, 0.0) < 0); }
+
+    public double Stabilize(double new_accel, double current_accel) {
+        double dev = new_accel - current_accel;
+        return Math.abs(dev) > RobotConstants.MAX_ACCELERATION_DEVIATION ? current_accel + RobotConstants.MAX_ACCELERATION_DEVIATION * dev / Math.abs(dev) : new_accel;
+    }
+
+    public double GetHeading() {
+        double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+        double rot = (double)(Math.round(-currentHeading + 720) % 360);
+        rot = rot == 0 ? 360 : rot;
+        return rot;
     }
 
     private void InitializeBlock() {

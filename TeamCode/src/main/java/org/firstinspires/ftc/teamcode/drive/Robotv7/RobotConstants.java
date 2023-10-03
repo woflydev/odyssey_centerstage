@@ -1,11 +1,5 @@
 package org.firstinspires.ftc.teamcode.drive.Robotv7;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.ElapsedTime;
-
 public class RobotConstants {
     // -------------------------------------------------------------- ROBOT CONFIG
 
@@ -19,8 +13,8 @@ public class RobotConstants {
     public static final String SERVO_WRIST = "wrist";
     public static final String HUB_IMU = "imu";
 
-    public static final int MAX_ARM_HEIGHT = 4300;
-    public static final int MIN_ARM_HEIGHT = 0;
+    public static final int MAX_OUTTAKE_HEIGHT = 4300;
+    public static final int MIN_OUTTAKE_HEIGHT = 0;
     public static final int ARM_ADJUSTMENT_INCREMENT = 50;
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
