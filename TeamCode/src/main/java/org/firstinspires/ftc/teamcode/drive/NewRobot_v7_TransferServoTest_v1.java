@@ -59,7 +59,7 @@ public class NewRobot_v7_TransferServoTest_v1 extends OpMode {
     private static final String SERVO_WRIST = "wrist";
     private static final String HUB_IMU = "imu";
 
-    private static final int MAX_ARM_HEIGHT = 4300;
+    private static final int MAX_ARM_HEIGHT = 4000; // TODO: CHANGE THIS BACK TO 4300 when stable
     private static final int MIN_ARM_HEIGHT = 0;
     private static final int ARM_ADJUSTMENT_INCREMENT = 50;
     private static final int ARM_BOOST_MODIFIER = 1;
@@ -67,8 +67,8 @@ public class NewRobot_v7_TransferServoTest_v1 extends OpMode {
 
     private static final double CLAW_CLOSE = 0;
     private static final double CLAW_OPEN = 0.2;
-    private static final double WRIST_STANDBY = 0.5;
-    private static final double WRIST_ACTIVE = 1.0;
+    private static final double WRIST_STANDBY = 0.8;
+    private static final double WRIST_ACTIVE = 0.4;
 
     private static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
     private static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed
@@ -83,8 +83,6 @@ public class NewRobot_v7_TransferServoTest_v1 extends OpMode {
     private static final int JUNCTION_MID = 2700;
     private static final int JUNCTION_STANDBY = 3200;
     private static final int JUNCTION_HIGH = 4000;
-
-    private static final RobotConstants robitVars = new RobotConstants();
 
     // -------------------------------------------------------------- ROBOT OPERATION
 
