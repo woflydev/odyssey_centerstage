@@ -51,6 +51,18 @@ public class NewRobot_v8_FullstackTest_v1 extends OpMode {
                 r.servoWrist.setPosition(r.targetWristPosition);
                 r.Delay(50);
             }
+
+            if (gamepad1.triangle) {
+                r.targetElbowPosition += 0.05;
+                r.servoElbowR.setPosition(r.targetElbowPosition);
+                r.servoElbowL.setPosition(r.targetElbowPosition);
+                r.Delay(50);
+            } else if (gamepad1.cross) {
+                r.targetElbowPosition -= 0.05;
+                r.servoElbowR.setPosition(r.targetElbowPosition);
+                r.servoElbowL.setPosition(r.targetElbowPosition);
+                r.Delay(50);
+            }
         }
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
@@ -76,7 +88,7 @@ public class NewRobot_v8_FullstackTest_v1 extends OpMode {
 
     private void Macros() {
         // test transfer stage macro
-        if (gamepad1.cross) {
+        if (gamepad1.dpad_left) {
             if (!r.wristActive) {
                 r.wristActive = true;
                 r.servoClaw.setPosition(RobotConstants.CLAW_CLOSE);

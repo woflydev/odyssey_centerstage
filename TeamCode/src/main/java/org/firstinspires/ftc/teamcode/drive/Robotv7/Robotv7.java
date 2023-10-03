@@ -31,7 +31,8 @@ public class Robotv7 extends OpMode {
     public final ElapsedTime resetTimer = new ElapsedTime();
 
     public double targetClawPosition = 0.4;
-    public double targetWristPosition = 0;
+    public double targetWristPosition = 0.5;
+    public double targetElbowPosition = 0.5;
     public boolean clawOpen = false;
     public boolean wristActive = false;
     public boolean elbowActive = false;
