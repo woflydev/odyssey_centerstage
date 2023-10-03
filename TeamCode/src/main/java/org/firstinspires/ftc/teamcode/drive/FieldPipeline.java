@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
 
 import org.opencv.core.MatOfPoint;
 import org.opencv.imgproc.Imgproc;
@@ -13,7 +14,6 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvPipeline;
 
-import java.util.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -31,6 +31,9 @@ public class FieldPipeline extends OpenCvPipeline {
             "purple",
             "yellow"
     };
+
+    public static Scalar[] TEAM_PROP_BOUNDS = {new Scalar(0, 0, 0), new Scalar(0, 0, 0)};
+    public static double ANGLE_THRESHOLD = Math.toRadians(15);
 
     public static int PIXEL_THRESHOLD = 1000;
     // Distance from opposite edges of the pixel in metres
@@ -56,11 +59,45 @@ public class FieldPipeline extends OpenCvPipeline {
     public static int APRIL_TAG_BACKDROP_SPACING = 2;
     public static int FIRST_APRIL_TAG_LOCATION = 0;
 
+    public static int SCREEN_WIDTH = 1080;
+    public static int SCREEN_HEIGHT = 720;
 
     public int spikeMark;
 
+    public int mode;
+
+    public FieldPipeline(int mode) {
+        this.mode = mode;
+    }
+
     public Mat processFrame (Mat input) {
+        spikeMark = propLocation(input);
         return input;
+    }
+
+    public static int propLocation(Mat input) {
+        Mat masked = new Mat();
+        Core.inRange(input, TEAM_PROP_BOUNDS[0], TEAM_PROP_BOUNDS[1], masked);
+        List<MatOfPoint> contours = new ArrayList<>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(masked, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+        Function<MatOfPoint, Double> sort = Imgproc::contourArea;
+        MatOfPoint[] contourArr = new MatOfPoint[contours.size()];
+        contours.toArray(contourArr);
+
+        int maxIndex = maxOfArr(contourArr, sort);
+
+        Moments M = Imgproc.moments(contourArr[maxIndex]);
+
+        long cX = Math.round(M.m10 / M.m00);
+        long cY = Math.round(M.m01 / M.m00);
+
+        double angle = Math.atan2(cY, cX - SCREEN_WIDTH / 2) - Math.PI / 2;
+        if (Math.abs(angle) > ANGLE_THRESHOLD) {
+            return angle > 0 ? 5 : 1;
+        }
+        return 3;
     }
 
     // Given a backdrop image, this function approximates the score that

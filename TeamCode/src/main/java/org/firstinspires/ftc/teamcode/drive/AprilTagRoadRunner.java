@@ -5,9 +5,9 @@ import android.annotation.SuppressLint;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryMarker;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -45,11 +45,25 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     private static int SLEEP_TIME = 20;
 
+    public static Pose2d TILE_LOCATION = new Pose2d();
+    public static Pose2d[] PIXEL_LOCATIONS = new Pose2d[FieldPipeline.PIXEL_COLOURS.length];
+
+    public static Pose2d INTER_POINT = new Pose2d();
+
+    public static Trajectory[] STRIPE_TO_PIXEL = new Trajectory[FieldPipeline.PIXEL_COLOURS.length];
+
+
+    // Location of the robot when it is about to drop a pixel on the leftmost slot
+    public static Pose2d BACKDROP_LOCATION = new Pose2d();
+
+    public static Trajectory[] PIXEL_TO_BACKDROP = new Trajectory[FieldPipeline.PIXEL_COLOURS.length];
+
+    public static Trajectory TILE_TO_BACKDROP;
 
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
-    private Trajectory pixelToBackdrop;
+
 
 
     // This assumes the april tag starts facing along the y-axis, may change later
@@ -100,15 +114,36 @@ public class AprilTagRoadRunner extends LinearOpMode {
         tagTelemetry(currentDetections);
         drive.setPoseEstimate(localizer.poseEstimate);
 
-        // TODO: Add directions to go from pixels to backdrop
-        pixelToBackdrop = drive.trajectoryBuilder(new Pose2d())
-                        .build();
+        FieldPipeline frontPipeline = new FieldPipeline(0);
+        FieldPipeline backPipeline = new FieldPipeline(1);
 
-        initCameras(new FieldPipeline(), new FieldPipeline());
+        for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
+            STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
+                    .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
+                    .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
+                    .build();
+
+            // Note, the robot turns 180 degrees before moving to the backdrop
+
+            PIXEL_TO_BACKDROP[i] = drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
+                    .strafeTo(BACKDROP_LOCATION.vec())
+                    .build();
+        }
+
+        TILE_TO_BACKDROP = drive.trajectoryBuilder(TILE_LOCATION)
+                .strafeTo(INTER_POINT.vec())
+                .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
+                .build();
+
+
+        initCameras(frontPipeline, backPipeline);
 
         waitForStart();
 
         if (opModeIsActive()) {
+            int startPropPos = frontPipeline.spikeMark;
+            transferPixel(drive, 1, startPropPos, true);
+
             while (opModeIsActive()) {
                 localizer.update();
                 // Add trajectories with drive.followTrajectory
@@ -210,5 +245,22 @@ public class AprilTagRoadRunner extends LinearOpMode {
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
             }
         }
+    }
+
+    public void transferPixel(SampleMecanumDrive drive, int pixelColour, int pixelSlot, boolean fromTile) {
+        //activateIntake()
+        //wait until desired pixel is in the slot
+        if (fromTile) {
+            drive.followTrajectory(TILE_TO_BACKDROP);
+        } else {
+            drive.followTrajectory(PIXEL_TO_BACKDROP[pixelColour]);
+        }
+
+        drive.followTrajectory(
+                drive.trajectoryBuilder(BACKDROP_LOCATION)
+                        .strafeTo(BACKDROP_LOCATION.vec().plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
+                        .build()
+        );
+        //dropOnBackdrop()
     }
 }
