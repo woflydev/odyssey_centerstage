@@ -17,6 +17,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @TeleOp()
 public class Robotv7_Fullstack extends OpMode {
+    public RobotState state = RobotState.IDLE;
+
     public DcMotorEx backLM = null;
     public DcMotorEx backRM = null;
     public DcMotorEx frontLM = null;
@@ -33,9 +35,11 @@ public class Robotv7_Fullstack extends OpMode {
     public final ElapsedTime armRuntime = new ElapsedTime();
     public final ElapsedTime resetTimer = new ElapsedTime();
 
-    public double targetClawPosition = 0.4;
-    public double targetWristPosition = 0.5;
-    public double targetElbowPosition = 0.5;
+    public double targetClawPosition = RobotConstants.CLAW_OPEN;
+    public double targetWristPosition = RobotConstants.WRIST_STANDBY;
+    public double targetElbowPosition = RobotConstants.ELBOW_STANDBY;
+    public int targetOuttakePosition = 0;
+
     public boolean clawOpen = false;
     public boolean wristActive = false;
     public boolean elbowActive = false;
@@ -49,7 +53,6 @@ public class Robotv7_Fullstack extends OpMode {
     public double driveSpeedModifier = 1;
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
-    public int targetOuttakePosition = 0;
 
     public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
@@ -124,8 +127,7 @@ public class Robotv7_Fullstack extends OpMode {
         transferStageDeployed = false;
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        servoElbowR.setPosition(RobotConstants.ELBOW_STANDBY);
-        servoElbowL.setPosition(RobotConstants.ELBOW_ACTIVE);
+        MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos
 
         // -------------------------------------------------------------- IMU INIT
 

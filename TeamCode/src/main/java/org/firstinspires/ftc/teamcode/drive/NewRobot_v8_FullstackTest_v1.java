@@ -72,15 +72,6 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
         }
-
-        else if ((gamepad1.left_trigger >= 0.25 && gamepad1.right_trigger >= 0.25) ||
-                (gamepad2.left_trigger >= 0.25 && gamepad2.right_trigger >= 0.25)) {
-            driveSpeedModifier = (driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER) ? RobotConstants.PRECISION_DRIVE_SPEED_MODIFIER : RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
-        }
-
-        else {
-            driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
-        }
     }
 
     private void Macros() {
@@ -180,6 +171,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
         telemetry.addData("Target Wrist Position: ", targetWristPosition);
         telemetry.addData("Target Elbow Position: ", targetElbowPosition);
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
+        telemetry.addData("Target Claw Position: ", targetClawPosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
         telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");

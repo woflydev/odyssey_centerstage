@@ -22,11 +22,11 @@ public class RobotConstants {
     public static final int ARM_RESET_TIMEOUT = 3;
 
     public static final double CLAW_CLOSE = 0;
-    public static final double CLAW_OPEN = 0.2;
-    public static final double WRIST_STANDBY = 0.3;
-    public static final double WRIST_ACTIVE = 1.0;
-    public static final double ELBOW_STANDBY = 0.5;
-    public static final double ELBOW_ACTIVE = 0.5;
+    public static final double CLAW_OPEN = 0.22;
+    public static final double WRIST_STANDBY = 0.52;
+    public static final double WRIST_ACTIVE = 0.3;
+    public static final double ELBOW_STANDBY = 0.52;
+    public static final double ELBOW_ACTIVE = 1;
 
     public static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
     public static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed
