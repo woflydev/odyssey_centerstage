@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -109,6 +110,8 @@ public class Robotv7_Fullstack extends OpMode {
         armR = hardwareMap.get(DcMotorEx.class, "armR");
         armL = hardwareMap.get(DcMotorEx.class, "armL");
 
+        armR.setDirection(DcMotorSimple.Direction.REVERSE);
+        armL.setDirection(DcMotorSimple.Direction.FORWARD);
         armR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         armR.setTargetPosition(0);
