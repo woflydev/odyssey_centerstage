@@ -400,8 +400,8 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
 
         else {
             armRuntime.reset();
-            armR.setVelocity(3800);
-            armL.setVelocity(3800); // velocity used to be 1800
+            armR.setVelocity(1800);
+            armL.setVelocity(1800); // velocity used to be 1800
         }
     }
 
@@ -450,8 +450,8 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
         armL.setTargetPosition(0);
         armR.setMode(DcMotor.RunMode.RUN_TO_POSITION); // TODO: CHANGE BACK TO RUN_TO_POS
         armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armR.setDirection(DcMotorSimple.Direction.FORWARD);
-        armL.setDirection(DcMotorSimple.Direction.REVERSE);
+        armR.setDirection(DcMotorSimple.Direction.REVERSE);
+        armL.setDirection(DcMotorSimple.Direction.FORWARD);
 
         //armM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

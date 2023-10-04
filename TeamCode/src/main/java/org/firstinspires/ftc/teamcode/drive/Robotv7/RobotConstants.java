@@ -15,9 +15,9 @@ public class RobotConstants {
     public static final String SERVO_ELBOW_R = "elbowR";
     public static final String HUB_IMU = "imu";
 
-    public static final int MAX_OUTTAKE_HEIGHT = 4300;
+    public static final int MAX_OUTTAKE_HEIGHT = 3900;
     public static final int MIN_OUTTAKE_HEIGHT = 0;
-    public static final int ARM_ADJUSTMENT_INCREMENT = 50;
+    public static final int ARM_ADJUSTMENT_INCREMENT = 25; // used to be 50
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
@@ -25,8 +25,8 @@ public class RobotConstants {
     public static final double CLAW_OPEN = 0.22;
     public static final double WRIST_STANDBY = 0.88;
     public static final double WRIST_ACTIVE = 0.26;
-    public static final double ELBOW_STANDBY = 0.52;
-    public static final double ELBOW_ACTIVE = 1;
+    public static final double ELBOW_STANDBY = 0.08;
+    public static final double ELBOW_ACTIVE = 0.5;
 
     public static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
     public static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed

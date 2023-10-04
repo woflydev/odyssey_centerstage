@@ -94,7 +94,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
             Delay(200);
         }
 
-        if (gamepad1.square && gamepad1.left_bumper) {
+        else if (gamepad1.dpad_right && gamepad1.left_bumper) {
             if (!transferStageDeployed) {
                 transferStageDeployed = true;
                 servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
@@ -114,11 +114,9 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
                 servoClaw.setPosition(RobotConstants.CLAW_OPEN);
                 Delay(300);
 
-                MoveElbow(RobotConstants.ELBOW_STANDBY);
-
-                targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT + 10;
+                targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT + 1;
                 UpdateOuttake(false);
-
+                MoveElbow(RobotConstants.ELBOW_STANDBY);
                 servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
             }
         }
@@ -152,12 +150,21 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
 
         else {
             armRuntime.reset();
-            armR.setVelocity(3800);
-            armL.setVelocity(3800); // velocity used to be 1800, could be faster
+            armR.setVelocity(1700);
+            armL.setVelocity(1700); // velocity used to be 1800, could be faster
+        }
+    }
+
+    private void PassiveArmResetCheck() {
+        if ((armL.getCurrentPosition() <= 15 && armR.getCurrentPosition() <= 15) && targetOuttakePosition <= 30) {
+            armR.setVelocity(0);
+            armL.setVelocity(0);
+            resetTimer.reset();
         }
     }
 
     public void loop() {
+        PassiveArmResetCheck();
         RuntimeConfig();
         Macros();
 
