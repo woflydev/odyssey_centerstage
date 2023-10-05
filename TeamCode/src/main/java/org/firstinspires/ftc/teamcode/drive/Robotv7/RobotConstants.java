@@ -15,7 +15,7 @@ public class RobotConstants {
     public static final String SERVO_ELBOW_R = "elbowR";
     public static final String HUB_IMU = "imu";
 
-    public static final int MAX_OUTTAKE_HEIGHT = 3400;
+    public static final int MAX_OUTTAKE_HEIGHT = 3200;
     public static final int MIN_OUTTAKE_HEIGHT = 0;
     public static final int ARM_ADJUSTMENT_INCREMENT = 25; // used to be 50
     public static final int ARM_BOOST_MODIFIER = 1;
@@ -23,9 +23,10 @@ public class RobotConstants {
 
     public static final double CLAW_CLOSE = 0.15;
     public static final double CLAW_OPEN = 0.28;
-    public static final double WRIST_PICKUP = 0.81;
+    public static final double WRIST_PICKUP = 0.86;
     public static final double WRIST_STANDBY = 0.5;
     public static final double WRIST_ACTIVE = 0.28;
+    public static final double ELBOW_PICKUP = 0.2;
     public static final double ELBOW_STANDBY = 0.06;
     public static final double ELBOW_ACTIVE = 0.5;
     public static final double PLANE_STANDBY = 0.1;
@@ -39,9 +40,7 @@ public class RobotConstants {
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
-    public static final int JUNCTION_OFF = 30; // will change
-    public static final int JUNCTION_LOW = 1650;
-    public static final int JUNCTION_MID = 2700;
-    public static final int JUNCTION_STANDBY = 3200;
-    public static final int JUNCTION_HIGH = 4000;
+    public static final int JUNCTION_LOW = 1300;
+    public static final int JUNCTION_MID = 2200;
+    public static final int JUNCTION_HIGH = 3100;
 }

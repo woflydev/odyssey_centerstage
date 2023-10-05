@@ -33,7 +33,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 
-@TeleOp(name = "Concept: AprilTagWithRoadRunner", group = "Concept")
+@TeleOp(name = "Concept: TeleOpPrototypeV1", group = "Concept")
 public class TeleOpPrototypeV1 extends Robotv7_Fullstack {
 
     private static final boolean USE_VIEWPORT = true;

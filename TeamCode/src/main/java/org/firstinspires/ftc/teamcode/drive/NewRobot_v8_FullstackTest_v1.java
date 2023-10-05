@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import static java.lang.Thread.sleep;
 
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
@@ -86,52 +87,45 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
     }
 
     private void Macros() {
-        // test transfer stage macro
-        if (gamepad1.dpad_left) {
-            if (!wristActive) {
-                wristActive = true;
-                servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-                Delay(500);
-                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-                Delay(100);
-                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-                servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
-
-            } else {
-                wristActive = false;
-                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                Delay(200);
-                servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-            }
-            Delay(200);
+        if (gamepad1.dpad_right && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.MAX_OUTTAKE_HEIGHT); // thi function handles both grab and deposit, but requires two presses for each process
+        } else if (gamepad1.dpad_down && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_LOW);
+        } else if (gamepad1.dpad_left && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_MID);
+        } else if (gamepad1.dpad_up && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_HIGH);
         }
+    }
 
-        else if (gamepad1.dpad_right && gamepad1.left_bumper) {
-            if (!transferStageDeployed) {
-                transferStageDeployed = true;
-                servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-                Delay(300);
-                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-                Delay(300);
-                // TODO: test if this reinforcement actually works
-                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-                servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+    private void GrabAndDeposit(int height) {
+        if (!transferStageDeployed) {
+            transferStageDeployed = true;
+            servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+            MoveElbow(RobotConstants.ELBOW_PICKUP);
+            Delay(200);
+            MoveElbow(RobotConstants.ELBOW_STANDBY);
+            Delay(200);
+            servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+            Delay(300);
+            // TODO: test if this reinforcement actually works
+            servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+            servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
-                MoveElbow(RobotConstants.ELBOW_ACTIVE);
+            MoveElbow(RobotConstants.ELBOW_ACTIVE);
 
-                Delay(100);
+            Delay(100);
 
-                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
-                UpdateOuttake(false, 0);
-            } else {
-                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT;
-                UpdateOuttake(false, 800);
-                Delay(1300);
-                MoveElbow(RobotConstants.ELBOW_STANDBY);
-                servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-                transferStageDeployed = false;
-            }
+            targetOuttakePosition = height;
+            UpdateOuttake(false, 0);
+        } else {
+            servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+            targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT;
+            UpdateOuttake(true, 300);
+            Delay(350); // elbow should come down after the slide is near done
+            MoveElbow(RobotConstants.ELBOW_STANDBY);
+            servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+            transferStageDeployed = false;
         }
     }
 
@@ -142,7 +136,8 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
             armL.setTargetPosition(10);
             targetOuttakePosition = 10;
             armRuntime.reset();
-
+            armR.setVelocity(2800);
+            armL.setVelocity(2800);
             /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
                 armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
 
@@ -151,7 +146,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
                 }
             }*/
 
-            if ((armL.getCurrentPosition() <= 15 || armR.getCurrentPosition() <= 15) || armRuntime.seconds() >= RobotConstants.ARM_RESET_TIMEOUT) {
+            if ((armL.getCurrentPosition() <= 20 || armR.getCurrentPosition() <= 20) || armRuntime.seconds() >= RobotConstants.ARM_RESET_TIMEOUT) {
                 armR.setVelocity(0);
                 armL.setVelocity(0);
             }
@@ -164,8 +159,8 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
             armR.setTargetPosition(targetOuttakePosition);
             armL.setTargetPosition(targetOuttakePosition);
             armRuntime.reset();
-            armR.setVelocity(2400);
-            armL.setVelocity(2400); // velocity used to be 1800, could be faster
+            armR.setVelocity(2800);
+            armL.setVelocity(2800); // velocity used to be 1800, could be faster
         }
     }
 

@@ -133,7 +133,7 @@ public class Robotv7_Fullstack extends OpMode {
         elbowActive = false;
         transferStageDeployed = false;
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
         MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos
 
