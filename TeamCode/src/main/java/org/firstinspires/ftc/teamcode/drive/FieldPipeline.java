@@ -21,13 +21,15 @@ import java.util.function.Function;
 public class FieldPipeline extends OpenCvPipeline {
 
     public static Scalar[][] PIXEL_BOUNDS = {
-            {new Scalar(0, 0, 0), new Scalar(0, 0, 0)},
-            {new Scalar(0, 0, 0), new Scalar(0, 0, 0)},
-            {new Scalar(0, 0, 0), new Scalar(0, 0, 0)}
+            {new Scalar(0, 0, 248), new Scalar(179, 17, 255)},
+            {new Scalar(44, 64, 166), new Scalar(106, 252, 255)},
+            {new Scalar(112, 55, 189), new Scalar(128, 252, 255)},
+            {new Scalar(17, 91, 0), new Scalar(236, 30, 255)}
     };
 
     public static String[] PIXEL_COLOURS = {
             "white",
+            "green",
             "purple",
             "yellow"
     };

@@ -39,22 +39,32 @@ public class AprilTagRoadRunner extends LinearOpMode {
     private static double FIELD_LENGTH = 3.58;
     private static double CAMERA_HEIGHT = 0.313;
 
+    private static double BACKDROP_DEPTH = 1.55;
+    private static double TAG_HEIGHT = 0.12;
+
+    private static double PIXEL_SPACE = 0.05;
+
     private static double YAW_ANGLE = Math.PI / 2;
 
     private static int ACQUISITION_TIME = 10;
 
     private static int SLEEP_TIME = 20;
 
-    public static Pose2d TILE_LOCATION = new Pose2d();
-    public static Pose2d[] PIXEL_LOCATIONS = new Pose2d[FieldPipeline.PIXEL_COLOURS.length];
+    public static Pose2d TILE_LOCATION = new Pose2d(1.62, 0.89, Math.PI);
+    public static Pose2d[] PIXEL_LOCATIONS = {
+            new Pose2d(0.2, - FIELD_LENGTH / 2 + PIXEL_SPACE, - Math.PI / 2),
+            new Pose2d(),
+            new Pose2d(),
+            new Pose2d()
+    };
 
-    public static Pose2d INTER_POINT = new Pose2d();
+    public static Pose2d INTER_POINT = new Pose2d(-0.87, 0.89, Math.PI / 2);
 
     public static Trajectory[] STRIPE_TO_PIXEL = new Trajectory[FieldPipeline.PIXEL_COLOURS.length];
 
 
     // Location of the robot when it is about to drop a pixel on the leftmost slot
-    public static Pose2d BACKDROP_LOCATION = new Pose2d();
+    public static Pose2d BACKDROP_LOCATION = new Pose2d(-0.88, BACKDROP_DEPTH, Math.PI / 2);
 
     public static Trajectory[] PIXEL_TO_BACKDROP = new Trajectory[FieldPipeline.PIXEL_COLOURS.length];
 
@@ -68,26 +78,56 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     // This assumes the april tag starts facing along the y-axis, may change later
     public static AprilTagMetadata[] tagArray = {
-            new AprilTagMetadata(0, "Forward", 0.1,
+            new AprilTagMetadata(10, "Forward", 0.1,
                     new VectorF(0, (float) FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(YAW_ANGLE), 0, 0,
                     (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
-            new AprilTagMetadata(1, "Left", 0.1,
+            new AprilTagMetadata(10, "Left", 0.1,
                     new VectorF((float) - FIELD_LENGTH / 2, 0, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(YAW_ANGLE / 2), 0, 0,
                     (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)
             ),
-            new AprilTagMetadata(3, "Back", 0.1,
+            new AprilTagMetadata(10, "Back", 0.1,
                     new VectorF(0, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, Quaternion.identityQuaternion()
             ),
-            new AprilTagMetadata(2, "Right", 0.1,
+            new AprilTagMetadata(10, "Right", 0.1,
                     new VectorF((float) FIELD_LENGTH / 2, 0, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(-YAW_ANGLE / 2), 0, 0,
-                    (float) Math.sin(-YAW_ANGLE / 2), ACQUISITION_TIME))
+                    (float) Math.sin(-YAW_ANGLE / 2), ACQUISITION_TIME)),
+            new AprilTagMetadata(1, "Backdrop 1", 0.05,
+                    new VectorF(-0.88F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE), 0, 0,
+                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+            new AprilTagMetadata(2, "Backdrop 2", 0.05,
+                    new VectorF(-0.74F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE), 0, 0,
+                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+            new AprilTagMetadata(3, "Backdrop 3", 0.05,
+                    new VectorF(-1.003F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE), 0, 0,
+                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+            new AprilTagMetadata(4, "Backdrop 4", 0.05,
+                    new VectorF(0.75F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE), 0, 0,
+                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+            new AprilTagMetadata(5, "Backdrop 5", 0.05,
+                    new VectorF(0.9F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE), 0, 0,
+                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+            new AprilTagMetadata(6, "Backdrop 6", 0.05,
+                    new VectorF(1.05F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE), 0, 0,
+                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME))
     };
 
     private List<AprilTagDetection> currentDetections;
