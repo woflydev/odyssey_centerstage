@@ -28,6 +28,7 @@ public class Robotv7_Fullstack extends OpMode {
     public Servo servoWrist = null;
     public Servo servoElbowR = null;
     public Servo servoElbowL = null;
+    public Servo servoPlane = null;
     public DcMotorEx armR = null;
     public DcMotorEx armL = null;
     public IMU imu = null;
@@ -37,10 +38,12 @@ public class Robotv7_Fullstack extends OpMode {
     public final ElapsedTime resetTimer = new ElapsedTime();
 
     public double targetClawPosition = RobotConstants.CLAW_OPEN;
-    public double targetWristPosition = RobotConstants.WRIST_STANDBY;
+    public double targetWristPosition = RobotConstants.WRIST_PICKUP;
     public double targetElbowPosition = RobotConstants.ELBOW_STANDBY;
+    public double targetPlanePosition = RobotConstants.PLANE_STANDBY;
     public int targetOuttakePosition = 0;
 
+    public boolean planeTriggered = false;
     public boolean clawOpen = false;
     public boolean wristActive = false;
     public boolean elbowActive = false;
@@ -123,13 +126,15 @@ public class Robotv7_Fullstack extends OpMode {
         servoElbowL = hardwareMap.get(Servo.class, "elbowL");
         servoClaw = hardwareMap.get(Servo.class, "claw");
         servoWrist = hardwareMap.get(Servo.class, "wrist");
+        servoPlane = hardwareMap.get(Servo.class, "plane");
 
         clawOpen = true;
         wristActive = false;
         elbowActive = false;
         transferStageDeployed = false;
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+        servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
         MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos
 
         // -------------------------------------------------------------- IMU INIT

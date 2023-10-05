@@ -12,42 +12,42 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            if (gamepad1.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+            if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    UpdateOuttake(false);
+                    UpdateOuttake(false, 0);
                 }
-            } else if (gamepad1.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+            } else if (gamepad2.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    UpdateOuttake(false);
+                    UpdateOuttake(false, 0);
                 }
-            } else if (gamepad1.dpad_down) {
+            } else if (gamepad2.dpad_down) {
                 targetOuttakePosition = 30;
-                UpdateOuttake(true);
-            } else if (gamepad1.dpad_up) {
+                UpdateOuttake(true, 0);
+            } else if (gamepad2.dpad_up) {
                 targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
-                UpdateOuttake(false);
+                UpdateOuttake(false, 0);
             } /*else if (gamepad1.right_bumper || gamepad1.left_bumper) {
                 armR.setVelocity(0);
                 armL.setVelocity(0);
             }*/
 
-            if (gamepad1.square) {
+            if (gamepad2.square) {
                 targetClawPosition -= 0.02;
                 servoClaw.setPosition(targetClawPosition);
                 Delay(50);
-            } else if (gamepad1.circle) {
+            } else if (gamepad2.circle) {
                 targetClawPosition += 0.02;
                 servoClaw.setPosition(targetClawPosition);
                 Delay(50);
             }
 
-            if (gamepad1.right_bumper) {
+            if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
-            } else if (gamepad1.left_bumper) {
+            } else if (gamepad2.left_bumper) {
                 targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
@@ -60,14 +60,25 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
                 targetElbowPosition -= 0.02;
                 MoveElbow(targetElbowPosition);
             }
+
+            if (gamepad2.cross) {
+                if (!planeTriggered) {
+                    planeTriggered = true;
+                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
+                } else {
+                    planeTriggered = false;
+                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+                }
+                Delay(250);
+            }
         }
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
 
-        if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
+        /*if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
             fieldCentricRed = !fieldCentricRed;
             Delay(50);
-        }
+        }*/
 
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
@@ -79,8 +90,10 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
         if (gamepad1.dpad_left) {
             if (!wristActive) {
                 wristActive = true;
+                servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+                Delay(500);
                 servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-                Delay(600);
+                Delay(100);
                 servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                 servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
@@ -89,7 +102,6 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
                 servoClaw.setPosition(RobotConstants.CLAW_OPEN);
                 Delay(200);
                 servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
             }
             Delay(200);
         }
@@ -97,36 +109,35 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
         else if (gamepad1.dpad_right && gamepad1.left_bumper) {
             if (!transferStageDeployed) {
                 transferStageDeployed = true;
+                servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+                Delay(300);
                 servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-                Delay(500);
+                Delay(300);
                 // TODO: test if this reinforcement actually works
                 servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                 servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
-                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
                 MoveElbow(RobotConstants.ELBOW_ACTIVE);
 
                 Delay(100);
 
-                UpdateOuttake(false);
+                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
+                UpdateOuttake(false, 0);
             } else {
-                transferStageDeployed = false;
                 servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                Delay(300);
-
-                targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT + 1;
-                UpdateOuttake(false);
+                targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT;
+                UpdateOuttake(false, 800);
+                Delay(1300);
                 MoveElbow(RobotConstants.ELBOW_STANDBY);
                 servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                transferStageDeployed = false;
             }
         }
     }
 
-    private void UpdateOuttake(boolean reset) { // test new function
-        armR.setTargetPosition(targetOuttakePosition);
-        armL.setTargetPosition(targetOuttakePosition);
-
+    private void UpdateOuttake(boolean reset, double delay) { // test new function
         if (reset) {
+            Delay(delay);
             armR.setTargetPosition(10);
             armL.setTargetPosition(10);
             targetOuttakePosition = 10;
@@ -149,9 +160,12 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
         }
 
         else {
+            Delay(delay);
+            armR.setTargetPosition(targetOuttakePosition);
+            armL.setTargetPosition(targetOuttakePosition);
             armRuntime.reset();
-            armR.setVelocity(1700);
-            armL.setVelocity(1700); // velocity used to be 1800, could be faster
+            armR.setVelocity(2400);
+            armL.setVelocity(2400); // velocity used to be 1800, could be faster
         }
     }
 
