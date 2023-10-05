@@ -1,5 +1,12 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import static java.lang.Thread.sleep;
+
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
+import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7_Fullstack;
+
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -8,8 +15,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -29,7 +34,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 
 @TeleOp(name = "Concept: AprilTagWithRoadRunner", group = "Concept")
-public class AprilTagRoadRunner extends LinearOpMode {
+public class TeleOpPrototypeV1 extends Robotv7_Fullstack {
 
     private static final boolean USE_VIEWPORT = true;
 
@@ -136,10 +141,16 @@ public class AprilTagRoadRunner extends LinearOpMode {
     private OpenCvCamera frontCamera;
     private OpenCvCamera backCamera;
 
+    private FieldPipeline frontPipeline;
+    private FieldPipeline backPipeline;
+
+    private SampleMecanumDrive drive;
+    private CameraLocalizer localizer;
+
     @SuppressLint("DefaultLocale")
-    public void runOpMode() {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
-        CameraLocalizer localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray);
+    public void init() {
+        drive = new SampleMecanumDrive(hardwareMap);
+        localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray);
 
 
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -155,8 +166,8 @@ public class AprilTagRoadRunner extends LinearOpMode {
         tagTelemetry(currentDetections);
         drive.setPoseEstimate(localizer.poseEstimate);
 
-        FieldPipeline frontPipeline = new FieldPipeline(0);
-        FieldPipeline backPipeline = new FieldPipeline(1);
+        frontPipeline = new FieldPipeline(0);
+        backPipeline = new FieldPipeline(1);
 
         for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
             STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
@@ -184,41 +195,61 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
         initCameras(frontPipeline, backPipeline);
 
-        waitForStart();
 
-        if (opModeIsActive()) {
-            int startPropPos = frontPipeline.spikeMark;
-            transferPixel(drive, 1, startPropPos, true);
+    }
 
-            while (opModeIsActive()) {
-                localizer.update();
-                // Add trajectories with drive.followTrajectory
+    public void start() {
+        int startPropPos = frontPipeline.spikeMark;
+        transferPixel(drive, 1, startPropPos, true);
+    }
 
-                tagTelemetry(currentDetections);
+    public void loop() {
+        localizer.update();
+        // Add trajectories with drive.followTrajectory
 
-                telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
-                // Push telemetry to the Driver Station.
-                telemetry.update();
+        tagTelemetry(currentDetections);
 
-                // Save CPU resources; can resume streaming when needed.
-                if (gamepad1.dpad_down) {
-                    localizer.visionPortal.stopStreaming();
-                } else if (gamepad1.dpad_up) {
-                    localizer.visionPortal.resumeStreaming();
-                }
+        telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
+        // Push telemetry to the Driver Station.
+        telemetry.update();
 
-                if (isStopRequested()) return;
-
-
-                // Share the CPU.
-                sleep(SLEEP_TIME);
-            }
+        // Save CPU resources; can resume streaming when needed.
+        if (gamepad1.dpad_down) {
+            localizer.visionPortal.stopStreaming();
+        } else if (gamepad1.dpad_up) {
+            localizer.visionPortal.resumeStreaming();
         }
 
+        PassiveArmResetCheck();
+        RuntimeConfig();
+        Macros();
+
+        // TELEMETRY
+        telemetry.addData("Arm Left: ", armL.getCurrentPosition());
+        telemetry.addData("Arm Right: ", armR.getCurrentPosition());
+        /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
+        telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
+        telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
+        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
+        telemetry.addData("Target Wrist Position: ", targetWristPosition);
+        telemetry.addData("Target Elbow Position: ", targetElbowPosition);
+        telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
+        telemetry.addData("Target Claw Position: ", targetClawPosition);
+        telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
+        telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
+        telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
+        //telemetry.addData("IMU Yaw: ", GetHeading());
+
+        telemetry.update();
+
+        // Share the CPU.
+        //sleep(SLEEP_TIME);
+    }
+
+    public void stop() {
         // Save more CPU resources when camera is no longer needed.
         localizer.visionPortal.close();
     }
-
     private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
         if (USE_VIEWPORT) {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -309,4 +340,162 @@ public class AprilTagRoadRunner extends LinearOpMode {
         );
         //dropOnBackdrop()
     }
+    private void RuntimeConfig() {
+        // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
+        if (adjustmentAllowed) { // lining up arm for topmost cone
+            if (gamepad1.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
+                    targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
+                    UpdateOuttake(false);
+                }
+            } else if (gamepad1.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
+                    targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
+                    UpdateOuttake(false);
+                }
+            } else if (gamepad1.dpad_down) {
+                targetOuttakePosition = 30;
+                UpdateOuttake(true);
+            } else if (gamepad1.dpad_up) {
+                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
+                UpdateOuttake(false);
+            } /*else if (gamepad1.right_bumper || gamepad1.left_bumper) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            }*/
+
+            if (gamepad1.square) {
+                targetClawPosition -= 0.02;
+                servoClaw.setPosition(targetClawPosition);
+                Delay(50);
+            } else if (gamepad1.circle) {
+                targetClawPosition += 0.02;
+                servoClaw.setPosition(targetClawPosition);
+                Delay(50);
+            }
+
+            if (gamepad1.right_bumper) {
+                targetWristPosition += 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
+            } else if (gamepad1.left_bumper) {
+                targetWristPosition -= 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
+            }
+
+            if (gamepad1.triangle) {
+                targetElbowPosition += 0.02;
+                MoveElbow(targetElbowPosition);
+            } else if (gamepad1.cross) {
+                targetElbowPosition -= 0.02;
+                MoveElbow(targetElbowPosition);
+            }
+        }
+
+        // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
+
+        if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
+            fieldCentricRed = !fieldCentricRed;
+            Delay(50);
+        }
+
+        if (gamepad1.start) { // re-calibrate field centric drive
+            imu.resetYaw();
+        }
+    }
+
+    private void Macros() {
+        // test transfer stage macro
+        if (gamepad1.dpad_left) {
+            if (!wristActive) {
+                wristActive = true;
+                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                Delay(600);
+                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+
+            } else {
+                wristActive = false;
+                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                Delay(200);
+                servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+            }
+            Delay(200);
+        }
+
+        else if (gamepad1.dpad_right && gamepad1.left_bumper) {
+            if (!transferStageDeployed) {
+                transferStageDeployed = true;
+                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                Delay(500);
+                // TODO: test if this reinforcement actually works
+                servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+
+                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
+                MoveElbow(RobotConstants.ELBOW_ACTIVE);
+
+                Delay(100);
+
+                UpdateOuttake(false);
+            } else {
+                transferStageDeployed = false;
+                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                Delay(300);
+
+                targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT + 1;
+                UpdateOuttake(false);
+                MoveElbow(RobotConstants.ELBOW_STANDBY);
+                servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+            }
+        } else if (gamepad1.right_stick_button) {
+            drive.followTrajectory(TILE_TO_BACKDROP);
+        } else if (gamepad1.left_stick_button) {
+            drive.followTrajectory(BACKDROP_TO_TILE);
+        }
+    }
+
+    private void UpdateOuttake(boolean reset) { // test new function
+        armR.setTargetPosition(targetOuttakePosition);
+        armL.setTargetPosition(targetOuttakePosition);
+
+        if (reset) {
+            armR.setTargetPosition(10);
+            armL.setTargetPosition(10);
+            targetOuttakePosition = 10;
+            armRuntime.reset();
+
+            /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
+                armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
+
+                if (armM.getCurrentPosition() <= 50 || armRuntime.seconds() >= ARM_RESET_TIMEOUT) {
+                    break;
+                }
+            }*/
+
+            if ((armL.getCurrentPosition() <= 15 || armR.getCurrentPosition() <= 15) || armRuntime.seconds() >= RobotConstants.ARM_RESET_TIMEOUT) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            }
+
+            telemetry.update();
+        }
+
+        else {
+            armRuntime.reset();
+            armR.setVelocity(1700);
+            armL.setVelocity(1700); // velocity used to be 1800, could be faster
+        }
+    }
+
+    private void PassiveArmResetCheck() {
+        if ((armL.getCurrentPosition() <= 15 && armR.getCurrentPosition() <= 15) && targetOuttakePosition <= 30) {
+            armR.setVelocity(0);
+            armL.setVelocity(0);
+            resetTimer.reset();
+        }
+    }
 }
+
