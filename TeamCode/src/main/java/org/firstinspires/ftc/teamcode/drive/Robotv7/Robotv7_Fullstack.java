@@ -85,12 +85,11 @@ public class Robotv7_Fullstack extends OpMode {
     public void InitializeBlock() {
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
-        // TODO: drivetrain stuff doesn't exist yet
-        /*backLM = hardwareMap.get(DcMotorEx.class, BACK_LEFT);
-        backRM = hardwareMap.get(DcMotorEx.class, BACK_RIGHT);
+        backLM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_LEFT);
+        backRM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_RIGHT);
 
-        frontLM = hardwareMap.get(DcMotorEx.class, FRONT_LEFT);
-        frontRM = hardwareMap.get(DcMotorEx.class, FRONT_RIGHT); //frontRM.setDirection(DcMotorSimple.Direction.REVERSE); // weird workaround Stanley put in
+        frontLM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_LEFT);
+        frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT); //frontRM.setDirection(DcMotorSimple.Direction.REVERSE); // weird workaround Stanley put in
 
         backLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -108,9 +107,9 @@ public class Robotv7_Fullstack extends OpMode {
         frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRM.setDirection(DcMotorSimple.Direction.REVERSE);*/
+        backRM.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        armR = hardwareMap.get(DcMotorEx.class, "armR");
+        /*armR = hardwareMap.get(DcMotorEx.class, "armR");
         armL = hardwareMap.get(DcMotorEx.class, "armL");
 
         armR.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -135,7 +134,7 @@ public class Robotv7_Fullstack extends OpMode {
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos
+        MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos*/
 
         // -------------------------------------------------------------- IMU INIT
 
