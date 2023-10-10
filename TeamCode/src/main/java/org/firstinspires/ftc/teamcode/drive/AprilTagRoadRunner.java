@@ -188,7 +188,7 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
         if (opModeIsActive()) {
             int startPropPos = frontPipeline.spikeMark;
-            transferPixel(drive, 1, startPropPos, true);
+            //transferPixel(drive, 1, startPropPos, true);
 
             while (opModeIsActive()) {
                 localizer.update();
