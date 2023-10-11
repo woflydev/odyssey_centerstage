@@ -32,6 +32,8 @@ import org.openftc.easyopencv.OpenCvPipeline;
 public class AprilTagRoadRunner extends LinearOpMode {
 
     private static final boolean USE_VIEWPORT = true;
+    private static final boolean USE_DRIVE = false;
+    private static final boolean USE_BACK = false;
 
     public static String FRONT_CAMERA = "Webcam 1";
     public static String BACK_CAMERA = "Webcam 2";
@@ -84,17 +86,17 @@ public class AprilTagRoadRunner extends LinearOpMode {
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(YAW_ANGLE), 0, 0,
                     (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
-            new AprilTagMetadata(10, "Left", 0.1,
+            new AprilTagMetadata(11, "Left", 0.1,
                     new VectorF((float) - FIELD_LENGTH / 2, 0, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(YAW_ANGLE / 2), 0, 0,
                     (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)
             ),
-            new AprilTagMetadata(10, "Back", 0.1,
+            new AprilTagMetadata(12, "Back", 0.1,
                     new VectorF(0, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, Quaternion.identityQuaternion()
             ),
-            new AprilTagMetadata(10, "Right", 0.1,
+            new AprilTagMetadata(13, "Right", 0.1,
                     new VectorF((float) FIELD_LENGTH / 2, 0, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(-YAW_ANGLE / 2), 0, 0,
@@ -138,7 +140,10 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     @SuppressLint("DefaultLocale")
     public void runOpMode() {
-        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+        SampleMecanumDrive drive;
+        if (USE_DRIVE) {
+            drive = new SampleMecanumDrive(hardwareMap);
+        }
         CameraLocalizer localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray);
 
 
@@ -153,36 +158,47 @@ public class AprilTagRoadRunner extends LinearOpMode {
         localizer.update();
         currentDetections = localizer.currentDetections;
         tagTelemetry(currentDetections);
-        drive.setPoseEstimate(localizer.poseEstimate);
+        if (USE_DRIVE) {
+            drive.setPoseEstimate(localizer.poseEstimate);
+        }
 
         FieldPipeline frontPipeline = new FieldPipeline(0);
-        FieldPipeline backPipeline = new FieldPipeline(1);
+        FieldPipeline backPipeline;
+        if (USE_BACK) {
+             backPipeline = new FieldPipeline(1);
+        }
 
-        for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
-            STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
-                    .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
-                    .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
+        if (USE_DRIVE) {
+            for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
+                STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
+                        .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
+                        .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
+                        .build();
+
+                // Note, the robot turns 180 degrees before moving to the backdrop
+
+                PIXEL_TO_BACKDROP[i] = drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
+                        .strafeTo(BACKDROP_LOCATION.vec())
+                        .build();
+            }
+
+            TILE_TO_BACKDROP = drive.trajectoryBuilder(TILE_LOCATION)
+                    .strafeTo(INTER_POINT.vec())
+                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
                     .build();
 
-            // Note, the robot turns 180 degrees before moving to the backdrop
-
-            PIXEL_TO_BACKDROP[i] = drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
-                    .strafeTo(BACKDROP_LOCATION.vec())
+            BACKDROP_TO_TILE = drive.trajectoryBuilder(TILE_LOCATION, true)
+                    .strafeTo(INTER_POINT.vec())
+                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
                     .build();
         }
 
-        TILE_TO_BACKDROP = drive.trajectoryBuilder(TILE_LOCATION)
-                .strafeTo(INTER_POINT.vec())
-                .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
-                .build();
+        if (USE_BACK) {
+            initCameras(frontPipeline, backPipeline);
+        } else {
+            initCameras(frontPipeline);
+        }
 
-        BACKDROP_TO_TILE = drive.trajectoryBuilder(TILE_LOCATION, true)
-                .strafeTo(INTER_POINT.vec())
-                .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
-                .build();
-
-
-        initCameras(frontPipeline, backPipeline);
 
         waitForStart();
 
@@ -217,6 +233,40 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
         // Save more CPU resources when camera is no longer needed.
         localizer.visionPortal.close();
+    }
+
+    private void initCameras(OpenCvPipeline frontPipeline) {
+        if (USE_VIEWPORT) {
+            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, FRONT_CAMERA),
+                    cameraMonitorViewId
+            );
+        } else {
+            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, FRONT_CAMERA)
+            );
+        }
+
+        frontCamera.openCameraDeviceAsync(
+                new OpenCvCamera.AsyncCameraOpenListener() {
+                    @Override
+                    public void onOpened() {
+                        // Usually this is where you'll want to start streaming from the camera (see section 4)
+                        frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        frontCamera.setPipeline(frontPipeline);
+                    }
+
+                    @Override
+                    public void onError(int errorCode) {
+                        /*
+                         * This will be called if the camera could not be opened
+                         */
+                        telemetry.addLine("Front camera could not be opened.");
+                        telemetry.update();
+                    }
+                }
+        );
     }
 
     private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
