@@ -18,6 +18,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -64,6 +65,9 @@ public class CameraLocalizer implements Localizer {
     private long blindTime = 0;
     private boolean isBlind = false;
 
+    private Telemetry t;
+    private boolean TELEMETRY_GIVEN;
+
     public Pose2d getPoseEstimate() {
         return this.poseEstimate;
     }
@@ -81,6 +85,29 @@ public class CameraLocalizer implements Localizer {
         this.poseEstimate = startingPose;
         this.lastEstimate = startingPose;
         this.tagArray = tagArray;
+        this.TELEMETRY_GIVEN = false;
+
+        this.currentPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
+        this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
+        this.currentVelocity = new VectorF(0, 0, 0);
+        this.currentHeading = startingPose.getHeading();
+
+        this.FRONT_CAMERA = front;
+        this.BACK_CAMERA = back;
+
+        initAprilTag();
+        while (elapsedTime.time() < STARTUP_TIME) {
+            analyseDetections();
+        }
+    }
+
+    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, AprilTagMetadata[] tagArray, Telemetry t) {
+        this.hardwareMap = map;
+        this.poseEstimate = startingPose;
+        this.lastEstimate = startingPose;
+        this.tagArray = tagArray;
+        this.t = t;
+        this.TELEMETRY_GIVEN = true;
 
         this.currentPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
         this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
@@ -178,7 +205,7 @@ public class CameraLocalizer implements Localizer {
 
             currentPosition = smoothPos.multiplied(1 / (float) notNullTags);
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
-            currentHeading = smoothHeading / notNullTags;
+            currentHeading = (smoothHeading / notNullTags) % (2 * Math.PI);
             isBlind = false;
         } else {
             // Assumes constant velocity if no April tags can be seen
@@ -186,8 +213,10 @@ public class CameraLocalizer implements Localizer {
                 blindTime = elapsedTime.time(timeUnit);
                 isBlind = true;
             }
-            currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
+            //currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
+        if (this.TELEMETRY_GIVEN) this.t.addData("Position: ", new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading));
+        this.t.update();
         return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
     }
 
@@ -197,7 +226,9 @@ public class CameraLocalizer implements Localizer {
                 .multiplied(rotationMatrix(0, 0, pose.bearing - pose.yaw));
         VectorF relativeVector = rotationM.multiplied(new VectorF(0, 1, 0));
         MatrixF fieldRotation = detection.metadata.fieldOrientation.toMatrix();
-        return fieldRotation.multiplied(relativeVector).added(detection.metadata.fieldPosition);
+        //if (TELEMETRY_GIVEN) this.t.addLine(fieldRotation.toString());
+        //this.t.update();
+        return fieldRotation.slice(3, 3).multiplied(relativeVector).added(detection.metadata.fieldPosition);
     }
 
     // Assumes pitch and roll are negligible
@@ -212,23 +243,20 @@ public class CameraLocalizer implements Localizer {
         MatrixF rollM = MatrixF.identityMatrix(3);
         MatrixF yawM = MatrixF.identityMatrix(3);
 
-        pitchM.add(new float[] {
-                0, 0, 0,
-                0, (float) (1 - Math.cos(pitch)), (float) -Math.sin(pitch),
-                0, (float) Math.sin(pitch), (float) (1 - Math.cos(pitch))
-        });
-
-        rollM.add(new float[] {
-                (float)(1 - Math.cos(roll)), 0, (float) Math.sin(roll),
-                0, 0, 0,
-                (float) (- Math.sin(roll)), 0, (float) (1 - Math.cos(roll))
-        });
-
-        yawM.add(new float[] {
-                (float)(1 - Math.cos(yaw)), (float) (-Math.sin(yaw)), 0,
-                (float) (Math.sin(yaw)), (float)(1 - Math.cos(yaw)), 0,
-                0, 0, 0
-        });
+        for (int i = 0; i < 3; i++) {
+            if (i != 0) {
+                pitchM.put(i, i, (float) Math.cos(pitch));
+                pitchM.put(3 - i,i, (float) Math.sin(pitch) * (i % 2 == 0 ? 1 : -1));
+            }
+            if (i != 1) {
+                rollM.put(i, i, (float) Math.cos(roll));
+                rollM.put(2 - i, i, (float) Math.sin(pitch) * (i == 2 ? 1 : -1));
+            }
+            if (i != 2) {
+                yawM.put(i, i, (float) Math.cos(yaw));
+                yawM.put(1 - i, i, (float) Math.sin(pitch) * (i == 0 ? 1 : -1));
+            }
+        }
 
         // Euler angles, pitch, then roll than yaw
         return yawM.multiplied(rollM.multiplied(pitchM));

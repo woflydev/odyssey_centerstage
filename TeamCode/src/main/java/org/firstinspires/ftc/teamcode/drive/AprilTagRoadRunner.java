@@ -9,7 +9,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -28,7 +28,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 
-@TeleOp(name = "Concept: AprilTagWithRoadRunner", group = "Concept")
+@Autonomous(name = "Concept: AprilTagWithRoadRunner", group = "Concept")
 public class AprilTagRoadRunner extends LinearOpMode {
 
     private static final boolean USE_VIEWPORT = true;
@@ -140,14 +140,17 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     @SuppressLint("DefaultLocale")
     public void runOpMode() {
+        telemetry.addLine("Initialising...");
+        telemetry.update();
+
         SampleMecanumDrive drive;
         if (USE_DRIVE) {
             drive = new SampleMecanumDrive(hardwareMap);
         }
-        CameraLocalizer localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray);
+        CameraLocalizer localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray, telemetry);
 
 
-        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
+        //telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
 
 
         // Wait for the DS start button to be touched.
@@ -201,7 +204,7 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
 
         waitForStart();
-
+        telemetry.clear();
         if (opModeIsActive()) {
             int startPropPos = frontPipeline.spikeMark;
             //transferPixel(drive, 1, startPropPos, true);
@@ -209,10 +212,10 @@ public class AprilTagRoadRunner extends LinearOpMode {
             while (opModeIsActive()) {
                 localizer.update();
                 // Add trajectories with drive.followTrajectory
-
                 tagTelemetry(currentDetections);
 
                 telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
+                telemetry.addLine("Running!");
                 // Push telemetry to the Driver Station.
                 telemetry.update();
 
@@ -223,16 +226,16 @@ public class AprilTagRoadRunner extends LinearOpMode {
                     localizer.visionPortal.resumeStreaming();
                 }
 
-                if (isStopRequested()) return;
+                if (isStopRequested()) {// Save more CPU resources when camera is no longer needed.
+                    localizer.visionPortal.close();
+                    return;
+                }
 
 
                 // Share the CPU.
-                sleep(SLEEP_TIME);
+                //sleep(SLEEP_TIME);
             }
         }
-
-        // Save more CPU resources when camera is no longer needed.
-        localizer.visionPortal.close();
     }
 
     private void initCameras(OpenCvPipeline frontPipeline) {
