@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.matrices.MatrixF;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
@@ -215,50 +216,48 @@ public class CameraLocalizer implements Localizer {
             }
             //currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
-        if (this.TELEMETRY_GIVEN) this.t.addData("Position: ", new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading));
-        this.t.update();
+        if (this.TELEMETRY_GIVEN) {
+            this.t.addData("Position: ", new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading));
+            this.t.update();
+        }
         return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
     }
 
     public VectorF vectorFromPose(AprilTagDetection detection) {
         AprilTagPoseFtc pose = detection.ftcPose;
-        MatrixF rotationM = rotationMatrix(pose.pitch + pose.elevation, 0, 0)
-                .multiplied(rotationMatrix(0, 0, pose.bearing - pose.yaw));
-        VectorF relativeVector = rotationM.multiplied(new VectorF(0, 1, 0));
-        MatrixF fieldRotation = detection.metadata.fieldOrientation.toMatrix();
-        //if (TELEMETRY_GIVEN) this.t.addLine(fieldRotation.toString());
-        //this.t.update();
-        return fieldRotation.slice(3, 3).multiplied(relativeVector).added(detection.metadata.fieldPosition);
+
+        VectorF u = new VectorF(0, -1, 0);
+        VectorF v = new VectorF(1, 0, 0);
+
+        u = detection.metadata.fieldOrientation.applyToVector(u);
+        v = detection.metadata.fieldOrientation.applyToVector(v);
+        VectorF w = cross(u, v);
+
+        VectorF newNormal = u;
+        newNormal = rotationAboutAxis(pose.bearing - pose.yaw, w).applyToVector(newNormal);
+        newNormal = rotationAboutAxis(pose.elevation, v).applyToVector(newNormal);
+
+        return newNormal.multiplied((float) pose.range).added(detection.metadata.fieldPosition);
     }
 
     // Assumes pitch and roll are negligible
     public double yawFromPose(AprilTagDetection detection) {
         AprilTagPoseFtc pose = detection.ftcPose;
-        return pose.bearing - pose.yaw + Math.acos(detection.metadata.fieldOrientation.w);
+        return (pose.yaw - pose.bearing + Math.acos(detection.metadata.fieldOrientation.w) * 2) % (2 * Math.PI);
     }
 
-    // All are in radians
-    public MatrixF rotationMatrix(double pitch, double roll, double yaw) {
-        MatrixF pitchM = MatrixF.identityMatrix(3);
-        MatrixF rollM = MatrixF.identityMatrix(3);
-        MatrixF yawM = MatrixF.identityMatrix(3);
+    public VectorF cross(VectorF a, VectorF b) {
+        return new VectorF(a.get(1) * b.get(2) - a.get(2) * b.get(1),
+                a.get(2) * b.get(0) - a.get(0) * b.get(2),
+                a.get(0) * b.get(1) - a.get(1) * b.get(0));
+    }
 
-        for (int i = 0; i < 3; i++) {
-            if (i != 0) {
-                pitchM.put(i, i, (float) Math.cos(pitch));
-                pitchM.put(3 - i,i, (float) Math.sin(pitch) * (i % 2 == 0 ? 1 : -1));
-            }
-            if (i != 1) {
-                rollM.put(i, i, (float) Math.cos(roll));
-                rollM.put(2 - i, i, (float) Math.sin(pitch) * (i == 2 ? 1 : -1));
-            }
-            if (i != 2) {
-                yawM.put(i, i, (float) Math.cos(yaw));
-                yawM.put(1 - i, i, (float) Math.sin(pitch) * (i == 0 ? 1 : -1));
-            }
-        }
-
-        // Euler angles, pitch, then roll than yaw
-        return yawM.multiplied(rollM.multiplied(pitchM));
+    public Quaternion rotationAboutAxis(double theta, VectorF axis) {
+        VectorF normAxis = axis.multiplied(1 / axis.magnitude());
+        return new Quaternion((float) Math.cos(theta / 2),
+                (float) (Math.sin(theta / 2) * normAxis.get(0)),
+                (float) (Math.sin(theta / 2) * normAxis.get(1)),
+                (float) (Math.sin(theta / 2) * normAxis.get(2)),
+                0);
     }
 }

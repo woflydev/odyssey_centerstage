@@ -214,10 +214,10 @@ public class AprilTagRoadRunner extends LinearOpMode {
                 // Add trajectories with drive.followTrajectory
                 tagTelemetry(currentDetections);
 
-                telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
-                telemetry.addLine("Running!");
+                //telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
+                //telemetry.addLine("Running!");
                 // Push telemetry to the Driver Station.
-                telemetry.update();
+                //telemetry.update();
 
                 // Save CPU resources; can resume streaming when needed.
                 if (gamepad1.dpad_down) {
@@ -344,6 +344,7 @@ public class AprilTagRoadRunner extends LinearOpMode {
                 telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
             }
         }
+        telemetry.update();
     }
 
     public void transferPixel(SampleMecanumDrive drive, int pixelColour, int pixelSlot, boolean fromTile) {
