@@ -21,6 +21,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -188,23 +189,43 @@ public class CameraLocalizer implements Localizer {
         currentDetections = aprilTag.getDetections();
         //telemetry.addData("# AprilTags Detected", currentDetections.size());
 
-        VectorF smoothPos = new VectorF(0, 0, 0);
         double smoothHeading = 0;
         int notNullTags = 0;
+
+        ArrayList<VectorF> normals = new ArrayList<VectorF>();
+        ArrayList<VectorF> positions = new ArrayList<VectorF>();
+
+        AprilTagDetection firstDetection = new AprilTagDetection();
 
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
-                smoothPos.add(vectorFromPose(detection));
+                if (notNullTags == 0) {
+                    firstDetection = detection;
+                }
+                normals.add(vectorFromPose(detection, true));
+                positions.add(detection.metadata.fieldPosition);
                 smoothHeading += yawFromPose(detection);
                 notNullTags++;
             }
         }
+
+        VectorF[] normalArr = new VectorF[normals.size()];
+        VectorF[] posArr = new VectorF[positions.size()];
+
+        normals.toArray(normalArr);
+        positions.toArray(posArr);
+
         previousPosition = currentPosition;
 
         if (notNullTags > 0) {
+            if (notNullTags > 1) {
+                currentPosition = intersectionEstimate(normalArr, posArr);
+            } else {
+                currentPosition = normalArr[0].multiplied((float) firstDetection.ftcPose.range);
+            }
 
-            currentPosition = smoothPos.multiplied(1 / (float) notNullTags);
+
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
             currentHeading = (smoothHeading / notNullTags) % (2 * Math.PI);
             isBlind = false;
@@ -239,6 +260,25 @@ public class CameraLocalizer implements Localizer {
 
         return newNormal.multiplied((float) pose.range).added(detection.metadata.fieldPosition);
     }
+    public VectorF vectorFromPose(AprilTagDetection detection, boolean normal) {
+        AprilTagPoseFtc pose = detection.ftcPose;
+
+        VectorF u = new VectorF(0, -1, 0);
+        VectorF v = new VectorF(1, 0, 0);
+
+        u = detection.metadata.fieldOrientation.applyToVector(u);
+        v = detection.metadata.fieldOrientation.applyToVector(v);
+        VectorF w = cross(u, v);
+
+        VectorF newNormal = u;
+        newNormal = rotationAboutAxis(pose.bearing - pose.yaw, w).applyToVector(newNormal);
+        newNormal = rotationAboutAxis(pose.elevation, v).applyToVector(newNormal);
+        if (normal) {
+            return newNormal;
+        } else {
+            return newNormal.multiplied((float) pose.range).added(detection.metadata.fieldPosition);
+        }
+    }
 
     // Assumes pitch and roll are negligible
     public double yawFromPose(AprilTagDetection detection) {
@@ -259,5 +299,49 @@ public class CameraLocalizer implements Localizer {
                 (float) (Math.sin(theta / 2) * normAxis.get(1)),
                 (float) (Math.sin(theta / 2) * normAxis.get(2)),
                 0);
+    }
+
+    // Assuming 2D here
+    public VectorF intersectionEstimate(VectorF[] normals, VectorF[] positions) {
+        if (normals.length != positions.length) {
+            throw new IllegalArgumentException();
+        }
+
+        float avgZ = 0;
+        for (VectorF position : positions) {
+            avgZ += position.get(2) / positions.length;
+        }
+
+        VectorF[] intersections = new VectorF[(int) (normals.length * (normals.length - 1) / 2)];
+        int count = 0;
+
+        for (int i = 0; i < normals.length; i++) {
+            for (int j = 0; j < normals.length; j++) {
+                if (j > i) {
+                    intersections[count] = intersectionPoint(normals[i], positions[i], normals[j], positions[j], avgZ);
+                    count++;
+                }
+            }
+        }
+
+        VectorF avgVector = new VectorF(0, 0, 0);
+        for (VectorF vec : intersections) {
+            avgVector.add(vec.multiplied(1 / (float) count));
+        }
+        return avgVector;
+    }
+    public VectorF intersectionPoint(VectorF v1, VectorF p1, VectorF v2, VectorF p2, float z) {
+        float dX = p2.get(0) - p1.get(0);
+        float dY = p2.get(1) - p1.get(1);
+
+        float a = v1.get(0);
+        float b = - v2.get(0);
+        float d = v1.get(1);
+        float e = -v2.get(1);
+
+        float x = (dX * e - b * dY) / (a * e - b * d);
+        float y = (a * dY - dX * d) / (a * e - b * d);
+
+        return new VectorF(x, y, z);
     }
 }
