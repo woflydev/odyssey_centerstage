@@ -339,9 +339,9 @@ public class CameraLocalizer implements Localizer {
         float d = v1.get(1);
         float e = -v2.get(1);
 
-        float x = (dX * e - b * dY) / (a * e - b * d);
-        float y = (a * dY - dX * d) / (a * e - b * d);
+        float r1 = (dX * e - b * dY) / (a * e - b * d);
+        float r2 = (a * dY - dX * d) / (a * e - b * d);
 
-        return new VectorF(x, y, z);
+        return p1.added(v1.multiplied(r1));
     }
 }
