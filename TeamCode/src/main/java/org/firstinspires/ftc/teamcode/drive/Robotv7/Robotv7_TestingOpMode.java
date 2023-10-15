@@ -5,8 +5,10 @@ import static java.lang.Thread.sleep;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -25,6 +27,8 @@ public class Robotv7_TestingOpMode extends OpMode {
     public Servo servoWrist = null;
     public Servo servoElbowR = null;
     public Servo servoElbowL = null;
+    public CRServo servoHangR = null;
+    public CRServo servoHangL = null;
     public DcMotorEx armR = null;
     public DcMotorEx armL = null;
     public IMU imu = null;
@@ -79,8 +83,9 @@ public class Robotv7_TestingOpMode extends OpMode {
     public void InitializeBlock() {
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
-        armR = hardwareMap.get(DcMotorEx.class, "armR");
-        armR.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        armR = hardwareMap.get(DcMotorEx.class, "hangR");
+        armR.setDirection(DcMotorSimple.Direction.FORWARD);
+        //servoHangR.setPower(0);
 
         // -------------------------------------------------------------- IMU INIT
 

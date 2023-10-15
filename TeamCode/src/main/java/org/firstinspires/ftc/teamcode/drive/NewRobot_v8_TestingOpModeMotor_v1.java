@@ -2,21 +2,20 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7_TestingOpMode;
 
 @TeleOp()
-public class NewRobot_v8_TestingOpMode_v1 extends Robotv7_TestingOpMode {
+public class NewRobot_v8_TestingOpModeMotor_v1 extends Robotv7_TestingOpMode {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
             if (gamepad1.right_trigger >= 0.6) {
-                servoHangR.setPower(1);
+                armR.setPower(1);
             } else if (gamepad1.left_trigger >= 0.6) {
-                servoHangR.setPower(-1);
+                armR.setPower(-1);
             } else {
-                servoHangR.setPower(0);
+                armR.setPower(0);
             }
         }
 
