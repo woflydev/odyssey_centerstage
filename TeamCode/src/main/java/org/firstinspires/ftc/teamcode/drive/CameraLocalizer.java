@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive;
 
+import android.annotation.SuppressLint;
 import android.util.Size;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -34,6 +35,8 @@ public class CameraLocalizer implements Localizer {
     private static int SLEEP_TIME = 20;
 
     private static int STARTUP_TIME = 5000;
+
+    private static float FEET_TO_METERS = 0.3048f;
 
     private String FRONT_CAMERA;
     private String BACK_CAMERA;
@@ -185,6 +188,7 @@ public class CameraLocalizer implements Localizer {
         //visionPortal.setProcessorEnabled(aprilTag, true);
 
     }
+    @SuppressLint("DefaultLocale")
     public Pose2d analyseDetections() {
         currentDetections = aprilTag.getDetections();
         //telemetry.addData("# AprilTags Detected", currentDetections.size());
@@ -193,38 +197,43 @@ public class CameraLocalizer implements Localizer {
         int notNullTags = 0;
 
         ArrayList<VectorF> normals = new ArrayList<VectorF>();
-        ArrayList<VectorF> positions = new ArrayList<VectorF>();
+        //ArrayList<VectorF> positions = new ArrayList<VectorF>();
 
-        AprilTagDetection firstDetection = new AprilTagDetection();
-
+        AprilTagDetection firstDetection = null;
+        tagTelemetry(currentDetections, this.t);
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
                 if (notNullTags == 0) {
                     firstDetection = detection;
                 }
-                normals.add(vectorFromPose(detection, true));
-                positions.add(detection.metadata.fieldPosition);
+
+                normals.add(vectorFromPose(detection, false));
+                //positions.add(detection.metadata.fieldPosition.multiplied(FEET_TO_METERS));
                 smoothHeading += yawFromPose(detection);
                 notNullTags++;
             }
         }
 
-        VectorF[] normalArr = new VectorF[normals.size()];
+        /*VectorF[] normalArr = new VectorF[normals.size()];
         VectorF[] posArr = new VectorF[positions.size()];
 
         normals.toArray(normalArr);
-        positions.toArray(posArr);
+        positions.toArray(posArr);*/
 
         previousPosition = currentPosition;
 
         if (notNullTags > 0) {
-            if (notNullTags > 1) {
+            /*if (notNullTags > 1) {
                 currentPosition = intersectionEstimate(normalArr, posArr);
             } else {
-                currentPosition = normalArr[0].multiplied((float) firstDetection.ftcPose.range);
-            }
+                currentPosition = normalArr[0].multiplied((float) firstDetection.ftcPose.range * FEET_TO_METERS);
+            }*/
+            currentPosition = new VectorF(0, 0, 0);
 
+            for (int i = 0; i < normals.size(); i++) {
+                currentPosition.add(normals.get(i).multiplied((float) 1 / normals.size()));
+            }
 
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
             currentHeading = (smoothHeading / notNullTags) % (2 * Math.PI);
@@ -239,6 +248,12 @@ public class CameraLocalizer implements Localizer {
         }
         if (this.TELEMETRY_GIVEN) {
             this.t.addData("Position: ", new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading));
+            this.t.addLine();
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
+                    this.t.addLine(String.format("Id: %d, Range: %.3f m", detection.metadata.id, currentPosition.subtracted(detection.metadata.fieldPosition).magnitude()));
+                }
+            }
             this.t.update();
         }
         return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
@@ -258,7 +273,7 @@ public class CameraLocalizer implements Localizer {
         newNormal = rotationAboutAxis(pose.bearing - pose.yaw, w).applyToVector(newNormal);
         newNormal = rotationAboutAxis(pose.elevation, v).applyToVector(newNormal);
 
-        return newNormal.multiplied((float) pose.range).added(detection.metadata.fieldPosition);
+        return newNormal.multiplied((float) pose.range * FEET_TO_METERS).added(detection.metadata.fieldPosition);
     }
     public VectorF vectorFromPose(AprilTagDetection detection, boolean normal) {
         AprilTagPoseFtc pose = detection.ftcPose;
@@ -276,7 +291,7 @@ public class CameraLocalizer implements Localizer {
         if (normal) {
             return newNormal;
         } else {
-            return newNormal.multiplied((float) pose.range).added(detection.metadata.fieldPosition);
+            return newNormal.multiplied((float) pose.range * FEET_TO_METERS).added(detection.metadata.fieldPosition);
         }
     }
 
@@ -302,6 +317,7 @@ public class CameraLocalizer implements Localizer {
     }
 
     // Assuming 2D here
+    /*
     public VectorF intersectionEstimate(VectorF[] normals, VectorF[] positions) {
         if (normals.length != positions.length) {
             throw new IllegalArgumentException();
@@ -343,5 +359,19 @@ public class CameraLocalizer implements Localizer {
         float r2 = (a * dY - dX * d) / (a * e - b * d);
 
         return p1.added(v1.multiplied(r1));
+    }*/
+
+    @SuppressLint("DefaultLocale")
+    public void tagTelemetry(List<AprilTagDetection> detections, Telemetry telemetry) {
+        for (AprilTagDetection detection : detections) {
+            if (detection.metadata != null) {
+                telemetry.addLine(String.format("ID %d", detection.id));
+                telemetry.addLine(String.format("XYZ %6.3f %6.3f %6.3f  (meter)", detection.ftcPose.x * FEET_TO_METERS, detection.ftcPose.y * FEET_TO_METERS, detection.ftcPose.z * FEET_TO_METERS));
+                telemetry.addLine(String.format("PRY %6.3f %6.3f %6.3f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                telemetry.addLine(String.format("RBE %6.3f %6.3f %6.3f  (meter, deg, deg)", detection.ftcPose.range * FEET_TO_METERS, detection.ftcPose.bearing, detection.ftcPose.elevation));
+            }
+            telemetry.addLine();
+        }
+        //telemetry.update();
     }
 }
