@@ -46,7 +46,8 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     private static double PIXEL_SPACE = 0.05;
 
-    private static double YAW_ANGLE = Math.PI / 2;
+    // Z-angle
+    private static double YAW_ANGLE = 0;
 
     private static int ACQUISITION_TIME = 10;
 
@@ -102,35 +103,35 @@ public class AprilTagRoadRunner extends LinearOpMode {
                     (float) Math.cos(-YAW_ANGLE / 2), 0, 0,
                     (float) Math.sin(-YAW_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(1, "Backdrop 1", 0.05,
-                    new VectorF(-0.88F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE), 0, 0,
-                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
-            new AprilTagMetadata(2, "Backdrop 2", 0.05,
-                    new VectorF(-0.74F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE), 0, 0,
-                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
-            new AprilTagMetadata(3, "Backdrop 3", 0.05,
                     new VectorF(-1.003F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE), 0, 0,
-                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+                    (float) Math.cos(YAW_ANGLE / 2), 0, 0,
+                    (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)),
+            new AprilTagMetadata(2, "Backdrop 2", 0.05,
+                    new VectorF(-0.88F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE / 2), 0, 0,
+                    (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)),
+            new AprilTagMetadata(3, "Backdrop 3", 0.05,
+                    new VectorF(-0.74F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(YAW_ANGLE / 2), 0, 0,
+                    (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(4, "Backdrop 4", 0.05,
                     new VectorF(0.75F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE), 0, 0,
-                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+                    (float) Math.cos(YAW_ANGLE / 2), 0, 0,
+                    (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(5, "Backdrop 5", 0.05,
                     new VectorF(0.9F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE), 0, 0,
-                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
+                    (float) Math.cos(YAW_ANGLE / 2), 0, 0,
+                    (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(6, "Backdrop 6", 0.05,
                     new VectorF(1.05F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE), 0, 0,
-                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME))
+                    (float) Math.cos(YAW_ANGLE / 2), 0, 0,
+                    (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME))
     };
 
     private List<AprilTagDetection> currentDetections;

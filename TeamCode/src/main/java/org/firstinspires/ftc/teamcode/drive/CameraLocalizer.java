@@ -36,7 +36,7 @@ public class CameraLocalizer implements Localizer {
 
     private static int STARTUP_TIME = 5000;
 
-    private static float FEET_TO_METERS = 0.3048f;
+    private static float FEET_TO_METERS = 1;
 
     private String FRONT_CAMERA;
     private String BACK_CAMERA;
@@ -150,7 +150,6 @@ public class CameraLocalizer implements Localizer {
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 .setTagLibrary(library)
                 .setOutputUnits(DistanceUnit.METER, AngleUnit.DEGREES)
-
                 // == CAMERA CALIBRATION ==
                 // If you do not manually specify calibration parameters, the SDK will attempt
                 // to load a predefined calibration for your camera.
@@ -232,11 +231,12 @@ public class CameraLocalizer implements Localizer {
             currentPosition = new VectorF(0, 0, 0);
 
             for (int i = 0; i < normals.size(); i++) {
-                currentPosition.add(normals.get(i).multiplied((float) 1 / normals.size()));
+                currentPosition.add(normals.get(i));
             }
+            currentPosition.multiply(1 / (float) normals.size());
 
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
-            currentHeading = (smoothHeading / notNullTags) % (2 * Math.PI);
+            currentHeading = smoothHeading / notNullTags;
             isBlind = false;
         } else {
             // Assumes constant velocity if no April tags can be seen
@@ -246,17 +246,20 @@ public class CameraLocalizer implements Localizer {
             }
             //currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
+        int index = 0;
         if (this.TELEMETRY_GIVEN) {
-            this.t.addData("Position: ", new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading));
+            this.t.addData("Position: ", new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading * Math.PI / 180));
             this.t.addLine();
             for (AprilTagDetection detection : currentDetections) {
                 if (detection.metadata != null) {
-                    this.t.addLine(String.format("Id: %d, Range: %.3f m", detection.metadata.id, currentPosition.subtracted(detection.metadata.fieldPosition).magnitude()));
+                    this.t.addLine(String.format("Id: %d, X: %.3f m, Y: %.3f m, Range: %.3f m", detection.metadata.id, normals.get(index).get(0), normals.get(index).get(1),
+                            currentPosition.subtracted(detection.metadata.fieldPosition).magnitude()));
+                    index++;
                 }
             }
             this.t.update();
         }
-        return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
+        return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading * Math.PI / 180);
     }
 
     public VectorF vectorFromPose(AprilTagDetection detection) {
@@ -298,7 +301,7 @@ public class CameraLocalizer implements Localizer {
     // Assumes pitch and roll are negligible
     public double yawFromPose(AprilTagDetection detection) {
         AprilTagPoseFtc pose = detection.ftcPose;
-        return (pose.yaw - pose.bearing + Math.acos(detection.metadata.fieldOrientation.w) * 2) % (2 * Math.PI);
+        return mod((float) (pose.yaw - pose.bearing + Math.acos(detection.metadata.fieldOrientation.w) * 180 / Math.PI * 2), 360);
     }
 
     public VectorF cross(VectorF a, VectorF b) {
@@ -307,7 +310,8 @@ public class CameraLocalizer implements Localizer {
                 a.get(0) * b.get(1) - a.get(1) * b.get(0));
     }
 
-    public Quaternion rotationAboutAxis(double theta, VectorF axis) {
+    public Quaternion rotationAboutAxis(double t, VectorF axis) {
+        double theta = t * Math.PI / 180;
         VectorF normAxis = axis.multiplied(1 / axis.magnitude());
         return new Quaternion((float) Math.cos(theta / 2),
                 (float) (Math.sin(theta / 2) * normAxis.get(0)),
@@ -315,51 +319,6 @@ public class CameraLocalizer implements Localizer {
                 (float) (Math.sin(theta / 2) * normAxis.get(2)),
                 0);
     }
-
-    // Assuming 2D here
-    /*
-    public VectorF intersectionEstimate(VectorF[] normals, VectorF[] positions) {
-        if (normals.length != positions.length) {
-            throw new IllegalArgumentException();
-        }
-
-        float avgZ = 0;
-        for (VectorF position : positions) {
-            avgZ += position.get(2) / positions.length;
-        }
-
-        VectorF[] intersections = new VectorF[(int) (normals.length * (normals.length - 1) / 2)];
-        int count = 0;
-
-        for (int i = 0; i < normals.length; i++) {
-            for (int j = 0; j < normals.length; j++) {
-                if (j > i) {
-                    intersections[count] = intersectionPoint(normals[i], positions[i], normals[j], positions[j], avgZ);
-                    count++;
-                }
-            }
-        }
-
-        VectorF avgVector = new VectorF(0, 0, 0);
-        for (VectorF vec : intersections) {
-            avgVector.add(vec.multiplied(1 / (float) count));
-        }
-        return avgVector;
-    }
-    public VectorF intersectionPoint(VectorF v1, VectorF p1, VectorF v2, VectorF p2, float z) {
-        float dX = p2.get(0) - p1.get(0);
-        float dY = p2.get(1) - p1.get(1);
-
-        float a = v1.get(0);
-        float b = - v2.get(0);
-        float d = v1.get(1);
-        float e = -v2.get(1);
-
-        float r1 = (dX * e - b * dY) / (a * e - b * d);
-        float r2 = (a * dY - dX * d) / (a * e - b * d);
-
-        return p1.added(v1.multiplied(r1));
-    }*/
 
     @SuppressLint("DefaultLocale")
     public void tagTelemetry(List<AprilTagDetection> detections, Telemetry telemetry) {
@@ -373,5 +332,8 @@ public class CameraLocalizer implements Localizer {
             telemetry.addLine();
         }
         //telemetry.update();
+    }
+    public float mod(float n, float m) {
+        return (float) (n - m * Math.floor(n / m));
     }
 }
