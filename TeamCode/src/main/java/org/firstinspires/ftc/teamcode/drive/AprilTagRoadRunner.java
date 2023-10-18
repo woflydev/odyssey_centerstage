@@ -40,6 +40,7 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     private static double FIELD_LENGTH = 3.58;
     private static double CAMERA_HEIGHT = 0.313;
+    private static double WALL_TAG_X = -1.005;
 
     private static double BACKDROP_DEPTH = 1.55;
     private static double TAG_HEIGHT = 0.12;
@@ -82,16 +83,16 @@ public class AprilTagRoadRunner extends LinearOpMode {
 
     // This assumes the april tag starts facing along the y-axis, may change later
     public static AprilTagMetadata[] tagArray = {
-            new AprilTagMetadata(10, "Forward", 0.1,
-                    new VectorF(0, (float) FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
+            new AprilTagMetadata(7, "Back 1", 0.1,
+                    new VectorF((float) WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE), 0, 0,
-                    (float) Math.sin(YAW_ANGLE), ACQUISITION_TIME)),
-            new AprilTagMetadata(11, "Left", 0.1,
-                    new VectorF((float) - FIELD_LENGTH / 2, 0, (float) CAMERA_HEIGHT),
+                    (float) Math.cos(Math.PI / 2), 0, 0,
+                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)),
+            new AprilTagMetadata(10, "Back 2", 0.1,
+                    new VectorF((float) WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(YAW_ANGLE / 2), 0, 0,
-                    (float) Math.sin(YAW_ANGLE / 2), ACQUISITION_TIME)
+                    (float) Math.cos(Math.PI / 2), 0, 0,
+                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
             ),
             new AprilTagMetadata(12, "Back", 0.1,
                     new VectorF(0, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),

@@ -36,7 +36,7 @@ public class CameraLocalizer implements Localizer {
 
     private static int STARTUP_TIME = 5000;
 
-    private static float FEET_TO_METERS = 1;
+    private static float CORRECTION_FACTOR = 1;
 
     private String FRONT_CAMERA;
     private String BACK_CAMERA;
@@ -57,13 +57,19 @@ public class CameraLocalizer implements Localizer {
     // This assumes the april tag starts facing along the y-axis, may change later
     private AprilTagMetadata[] tagArray;
 
+    private int AVERAGE_LENGTH = 5;
+
     private VectorF previousPosition;
+
+    private ArrayList<VectorF> previousPositions;
 
     private VectorF currentPosition;
 
     private VectorF currentVelocity;
 
     private double currentHeading;
+
+    private ArrayList<Double> previousHeadings;
 
     public List<AprilTagDetection> currentDetections;
 
@@ -93,9 +99,11 @@ public class CameraLocalizer implements Localizer {
         this.TELEMETRY_GIVEN = false;
 
         this.currentPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
-        this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
+        this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);;
+        this.previousPositions = new ArrayList<>();
         this.currentVelocity = new VectorF(0, 0, 0);
         this.currentHeading = startingPose.getHeading();
+        this.previousHeadings = new ArrayList<>();
 
         this.FRONT_CAMERA = front;
         this.BACK_CAMERA = back;
@@ -115,9 +123,11 @@ public class CameraLocalizer implements Localizer {
         this.TELEMETRY_GIVEN = true;
 
         this.currentPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
-        this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
+        this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);;
+        this.previousPositions = new ArrayList<>();
         this.currentVelocity = new VectorF(0, 0, 0);
         this.currentHeading = startingPose.getHeading();
+        this.previousHeadings = new ArrayList<>();
 
         this.FRONT_CAMERA = front;
         this.BACK_CAMERA = back;
@@ -149,7 +159,7 @@ public class CameraLocalizer implements Localizer {
                 .setDrawTagOutline(true)
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 .setTagLibrary(library)
-                .setOutputUnits(DistanceUnit.METER, AngleUnit.DEGREES)
+                .setOutputUnits(DistanceUnit.METER, AngleUnit.RADIANS)
                 // == CAMERA CALIBRATION ==
                 // If you do not manually specify calibration parameters, the SDK will attempt
                 // to load a predefined calibration for your camera.
@@ -192,24 +202,20 @@ public class CameraLocalizer implements Localizer {
         currentDetections = aprilTag.getDetections();
         //telemetry.addData("# AprilTags Detected", currentDetections.size());
 
-        double smoothHeading = 0;
+        double heading = 0;
         int notNullTags = 0;
 
         ArrayList<VectorF> normals = new ArrayList<VectorF>();
         //ArrayList<VectorF> positions = new ArrayList<VectorF>();
 
-        AprilTagDetection firstDetection = null;
         tagTelemetry(currentDetections, this.t);
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
-                if (notNullTags == 0) {
-                    firstDetection = detection;
-                }
 
                 normals.add(vectorFromPose(detection, false));
                 //positions.add(detection.metadata.fieldPosition.multiplied(FEET_TO_METERS));
-                smoothHeading += yawFromPose(detection);
+                heading += yawFromPose(detection);
                 notNullTags++;
             }
         }
@@ -220,23 +226,48 @@ public class CameraLocalizer implements Localizer {
         normals.toArray(normalArr);
         positions.toArray(posArr);*/
 
-        previousPosition = currentPosition;
-
         if (notNullTags > 0) {
+            heading /= notNullTags;
+            previousHeadings.add(heading);
+
+            while (previousHeadings.size() > AVERAGE_LENGTH) {
+                previousHeadings.remove(0);
+            }
+
+            currentHeading = 0;
+
+            for (int i = 0; i < previousHeadings.size(); i++) {
+                currentHeading += previousHeadings.get(i) / previousHeadings.size();
+            }
+
             /*if (notNullTags > 1) {
                 currentPosition = intersectionEstimate(normalArr, posArr);
             } else {
                 currentPosition = normalArr[0].multiplied((float) firstDetection.ftcPose.range * FEET_TO_METERS);
             }*/
-            currentPosition = new VectorF(0, 0, 0);
+            VectorF tmpPosition = new VectorF(0, 0, 0);
 
             for (int i = 0; i < normals.size(); i++) {
-                currentPosition.add(normals.get(i));
+                tmpPosition.add(normals.get(i));
             }
-            currentPosition.multiply(1 / (float) normals.size());
+            tmpPosition.multiply(1 / (float) normals.size());
+            previousPositions.add(tmpPosition);
+
+            if (previousPositions.size() > AVERAGE_LENGTH) {
+                previousPositions.remove(0);
+            }
+
+            previousPosition = currentPosition;
+            currentPosition = new VectorF(0, 0,0);
+
+            for (int j = 0; j < previousPositions.size(); j++) {
+                currentPosition.add(previousPositions.get(j));
+            }
+            currentPosition.multiply((float) (1 / previousPositions.size()));
+
+            currentPosition = tmpPosition;
 
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
-            currentHeading = smoothHeading / notNullTags;
             isBlind = false;
         } else {
             // Assumes constant velocity if no April tags can be seen
@@ -246,20 +277,22 @@ public class CameraLocalizer implements Localizer {
             }
             //currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
-        int index = 0;
+
+        Pose2d currentPose = new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
+        //int index = 0;
         if (this.TELEMETRY_GIVEN) {
-            this.t.addData("Position: ", new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading * Math.PI / 180));
-            this.t.addLine();
+            this.t.addData("Position: ",  currentPose);
+            /*this.t.addLine();
             for (AprilTagDetection detection : currentDetections) {
                 if (detection.metadata != null) {
                     this.t.addLine(String.format("Id: %d, X: %.3f m, Y: %.3f m, Range: %.3f m", detection.metadata.id, normals.get(index).get(0), normals.get(index).get(1),
                             currentPosition.subtracted(detection.metadata.fieldPosition).magnitude()));
                     index++;
                 }
-            }
+            }*/
             this.t.update();
         }
-        return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading * Math.PI / 180);
+        return currentPose;
     }
 
     public VectorF vectorFromPose(AprilTagDetection detection) {
@@ -276,7 +309,7 @@ public class CameraLocalizer implements Localizer {
         newNormal = rotationAboutAxis(pose.bearing - pose.yaw, w).applyToVector(newNormal);
         newNormal = rotationAboutAxis(pose.elevation, v).applyToVector(newNormal);
 
-        return newNormal.multiplied((float) pose.range * FEET_TO_METERS).added(detection.metadata.fieldPosition);
+        return newNormal.multiplied((float) pose.range * CORRECTION_FACTOR).added(detection.metadata.fieldPosition);
     }
     public VectorF vectorFromPose(AprilTagDetection detection, boolean normal) {
         AprilTagPoseFtc pose = detection.ftcPose;
@@ -294,14 +327,14 @@ public class CameraLocalizer implements Localizer {
         if (normal) {
             return newNormal;
         } else {
-            return newNormal.multiplied((float) pose.range * FEET_TO_METERS).added(detection.metadata.fieldPosition);
+            return newNormal.multiplied((float) pose.range * CORRECTION_FACTOR).added(detection.metadata.fieldPosition);
         }
     }
 
     // Assumes pitch and roll are negligible
     public double yawFromPose(AprilTagDetection detection) {
         AprilTagPoseFtc pose = detection.ftcPose;
-        return mod((float) (pose.yaw - pose.bearing + Math.acos(detection.metadata.fieldOrientation.w) * 180 / Math.PI * 2), 360);
+        return mod((float) (pose.bearing + Math.acos(detection.metadata.fieldOrientation.w) * 2), (float) (2 * Math.PI));
     }
 
     public VectorF cross(VectorF a, VectorF b) {
@@ -310,8 +343,7 @@ public class CameraLocalizer implements Localizer {
                 a.get(0) * b.get(1) - a.get(1) * b.get(0));
     }
 
-    public Quaternion rotationAboutAxis(double t, VectorF axis) {
-        double theta = t * Math.PI / 180;
+    public Quaternion rotationAboutAxis(double theta, VectorF axis) {
         VectorF normAxis = axis.multiplied(1 / axis.magnitude());
         return new Quaternion((float) Math.cos(theta / 2),
                 (float) (Math.sin(theta / 2) * normAxis.get(0)),
@@ -325,15 +357,17 @@ public class CameraLocalizer implements Localizer {
         for (AprilTagDetection detection : detections) {
             if (detection.metadata != null) {
                 telemetry.addLine(String.format("ID %d", detection.id));
-                telemetry.addLine(String.format("XYZ %6.3f %6.3f %6.3f  (meter)", detection.ftcPose.x * FEET_TO_METERS, detection.ftcPose.y * FEET_TO_METERS, detection.ftcPose.z * FEET_TO_METERS));
-                telemetry.addLine(String.format("PRY %6.3f %6.3f %6.3f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.3f %6.3f %6.3f  (meter, deg, deg)", detection.ftcPose.range * FEET_TO_METERS, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                telemetry.addLine(String.format("XYZ %6.3f %6.3f %6.3f  (meter)", detection.ftcPose.x * CORRECTION_FACTOR, detection.ftcPose.y * CORRECTION_FACTOR, detection.ftcPose.z * CORRECTION_FACTOR));
+                telemetry.addLine(String.format("PRY %6.3f %6.3f %6.3f  (rad)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                telemetry.addLine(String.format("RBE %6.3f %6.3f %6.3f  (meter, rad, rad)", detection.ftcPose.range * CORRECTION_FACTOR, detection.ftcPose.bearing, detection.ftcPose.elevation));
             }
             telemetry.addLine();
         }
         //telemetry.update();
     }
+
+    // Return negatives as well, if only positive use Math.floor
     public float mod(float n, float m) {
-        return (float) (n - m * Math.floor(n / m));
+        return (n - m * Math.round(n / m));
     }
 }
