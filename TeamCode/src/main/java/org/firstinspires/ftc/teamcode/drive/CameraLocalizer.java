@@ -57,7 +57,7 @@ public class CameraLocalizer implements Localizer {
     // This assumes the april tag starts facing along the y-axis, may change later
     private AprilTagMetadata[] tagArray;
 
-    private int AVERAGE_LENGTH = 5;
+    private int AVERAGE_LENGTH = 3;
 
     private VectorF previousPosition;
 
@@ -257,14 +257,23 @@ public class CameraLocalizer implements Localizer {
                 previousPositions.remove(0);
             }
 
-            previousPosition = currentPosition;
-            currentPosition = new VectorF(0, 0,0);
+            VectorF avgPos = new VectorF(0, 0, 0);
 
-            for (int j = 0; j < previousPositions.size(); j++) {
-                currentPosition.add(previousPositions.get(j).multiplied(((float) (1 / previousPositions.size()))));
+            for (VectorF pos : previousPositions) {
+                avgPos.add(pos);
             }
 
-            //currentPosition = tmpPosition;
+            avgPos.multiply( 1 / (float)previousPositions.size());
+
+            previousPosition = currentPosition;
+            /*if (TELEMETRY_GIVEN) {
+                for (int j = 0; j < previousPositions.size(); j++) {
+                    this.t.addData("Previous position: ", String.format("X: %6.3f, Y: %6.3f", previousPositions.get(j).get(0), previousPositions.get(j).get(1)));
+                }
+                this.t.addData("Smoothed position: ", avgPos);
+            }*/
+
+            currentPosition = avgPos;
 
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
             isBlind = false;
@@ -274,6 +283,7 @@ public class CameraLocalizer implements Localizer {
                 blindTime = elapsedTime.time(timeUnit);
                 isBlind = true;
             }
+            previousPositions = new ArrayList<>();
             //currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
 
