@@ -83,9 +83,9 @@ public class Robotv7_TestingOpMode extends OpMode {
     public void InitializeBlock() {
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
-        armR = hardwareMap.get(DcMotorEx.class, "hangR");
-        armR.setDirection(DcMotorSimple.Direction.FORWARD);
-        //servoHangR.setPower(0);
+        servoHangR = hardwareMap.get(CRServo.class, "hangR");
+        servoHangR.setDirection(DcMotorSimple.Direction.FORWARD);
+        servoHangR.setPower(0);
 
         // -------------------------------------------------------------- IMU INIT
 
