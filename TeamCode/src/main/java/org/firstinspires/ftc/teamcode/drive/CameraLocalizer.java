@@ -253,7 +253,7 @@ public class CameraLocalizer implements Localizer {
             tmpPosition.multiply(1 / (float) normals.size());
             previousPositions.add(tmpPosition);
 
-            if (previousPositions.size() > AVERAGE_LENGTH) {
+            while (previousPositions.size() > AVERAGE_LENGTH) {
                 previousPositions.remove(0);
             }
 
@@ -261,11 +261,10 @@ public class CameraLocalizer implements Localizer {
             currentPosition = new VectorF(0, 0,0);
 
             for (int j = 0; j < previousPositions.size(); j++) {
-                currentPosition.add(previousPositions.get(j));
+                currentPosition.add(previousPositions.get(j).multiplied(((float) (1 / previousPositions.size()))));
             }
-            currentPosition.multiply((float) (1 / previousPositions.size()));
 
-            currentPosition = tmpPosition;
+            //currentPosition = tmpPosition;
 
             currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
             isBlind = false;
@@ -332,9 +331,10 @@ public class CameraLocalizer implements Localizer {
     }
 
     // Assumes pitch and roll are negligible
+    // Heading is clockwise
     public double yawFromPose(AprilTagDetection detection) {
         AprilTagPoseFtc pose = detection.ftcPose;
-        return mod((float) (pose.bearing + Math.acos(detection.metadata.fieldOrientation.w) * 2), (float) (2 * Math.PI));
+        return mod((float) (pose.bearing - pose.yaw - Math.acos(detection.metadata.fieldOrientation.w) * 2), (float) (2 * Math.PI));
     }
 
     public VectorF cross(VectorF a, VectorF b) {
