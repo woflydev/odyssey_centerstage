@@ -54,10 +54,10 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
     private static final String ARM_L = "armL";
     private static final String HUB_IMU = "imu";
 
-    private static final int MAX_ARM_HEIGHT = 4300;
+    private static final int MAX_ARM_HEIGHT = 3800;
     private static final int MIN_ARM_HEIGHT = 0;
 
-    private static final int ARM_ADJUSTMENT_INCREMENT = 50;
+    private static final int ARM_ADJUSTMENT_INCREMENT = 20;
     private static final int ARM_BOOST_MODIFIER = 1;
     private static final int ARM_RESET_TIMEOUT = 3;
 
@@ -400,8 +400,8 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
 
         else {
             armRuntime.reset();
-            armR.setVelocity(1800);
-            armL.setVelocity(1800); // velocity used to be 1800
+            armR.setVelocity(800);
+            armL.setVelocity(800); // velocity used to be 1800
         }
     }
 
@@ -450,8 +450,8 @@ public class NewRobot_v7_OutSlideTest_v1 extends OpMode {
         armL.setTargetPosition(0);
         armR.setMode(DcMotor.RunMode.RUN_TO_POSITION); // TODO: CHANGE BACK TO RUN_TO_POS
         armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armR.setDirection(DcMotorSimple.Direction.REVERSE);
-        armL.setDirection(DcMotorSimple.Direction.FORWARD);
+        armR.setDirection(DcMotorSimple.Direction.FORWARD);
+        armL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         //armM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
