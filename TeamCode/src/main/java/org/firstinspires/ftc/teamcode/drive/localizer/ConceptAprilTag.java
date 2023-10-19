@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.localizer;
 
 import android.util.Size;
 

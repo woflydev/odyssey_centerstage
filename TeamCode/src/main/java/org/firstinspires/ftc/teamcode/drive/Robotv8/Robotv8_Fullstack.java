@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Robotv7;
+package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
 import static java.lang.Thread.sleep;
 
@@ -17,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @TeleOp()
-public class Robotv7_Fullstack extends OpMode {
+public class Robotv8_Fullstack extends OpMode {
     public RobotState state = RobotState.IDLE;
 
     public DcMotorEx backLM = null;

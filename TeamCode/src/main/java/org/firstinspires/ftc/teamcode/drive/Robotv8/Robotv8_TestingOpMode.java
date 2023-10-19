@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Robotv7;
+package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
 import static java.lang.Thread.sleep;
 
@@ -6,7 +6,6 @@ import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
@@ -18,7 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @TeleOp()
-public class Robotv7_TestingOpMode extends OpMode {
+public class Robotv8_TestingOpMode extends OpMode {
     public DcMotorEx backLM = null;
     public DcMotorEx backRM = null;
     public DcMotorEx frontLM = null;

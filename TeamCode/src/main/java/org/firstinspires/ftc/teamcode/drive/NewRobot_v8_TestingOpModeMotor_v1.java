@@ -2,11 +2,11 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7_TestingOpMode;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_TestingOpMode;
 
 @TeleOp()
-public class NewRobot_v8_TestingOpModeMotor_v1 extends Robotv7_TestingOpMode {
+public class NewRobot_v8_TestingOpModeMotor_v1 extends Robotv8_TestingOpMode {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone

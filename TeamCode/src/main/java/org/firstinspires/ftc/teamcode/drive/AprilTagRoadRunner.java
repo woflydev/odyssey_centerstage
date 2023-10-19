@@ -2,8 +2,6 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import android.annotation.SuppressLint;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -16,6 +14,8 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
+import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 

@@ -2,14 +2,13 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import static java.lang.Thread.sleep;
 
-import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 @TeleOp()
-public class NewRobot_v8_FullstackTest_v1 extends Robotv7_Fullstack {
+public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
