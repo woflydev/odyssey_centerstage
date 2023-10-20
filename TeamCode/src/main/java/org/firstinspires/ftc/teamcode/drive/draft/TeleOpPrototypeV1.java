@@ -4,15 +4,10 @@ import static java.lang.Thread.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-<<<<<<<< Updated upstream:TeamCode/src/main/java/org/firstinspires/ftc/teamcode/drive/NewRobot_v8_AutoTeleOp_V1.java
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
-========
 import org.firstinspires.ftc.teamcode.drive.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.FieldPipeline;
-import org.firstinspires.ftc.teamcode.drive.Robotv7.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv7.Robotv7_Fullstack;
->>>>>>>> Stashed changes:TeamCode/src/main/java/org/firstinspires/ftc/teamcode/drive/draft/TeleOpPrototypeV1.java
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 import android.annotation.SuppressLint;
 
@@ -28,12 +23,8 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
-<<<<<<<< Updated upstream:TeamCode/src/main/java/org/firstinspires/ftc/teamcode/drive/NewRobot_v8_AutoTeleOp_V1.java
-import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
-import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
-========
+
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
->>>>>>>> Stashed changes:TeamCode/src/main/java/org/firstinspires/ftc/teamcode/drive/draft/TeleOpPrototypeV1.java
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 

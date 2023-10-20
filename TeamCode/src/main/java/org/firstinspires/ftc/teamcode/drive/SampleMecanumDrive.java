@@ -38,9 +38,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.firstinspires.ftc.teamcode.drive.AprilTagRoadRunner.BACK_CAMERA;
-import static org.firstinspires.ftc.teamcode.drive.AprilTagRoadRunner.FRONT_CAMERA;
-import static org.firstinspires.ftc.teamcode.drive.AprilTagRoadRunner.tagArray;
+import static org.firstinspires.ftc.teamcode.drive.draft.AprilTagRoadRunner.BACK_CAMERA;
+import static org.firstinspires.ftc.teamcode.drive.draft.AprilTagRoadRunner.FRONT_CAMERA;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
@@ -134,7 +133,7 @@ public class SampleMecanumDrive extends MecanumDrive {
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
         // TODO: if desired, use setLocalizer() to change the localization method
-        setLocalizer(new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray));
+        setLocalizer(new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0)));
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
                 follower, HEADING_PID, batteryVoltageSensor,

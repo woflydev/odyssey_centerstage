@@ -3,34 +3,22 @@ package org.firstinspires.ftc.teamcode.drive;
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
-import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
-import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
-
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
+import java.util.List;
 
-@Autonomous(name = "Concept: AprilTagWithRoadRunner", group = "Concept")
-public class AprilTagRoadRunner extends LinearOpMode {
-
+public class NewRobot_v9_Abstract {
     private static final boolean USE_VIEWPORT = true;
     private static final boolean USE_DRIVE = false;
     private static final boolean USE_BACK = false;
@@ -76,93 +64,44 @@ public class AprilTagRoadRunner extends LinearOpMode {
     public Trajectory TILE_TO_BACKDROP;
     public Trajectory BACKDROP_TO_TILE;
 
-    private ElapsedTime elapsedTime = new ElapsedTime();
-    private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
-
-
-
-
-    // This assumes the april tag starts facing along the y-axis, may change later
-    public static AprilTagMetadata[] tagArray = {
-            new AprilTagMetadata(7, "Back 1", 0.127,
-                    new VectorF((float) - WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
-                    DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(Math.PI / 2), 0, 0,
-                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)),
-            new AprilTagMetadata(10, "Back 2", 0.127,
-                    new VectorF((float) WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
-                    DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(Math.PI / 2), 0, 0,
-                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
-            ),
-            new AprilTagMetadata(8, "Back 1a", 0.1,
-                    new VectorF((float)-SMALL_WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
-                    DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(Math.PI / 2), 0, 0,
-                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
-            ),
-            new AprilTagMetadata(11, "Back 2a", 0.1,
-                    new VectorF((float)SMALL_WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
-                    DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(Math.PI / 2), 0, 0,
-                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)),
-            new AprilTagMetadata(1, "Backdrop 1", 0.05,
-                    new VectorF(-1.003F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
-            new AprilTagMetadata(2, "Backdrop 2", 0.05,
-                    new VectorF(-0.88F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
-            new AprilTagMetadata(3, "Backdrop 3", 0.05,
-                    new VectorF(-0.74F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
-            new AprilTagMetadata(4, "Backdrop 4", 0.05,
-                    new VectorF(0.75F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
-            new AprilTagMetadata(5, "Backdrop 5", 0.05,
-                    new VectorF(0.9F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
-            new AprilTagMetadata(6, "Backdrop 6", 0.05,
-                    new VectorF(1.05F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion())
-    };
-
-    private List<AprilTagDetection> currentDetections;
-
     private OpenCvCamera frontCamera;
     private OpenCvCamera backCamera;
+    private FieldPipeline frontPipeline;
+    private FieldPipeline backPipeline;
 
-    @SuppressLint("DefaultLocale")
-    public void runOpMode() {
-        telemetry.addLine("Initialising...");
-        telemetry.update();
+    private HardwareMap hardwareMap;
 
-        SampleMecanumDrive drive;
+    private Telemetry telemetry;
+    private boolean TELEMETRY_GIVEN;
+
+    private SampleMecanumDrive drive;
+    private CameraLocalizer localizer;
+
+    public NewRobot_v9_Abstract() {
+        TELEMETRY_GIVEN = false;
+        //telemetry.addLine("Initialising...");
+
         if (USE_DRIVE) {
             drive = new SampleMecanumDrive(hardwareMap);
         }
-        CameraLocalizer localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), tagArray, telemetry);
+        localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
-
-        //telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-
-
-        // Wait for the DS start button to be touched.
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch Play to start OpMode");
-        telemetry.update();
+        //telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+        //telemetry.addData(">", "Touch Play to start OpMode");
 
         localizer.update();
-        currentDetections = localizer.currentDetections;
-        tagTelemetry(currentDetections);
-        if (USE_DRIVE) {
+        if (!localizer.isBlind && USE_DRIVE) {
             drive.setPoseEstimate(localizer.poseEstimate);
         }
-
-        FieldPipeline frontPipeline = new FieldPipeline(0);
-        FieldPipeline backPipeline;
+        frontPipeline = new FieldPipeline(0);
         if (USE_BACK) {
-             backPipeline = new FieldPipeline(1);
+            backPipeline = new FieldPipeline(1);
+            initCameras(frontPipeline, backPipeline);
+        } else {
+            initCameras(frontPipeline);
         }
+
+        frontPipeline = new FieldPipeline(0);
 
         if (USE_DRIVE) {
             for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
@@ -188,47 +127,61 @@ public class AprilTagRoadRunner extends LinearOpMode {
                     .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
                     .build();
         }
+        //telemetry.clear();
+    }
 
+    public NewRobot_v9_Abstract(Telemetry t) {
+        telemetry = t;
+        TELEMETRY_GIVEN = true;
+        telemetry.addLine("Initialising...");
+
+        if (USE_DRIVE) {
+            drive = new SampleMecanumDrive(hardwareMap);
+        }
+        localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
+
+        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Touch Play to start OpMode");
+
+        localizer.update();
+        if (!localizer.isBlind && USE_DRIVE) {
+            drive.setPoseEstimate(localizer.poseEstimate);
+        }
+        frontPipeline = new FieldPipeline(0);
         if (USE_BACK) {
+            backPipeline = new FieldPipeline(1);
             initCameras(frontPipeline, backPipeline);
         } else {
             initCameras(frontPipeline);
         }
 
+        frontPipeline = new FieldPipeline(0);
 
-        waitForStart();
-        telemetry.clear();
-        if (opModeIsActive()) {
-            int startPropPos = frontPipeline.spikeMark;
-            //transferPixel(drive, 1, startPropPos, true);
+        if (USE_DRIVE) {
+            for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
+                STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
+                        .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
+                        .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
+                        .build();
 
-            while (opModeIsActive()) {
-                localizer.update();
-                // Add trajectories with drive.followTrajectory
-                tagTelemetry(currentDetections);
+                // Note, the robot turns 180 degrees before moving to the backdrop
 
-                //telemetry.addData("Position: ", String.format("x: %.2f, y: %.2f, h: %.2f", localizer.poseEstimate.getX(),localizer.poseEstimate.getY(), localizer.poseEstimate.getHeading()));
-                //telemetry.addLine("Running!");
-                // Push telemetry to the Driver Station.
-                //telemetry.update();
-
-                // Save CPU resources; can resume streaming when needed.
-                if (gamepad1.dpad_down) {
-                    localizer.visionPortal.stopStreaming();
-                } else if (gamepad1.dpad_up) {
-                    localizer.visionPortal.resumeStreaming();
-                }
-
-                if (isStopRequested()) {// Save more CPU resources when camera is no longer needed.
-                    localizer.visionPortal.close();
-                    return;
-                }
-
-
-                // Share the CPU.
-                //sleep(SLEEP_TIME);
+                PIXEL_TO_BACKDROP[i] = drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
+                        .strafeTo(BACKDROP_LOCATION.vec())
+                        .build();
             }
+
+            TILE_TO_BACKDROP = drive.trajectoryBuilder(TILE_LOCATION)
+                    .strafeTo(INTER_POINT.vec())
+                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
+                    .build();
+
+            BACKDROP_TO_TILE = drive.trajectoryBuilder(TILE_LOCATION, true)
+                    .strafeTo(INTER_POINT.vec())
+                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
+                    .build();
         }
+        telemetry.clear();
     }
 
     private void initCameras(OpenCvPipeline frontPipeline) {
@@ -258,8 +211,9 @@ public class AprilTagRoadRunner extends LinearOpMode {
                         /*
                          * This will be called if the camera could not be opened
                          */
-                        telemetry.addLine("Front camera could not be opened.");
-                        telemetry.update();
+                        if (TELEMETRY_GIVEN) {
+                            telemetry.addLine("Front camera could not be opened.");
+                        }
                     }
                 }
         );
@@ -299,8 +253,9 @@ public class AprilTagRoadRunner extends LinearOpMode {
                         /*
                          * This will be called if the camera could not be opened
                          */
-                        telemetry.addLine("Front camera could not be opened.");
-                        telemetry.update();
+                        if (TELEMETRY_GIVEN) {
+                            telemetry.addLine("Front camera could not be opened.");
+                        }
                     }
                 }
         );
@@ -318,29 +273,53 @@ public class AprilTagRoadRunner extends LinearOpMode {
                         /*
                          * This will be called if the camera could not be opened
                          */
-                        telemetry.addLine("Back camera could not be opened.");
-                        telemetry.update();
+                        if (TELEMETRY_GIVEN) {
+                            telemetry.addLine("Back camera could not be opened.");
+                        }
                     }
                 }
         );
     }
 
-    @SuppressLint("DefaultLocale")
-    public void tagTelemetry(List<AprilTagDetection> detections) {
-        for (AprilTagDetection detection : detections) {
-            if (detection.metadata != null) {
-                telemetry.addLine(String.format("XYZ %6.3f %6.3f %6.3f  (meter)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
-                telemetry.addLine(String.format("PRY %6.3f %6.3f %6.3f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
-                telemetry.addLine(String.format("RBE %6.3f %6.3f %6.3f  (meter, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
-            } else {
-                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
-                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
-            }
-        }
-        telemetry.update();
+    public void update() {
+        localizer.update();
+        tagTelemetry(localizer.currentDetections);
     }
 
-    public void transferPixel(SampleMecanumDrive drive, int pixelColour, int pixelSlot, boolean fromTile) {
+    public void update(Gamepad gamepad1) {
+        localizer.update();
+        tagTelemetry(localizer.currentDetections);
+        if (gamepad1.dpad_down) {
+            localizer.visionPortal.stopStreaming();
+        } else if (gamepad1.dpad_up) {
+            localizer.visionPortal.resumeStreaming();
+        }
+    }
+
+    public void stop() {
+        localizer.visionPortal.close();
+    }
+    @SuppressLint("DefaultLocale")
+    public void tagTelemetry(List<AprilTagDetection> detections) {
+        if (TELEMETRY_GIVEN) {
+            for (AprilTagDetection detection : detections) {
+                if (detection.metadata != null) {
+                    telemetry.addLine(String.format("XYZ %6.3f %6.3f %6.3f  (meter)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                    telemetry.addLine(String.format("PRY %6.3f %6.3f %6.3f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                    telemetry.addLine(String.format("RBE %6.3f %6.3f %6.3f  (meter, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+                } else {
+                    telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+                    telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+                }
+            }
+            telemetry.update();
+        }
+    }
+
+    public void initTask(int pixelColour) {
+        transferPixel(pixelColour, frontPipeline.spikeMark, true);
+    }
+    public void transferPixel(int pixelColour, int pixelSlot, boolean fromTile) {
         //activateIntake()
         //wait until desired pixel is in the slot
         if (fromTile) {
