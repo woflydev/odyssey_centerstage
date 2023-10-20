@@ -55,6 +55,7 @@ public class NewRobot_v8_DriveBaseTest_v1 extends Robotv8_Fullstack {
 
     public void loop() {
         Mecanum();
+        //Add drive.followTrajectory stuff here
 
         if (gamepad1.start) {
             imu.resetYaw();

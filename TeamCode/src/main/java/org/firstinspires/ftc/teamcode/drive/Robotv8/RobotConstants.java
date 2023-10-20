@@ -61,4 +61,6 @@ public class RobotConstants {
     public static final double TAG_HEIGHT = 0.12;
 
     public static final double PIXEL_SPACE = 0.05;
+
+    public static final double ROAD_RUNNER_SCALE = 72 / (FIELD_LENGTH / 2);
 }

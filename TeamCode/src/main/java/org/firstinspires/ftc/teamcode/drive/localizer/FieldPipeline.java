@@ -64,6 +64,11 @@ public class FieldPipeline extends OpenCvPipeline {
     public static int SCREEN_WIDTH = 1080;
     public static int SCREEN_HEIGHT = 720;
 
+    public static float BACKDROP_Z_OFFSET = 0.18f;
+    public static float PIXEL_HEIGHT = 0.1f;
+
+    public Pixel.Backdrop backdrop = null;
+
     public int spikeMark;
 
     public int mode;
@@ -74,6 +79,7 @@ public class FieldPipeline extends OpenCvPipeline {
 
     public Mat processFrame (Mat input) {
         spikeMark = propLocation(input);
+        backdrop = new Pixel.Backdrop(recognisePixels(input));
         return input;
     }
 
