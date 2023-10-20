@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import android.annotation.SuppressLint;
 
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -10,6 +12,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -19,33 +23,14 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.List;
 
 public class NewRobot_v9_Abstract {
-    private static final boolean USE_VIEWPORT = true;
-    private static final boolean USE_DRIVE = false;
-    private static final boolean USE_BACK = false;
-
-    public static String FRONT_CAMERA = "Webcam 1";
-    public static String BACK_CAMERA = "Webcam 2";
-
-    private static double FIELD_LENGTH = 3.58;
-    private static double CAMERA_HEIGHT = 0.313;
-    private static double WALL_TAG_X = 1.005;
-    private static double SMALL_WALL_TAG_X = 0.9;
-
-    private static double BACKDROP_DEPTH = 1.55;
-    private static double TAG_HEIGHT = 0.12;
-
-    private static double PIXEL_SPACE = 0.05;
-
     // Z-angle
     private static double YAW_ANGLE = 0;
-
     private static int ACQUISITION_TIME = 10;
-
     private static int SLEEP_TIME = 20;
 
     public static Pose2d TILE_LOCATION = new Pose2d(1.62, 0.89, Math.PI);
     public static Pose2d[] PIXEL_LOCATIONS = {
-            new Pose2d(0.2, - FIELD_LENGTH / 2 + PIXEL_SPACE, - Math.PI / 2),
+            new Pose2d(0.2, - RobotConstants.FIELD_LENGTH / 2 + RobotConstants.PIXEL_SPACE, - Math.PI / 2),
             new Pose2d(),
             new Pose2d(),
             new Pose2d()
@@ -57,7 +42,7 @@ public class NewRobot_v9_Abstract {
 
 
     // Location of the robot when it is about to drop a pixel on the leftmost slot
-    public static Pose2d BACKDROP_LOCATION = new Pose2d(-0.88, BACKDROP_DEPTH, Math.PI / 2);
+    public static Pose2d BACKDROP_LOCATION = new Pose2d(-0.88, RobotConstants.BACKDROP_DEPTH, Math.PI / 2);
 
     public Trajectory[] PIXEL_TO_BACKDROP = new Trajectory[PIXEL_LOCATIONS.length];
 
@@ -81,20 +66,20 @@ public class NewRobot_v9_Abstract {
         TELEMETRY_GIVEN = false;
         //telemetry.addLine("Initialising...");
 
-        if (USE_DRIVE) {
+        if (RobotConstants.USE_DRIVE) {
             drive = new SampleMecanumDrive(hardwareMap);
         }
-        localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
+        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
         //telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         //telemetry.addData(">", "Touch Play to start OpMode");
 
         localizer.update();
-        if (!localizer.isBlind && USE_DRIVE) {
+        if (!localizer.isBlind && RobotConstants.USE_DRIVE) {
             drive.setPoseEstimate(localizer.poseEstimate);
         }
         frontPipeline = new FieldPipeline(0);
-        if (USE_BACK) {
+        if (RobotConstants.USE_BACK) {
             backPipeline = new FieldPipeline(1);
             initCameras(frontPipeline, backPipeline);
         } else {
@@ -103,7 +88,7 @@ public class NewRobot_v9_Abstract {
 
         frontPipeline = new FieldPipeline(0);
 
-        if (USE_DRIVE) {
+        if (RobotConstants.USE_DRIVE) {
             for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
                 STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
                         .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
@@ -135,20 +120,20 @@ public class NewRobot_v9_Abstract {
         TELEMETRY_GIVEN = true;
         telemetry.addLine("Initialising...");
 
-        if (USE_DRIVE) {
+        if (RobotConstants.USE_DRIVE) {
             drive = new SampleMecanumDrive(hardwareMap);
         }
-        localizer = new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
+        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch Play to start OpMode");
 
         localizer.update();
-        if (!localizer.isBlind && USE_DRIVE) {
+        if (!localizer.isBlind && RobotConstants.USE_DRIVE) {
             drive.setPoseEstimate(localizer.poseEstimate);
         }
         frontPipeline = new FieldPipeline(0);
-        if (USE_BACK) {
+        if (RobotConstants.USE_BACK) {
             backPipeline = new FieldPipeline(1);
             initCameras(frontPipeline, backPipeline);
         } else {
@@ -157,7 +142,7 @@ public class NewRobot_v9_Abstract {
 
         frontPipeline = new FieldPipeline(0);
 
-        if (USE_DRIVE) {
+        if (RobotConstants.USE_DRIVE) {
             for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
                 STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
                         .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
@@ -185,15 +170,15 @@ public class NewRobot_v9_Abstract {
     }
 
     private void initCameras(OpenCvPipeline frontPipeline) {
-        if (USE_VIEWPORT) {
+        if (RobotConstants.USE_VIEWPORT) {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
             frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, FRONT_CAMERA),
+                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
                     cameraMonitorViewId
             );
         } else {
             frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, FRONT_CAMERA)
+                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA)
             );
         }
 
@@ -220,22 +205,22 @@ public class NewRobot_v9_Abstract {
     }
 
     private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
-        if (USE_VIEWPORT) {
+        if (RobotConstants.USE_VIEWPORT) {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
             frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, FRONT_CAMERA),
+                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
                     cameraMonitorViewId
             );
             backCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, BACK_CAMERA),
+                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA),
                     cameraMonitorViewId
             );
         } else {
             frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, FRONT_CAMERA)
+                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA)
             );
             backCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, BACK_CAMERA)
+                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA)
             );
         }
 

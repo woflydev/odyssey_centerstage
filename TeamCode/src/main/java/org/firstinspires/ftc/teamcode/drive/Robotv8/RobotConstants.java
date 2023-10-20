@@ -14,6 +14,8 @@ public class RobotConstants {
     public static final String SERVO_ELBOW_L = "elbowL";
     public static final String SERVO_ELBOW_R = "elbowR";
     public static final String HUB_IMU = "imu";
+    public static final String FRONT_CAMERA = "Webcam 1";
+    public static final String BACK_CAMERA = "Webcam 2";
 
     public static final int MAX_OUTTAKE_HEIGHT = 3200;
     public static final int MIN_OUTTAKE_HEIGHT = 0;
@@ -43,4 +45,20 @@ public class RobotConstants {
     public static final int JUNCTION_LOW = 1300;
     public static final int JUNCTION_MID = 2200;
     public static final int JUNCTION_HIGH = 3100;
+
+    // -------------------------------------------------------------- VISION
+
+    public static final boolean USE_VIEWPORT = true;
+    public static final boolean USE_DRIVE = false;
+    public static final boolean USE_BACK = false;
+
+    public static final double FIELD_LENGTH = 3.58;
+    public static final double CAMERA_HEIGHT = 0.313;
+    public static final double WALL_TAG_X = 1.005;
+    public static final double SMALL_WALL_TAG_X = 0.9;
+
+    public static final double BACKDROP_DEPTH = 1.55;
+    public static final double TAG_HEIGHT = 0.12;
+
+    public static final double PIXEL_SPACE = 0.05;
 }
