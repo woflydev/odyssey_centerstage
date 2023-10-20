@@ -4,8 +4,8 @@ import static java.lang.Thread.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.CameraLocalizer;
-import org.firstinspires.ftc.teamcode.drive.FieldPipeline;
+import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
@@ -20,13 +20,9 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -38,7 +34,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 
 @TeleOp(name = "Concept: TeleOpPrototypeV1", group = "Concept")
-public class NewRobot_v8_AutoTeleOp_V1 extends Robotv8_Fullstack {
+public class NewRobot_v8_AutoTeleOp_Draft extends Robotv8_Fullstack {
 
     private static final boolean USE_VIEWPORT = true;
 

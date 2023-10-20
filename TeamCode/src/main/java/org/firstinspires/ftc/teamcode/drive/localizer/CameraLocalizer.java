@@ -258,7 +258,7 @@ public class CameraLocalizer implements Localizer {
         ArrayList<VectorF> normals = new ArrayList<VectorF>();
         //ArrayList<VectorF> positions = new ArrayList<VectorF>();
 
-        tagTelemetry(currentDetections, this.t);
+        //tagTelemetry(currentDetections, this.t);
         // Step through the list of detections and display info for each one.
         for (AprilTagDetection detection : currentDetections) {
             if (detection.metadata != null) {
@@ -339,18 +339,10 @@ public class CameraLocalizer implements Localizer {
 
         Pose2d currentPose = new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
         //int index = 0;
-        if (this.TELEMETRY_GIVEN) {
+        /*if (this.TELEMETRY_GIVEN) {
             this.t.addData("Position: ",  currentPose);
-            /*this.t.addLine();
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
-                    this.t.addLine(String.format("Id: %d, X: %.3f m, Y: %.3f m, Range: %.3f m", detection.metadata.id, normals.get(index).get(0), normals.get(index).get(1),
-                            currentPosition.subtracted(detection.metadata.fieldPosition).magnitude()));
-                    index++;
-                }
-            }*/
             this.t.update();
-        }
+        }*/
         return currentPose;
     }
 

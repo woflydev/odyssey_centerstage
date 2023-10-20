@@ -10,6 +10,9 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
+
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
@@ -59,12 +62,13 @@ public class NewRobot_v9_Abstract {
     private Telemetry telemetry;
     private boolean TELEMETRY_GIVEN;
 
-    private SampleMecanumDrive drive;
-    private CameraLocalizer localizer;
+    public SampleMecanumDrive drive;
+    public CameraLocalizer localizer;
 
-    public NewRobot_v9_Abstract() {
+    public NewRobot_v9_Abstract(HardwareMap map) {
         TELEMETRY_GIVEN = false;
         //telemetry.addLine("Initialising...");
+        hardwareMap = map;
 
         if (RobotConstants.USE_DRIVE) {
             drive = new SampleMecanumDrive(hardwareMap);
@@ -115,8 +119,9 @@ public class NewRobot_v9_Abstract {
         //telemetry.clear();
     }
 
-    public NewRobot_v9_Abstract(Telemetry t) {
+    public NewRobot_v9_Abstract(HardwareMap map, Telemetry t) {
         telemetry = t;
+        hardwareMap = map;
         TELEMETRY_GIVEN = true;
         telemetry.addLine("Initialising...");
 
@@ -269,6 +274,10 @@ public class NewRobot_v9_Abstract {
     public void update() {
         localizer.update();
         tagTelemetry(localizer.currentDetections);
+        if (TELEMETRY_GIVEN) {
+            telemetry.addData("Pose: ", localizer.getPoseEstimate());
+            telemetry.update();
+        }
     }
 
     public void update(Gamepad gamepad1) {
