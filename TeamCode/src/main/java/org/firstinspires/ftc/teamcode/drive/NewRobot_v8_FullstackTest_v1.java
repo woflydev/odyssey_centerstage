@@ -135,8 +135,8 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
             armL.setTargetPosition(10);
             targetOuttakePosition = 10;
             armRuntime.reset();
-            armR.setVelocity(2800);
-            armL.setVelocity(2800);
+            armR.setVelocity(500);
+            armL.setVelocity(500);
             /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
                 armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
 
@@ -158,8 +158,8 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
             armR.setTargetPosition(targetOuttakePosition);
             armL.setTargetPosition(targetOuttakePosition);
             armRuntime.reset();
-            armR.setVelocity(2800);
-            armL.setVelocity(2800); // velocity used to be 1800, could be faster
+            armR.setVelocity(500);
+            armL.setVelocity(500); // velocity used to be 1800, could be faster
         }
     }
 
@@ -174,7 +174,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
     public void loop() {
         PassiveArmResetCheck();
         RuntimeConfig();
-        Macros();
+        //Macros();
 
         // TELEMETRY
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
