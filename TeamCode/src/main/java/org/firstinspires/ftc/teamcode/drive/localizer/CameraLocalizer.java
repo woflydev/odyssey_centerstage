@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.drive.localizer;
 import android.annotation.SuppressLint;
 import android.util.Size;
 
+import com.acmerobotics.roadrunner.drive.Drive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -25,6 +26,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 
 public class CameraLocalizer implements Localizer {
     public Pose2d poseEstimate;
@@ -54,59 +56,62 @@ public class CameraLocalizer implements Localizer {
      */
     public VisionPortal visionPortal;
 
-    private static double FIELD_LENGTH = 3.58;
-    private static double WALL_TAG_X = 1.005;
-    private static double SMALL_WALL_TAG_X = 0.9;
-
-    private static double BACKDROP_DEPTH = 1.55;
-    private static double TAG_HEIGHT = 0.12;
-
-    private static double PIXEL_SPACE = 0.05;
-
     private static int ACQUISITION_TIME = 10;
 
     // This assumes the april tag starts facing along the y-axis, may change later
     public static AprilTagMetadata[] tagArray = {
             new AprilTagMetadata(7, "Back 1", 0.127,
-                    new VectorF((float) - WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
+                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float) -RobotConstants.WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(Math.PI / 2), 0, 0,
                     (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(10, "Back 2", 0.127,
-                    new VectorF((float) WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
+                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float) RobotConstants.WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(Math.PI / 2), 0, 0,
                     (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
             ),
             new AprilTagMetadata(8, "Back 1a", 0.1,
-                    new VectorF((float)-SMALL_WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
+                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float)-RobotConstants.SMALL_WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(Math.PI / 2), 0, 0,
                     (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
             ),
             new AprilTagMetadata(11, "Back 2a", 0.1,
-                    new VectorF((float)SMALL_WALL_TAG_X, (float) - FIELD_LENGTH / 2, (float) CAMERA_HEIGHT),
+                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float)RobotConstants.SMALL_WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(Math.PI / 2), 0, 0,
                     (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(1, "Backdrop 1", 0.05,
-                    new VectorF(-1.003F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
+                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, (float) 1.003F, (float) RobotConstants.TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
+                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(2, "Backdrop 2", 0.05,
-                    new VectorF(-0.88F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
+                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, 0.88F, (float) RobotConstants.TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
+                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(3, "Backdrop 3", 0.05,
-                    new VectorF(-0.74F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
+                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, 0.74F, (float) RobotConstants.TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
+                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(4, "Backdrop 4", 0.05,
-                    new VectorF(0.75F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
+                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, -0.75F, (float) RobotConstants.TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
+                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(5, "Backdrop 5", 0.05,
-                    new VectorF(0.9F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion()),
+                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, -0.9F, (float) RobotConstants.TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
+                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(6, "Backdrop 6", 0.05,
-                    new VectorF(1.05F, (float) BACKDROP_DEPTH, (float) TAG_HEIGHT),
-                    DistanceUnit.METER, Quaternion.identityQuaternion())
+                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, -1.05F, (float) RobotConstants.TAG_HEIGHT),
+                    DistanceUnit.METER, new Quaternion(
+                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
+                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME))
     };
 
     private int AVERAGE_LENGTH = 3;

@@ -10,6 +10,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 
@@ -31,21 +32,25 @@ public class NewRobot_v9_Abstract {
     private static int ACQUISITION_TIME = 10;
     private static int SLEEP_TIME = 20;
 
-    public static Pose2d TILE_LOCATION = new Pose2d(1.62, 0.89, Math.PI);
+    public static boolean PLAYING_BLUE = true;
+
+    public static Pose2d TILE_LOCATION = new Pose2d(-0.89,  -1.62 * (PLAYING_BLUE ? 1 : -1), 0).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
     public static Pose2d[] PIXEL_LOCATIONS = {
-            new Pose2d(0.2, - RobotConstants.FIELD_LENGTH / 2 + RobotConstants.PIXEL_SPACE, - Math.PI / 2),
+            new Pose2d(- RobotConstants.FIELD_LENGTH / 2 + RobotConstants.PIXEL_SPACE, -0.2, - Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE),
             new Pose2d(),
             new Pose2d(),
             new Pose2d()
     };
 
-    public static Pose2d INTER_POINT = new Pose2d(-0.87, 0.89, Math.PI / 2);
+
+    public static Pose2d INTER_POINT = new Pose2d(-0.87, 0.89 * (PLAYING_BLUE ? 1 : -1), -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
 
     public Trajectory[] STRIPE_TO_PIXEL = new Trajectory[PIXEL_LOCATIONS.length];
 
 
     // Location of the robot when it is about to drop a pixel on the leftmost slot
-    public static Pose2d BACKDROP_LOCATION = new Pose2d(-0.88, RobotConstants.BACKDROP_DEPTH, Math.PI / 2);
+    public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
+    public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
 
     public Trajectory[] PIXEL_TO_BACKDROP = new Trajectory[PIXEL_LOCATIONS.length];
 
@@ -61,8 +66,7 @@ public class NewRobot_v9_Abstract {
 
     private Telemetry telemetry;
     private boolean TELEMETRY_GIVEN;
-
-    public SampleMecanumDrive drive;
+    public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
 
     public NewRobot_v9_Abstract(HardwareMap map) {
@@ -71,7 +75,7 @@ public class NewRobot_v9_Abstract {
         hardwareMap = map;
 
         if (RobotConstants.USE_DRIVE) {
-            drive = new SampleMecanumDrive(hardwareMap);
+            stack = new Robotv8_Fullstack();
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
@@ -80,7 +84,7 @@ public class NewRobot_v9_Abstract {
 
         localizer.update();
         if (!localizer.isBlind && RobotConstants.USE_DRIVE) {
-            drive.setPoseEstimate(localizer.poseEstimate);
+            stack.drive.setPoseEstimate(localizer.poseEstimate);
         }
         frontPipeline = new FieldPipeline(0);
         if (RobotConstants.USE_BACK) {
@@ -94,26 +98,26 @@ public class NewRobot_v9_Abstract {
 
         if (RobotConstants.USE_DRIVE) {
             for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
-                STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
+                STRIPE_TO_PIXEL[i] = stack.drive.trajectoryBuilder(TILE_LOCATION)
                         .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
                         .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
                         .build();
 
                 // Note, the robot turns 180 degrees before moving to the backdrop
 
-                PIXEL_TO_BACKDROP[i] = drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
-                        .strafeTo(BACKDROP_LOCATION.vec())
+                PIXEL_TO_BACKDROP[i] = stack.drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
+                        .strafeTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec())
                         .build();
             }
 
-            TILE_TO_BACKDROP = drive.trajectoryBuilder(TILE_LOCATION)
+            TILE_TO_BACKDROP = stack.drive.trajectoryBuilder(TILE_LOCATION)
                     .strafeTo(INTER_POINT.vec())
-                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
+                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
                     .build();
 
-            BACKDROP_TO_TILE = drive.trajectoryBuilder(TILE_LOCATION, true)
+            BACKDROP_TO_TILE = stack.drive.trajectoryBuilder(TILE_LOCATION, true)
                     .strafeTo(INTER_POINT.vec())
-                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
+                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
                     .build();
         }
         //telemetry.clear();
@@ -126,7 +130,7 @@ public class NewRobot_v9_Abstract {
         telemetry.addLine("Initialising...");
 
         if (RobotConstants.USE_DRIVE) {
-            drive = new SampleMecanumDrive(hardwareMap);
+            stack = new Robotv8_Fullstack();
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
@@ -135,7 +139,7 @@ public class NewRobot_v9_Abstract {
 
         localizer.update();
         if (!localizer.isBlind && RobotConstants.USE_DRIVE) {
-            drive.setPoseEstimate(localizer.poseEstimate);
+            stack.drive.setPoseEstimate(localizer.poseEstimate);
         }
         frontPipeline = new FieldPipeline(0);
         if (RobotConstants.USE_BACK) {
@@ -149,26 +153,26 @@ public class NewRobot_v9_Abstract {
 
         if (RobotConstants.USE_DRIVE) {
             for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
-                STRIPE_TO_PIXEL[i] = drive.trajectoryBuilder(TILE_LOCATION)
+                STRIPE_TO_PIXEL[i] = stack.drive.trajectoryBuilder(TILE_LOCATION)
                         .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
                         .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
                         .build();
 
                 // Note, the robot turns 180 degrees before moving to the backdrop
 
-                PIXEL_TO_BACKDROP[i] = drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
-                        .strafeTo(BACKDROP_LOCATION.vec())
+                PIXEL_TO_BACKDROP[i] = stack.drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
+                        .strafeTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec())
                         .build();
             }
 
-            TILE_TO_BACKDROP = drive.trajectoryBuilder(TILE_LOCATION)
+            TILE_TO_BACKDROP = stack.drive.trajectoryBuilder(TILE_LOCATION)
                     .strafeTo(INTER_POINT.vec())
-                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
+                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
                     .build();
 
-            BACKDROP_TO_TILE = drive.trajectoryBuilder(TILE_LOCATION, true)
+            BACKDROP_TO_TILE = stack.drive.trajectoryBuilder(TILE_LOCATION, true)
                     .strafeTo(INTER_POINT.vec())
-                    .splineTo(BACKDROP_LOCATION.vec(), BACKDROP_LOCATION.minus(INTER_POINT).getHeading())
+                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
                     .build();
         }
         telemetry.clear();
@@ -317,16 +321,17 @@ public class NewRobot_v9_Abstract {
         //activateIntake()
         //wait until desired pixel is in the slot
         if (fromTile) {
-            drive.followTrajectory(TILE_TO_BACKDROP);
+            stack.drive.followTrajectory(TILE_TO_BACKDROP);
         } else {
-            drive.followTrajectory(PIXEL_TO_BACKDROP[pixelColour]);
+            stack.drive.followTrajectory(PIXEL_TO_BACKDROP[pixelColour]);
         }
 
-        drive.followTrajectory(
-                drive.trajectoryBuilder(BACKDROP_LOCATION)
-                        .strafeTo(BACKDROP_LOCATION.vec().plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
+        stack.drive.followTrajectory(
+                stack.drive.trajectoryBuilder(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION)
+                        .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
                         .build()
         );
-        //dropOnBackdrop()
+        stack.GrabAndDeposit((int) (frontPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
+
     }
 }
