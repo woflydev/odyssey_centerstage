@@ -71,6 +71,12 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
                 }
                 Delay(250);
             }
+
+            if (gamepad1.dpad_up) {
+                intake.setPower(0.5);
+            } else {
+                intake.setPower(0);
+            }
         }
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
@@ -164,7 +170,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
     }
 
     private void PassiveArmResetCheck() {
-        if ((armL.getCurrentPosition() <= 15 && armR.getCurrentPosition() <= 15) && targetOuttakePosition <= 30) {
+        if ((armL.getCurrentPosition() <= 30 && armR.getCurrentPosition() <= 30) && targetOuttakePosition <= 30) {
             armR.setVelocity(0);
             armL.setVelocity(0);
             resetTimer.reset();

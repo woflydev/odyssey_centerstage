@@ -9,10 +9,12 @@ public class RobotConstants {
     public static final String BACK_RIGHT = "backR";
     public static final String ARM_R = "armR";
     public static final String ARM_L = "armL";
+    public static final String INTAKE_MOTOR = "intake";
     public static final String SERVO_CLAW = "claw";
     public static final String SERVO_WRIST = "wrist";
     public static final String SERVO_ELBOW_L = "elbowL";
     public static final String SERVO_ELBOW_R = "elbowR";
+    public static final String SERVO_PLANE = "plane";
     public static final String HUB_IMU = "imu";
     public static final String FRONT_CAMERA = "Webcam 1";
     public static final String BACK_CAMERA = "Webcam 2";
@@ -23,16 +25,16 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double CLAW_CLOSE = 0.15;
-    public static final double CLAW_OPEN = 0.28;
-    public static final double WRIST_PICKUP = 0.86;
-    public static final double WRIST_STANDBY = 0.5;
-    public static final double WRIST_ACTIVE = 0.28;
-    public static final double ELBOW_PICKUP = 0.2;
-    public static final double ELBOW_STANDBY = 0.06;
-    public static final double ELBOW_ACTIVE = 0.5;
+    public static final double CLAW_CLOSE = 0.47;
+    public static final double CLAW_OPEN = 0.6;
+    public static final double WRIST_PICKUP = 0.65;
+    public static final double WRIST_STANDBY = 0.94;
+    public static final double WRIST_ACTIVE = 0.22;
+    public static final double ELBOW_PICKUP = 0.12;
+    public static final double ELBOW_STANDBY = 0.15;
+    public static final double ELBOW_ACTIVE = 0.54;
     public static final double PLANE_STANDBY = 0.1;
-    public static final double PLANE_ACTIVE = 0.35;
+    public static final double PLANE_ACTIVE = 0.0;
 
     public static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
     public static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed

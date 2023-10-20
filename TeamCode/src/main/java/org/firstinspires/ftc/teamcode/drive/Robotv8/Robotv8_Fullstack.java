@@ -32,6 +32,7 @@ public class Robotv8_Fullstack extends OpMode {
     public DcMotorEx armR = null;
     public DcMotorEx armL = null;
     public IMU imu = null;
+    public DcMotorEx intake = null;
 
     public final ElapsedTime encoderRuntime = new ElapsedTime();
     public final ElapsedTime armRuntime = new ElapsedTime();
@@ -90,6 +91,7 @@ public class Robotv8_Fullstack extends OpMode {
 
         frontLM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_LEFT);
         frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT); //frontRM.setDirection(DcMotorSimple.Direction.REVERSE); // weird workaround Stanley put in
+        intake = hardwareMap.get(DcMotorEx.class, RobotConstants.INTAKE_MOTOR);
 
         backLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -109,8 +111,8 @@ public class Robotv8_Fullstack extends OpMode {
         frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
         backRM.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        /*armR = hardwareMap.get(DcMotorEx.class, "armR");
-        armL = hardwareMap.get(DcMotorEx.class, "armL");
+        armR = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_R);
+        armL = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_L);
 
         armR.setDirection(DcMotorSimple.Direction.REVERSE);
         armL.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -121,11 +123,11 @@ public class Robotv8_Fullstack extends OpMode {
         armR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        servoElbowR = hardwareMap.get(Servo.class, "elbowR");
-        servoElbowL = hardwareMap.get(Servo.class, "elbowL");
-        servoClaw = hardwareMap.get(Servo.class, "claw");
-        servoWrist = hardwareMap.get(Servo.class, "wrist");
-        servoPlane = hardwareMap.get(Servo.class, "plane");
+        servoElbowR = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_R);
+        servoElbowL = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_L);
+        servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
+        servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
+        servoPlane = hardwareMap.get(Servo.class, RobotConstants.SERVO_PLANE);
 
         clawOpen = true;
         wristActive = false;
@@ -143,7 +145,7 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.update();
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
+                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                 RevHubOrientationOnRobot.UsbFacingDirection.UP
         ));
 
