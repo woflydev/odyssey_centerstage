@@ -11,7 +11,7 @@ public class NewRobot_v9_TeleOp extends Robotv8_Fullstack {
     public void init() {
         telemetry.addLine("Initialising...");
         telemetry.update();
-        handler = new NewRobot_v8_Abstract(hardwareMap, telemetry);
+        handler = new NewRobot_v8_Abstract(this, hardwareMap, telemetry);
         telemetry.addLine("Press Play to begin TeleOp: ");
         telemetry.update();
     }

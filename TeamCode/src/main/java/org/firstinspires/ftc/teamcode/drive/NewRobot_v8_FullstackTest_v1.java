@@ -16,7 +16,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
     public void init() {
         telemetry.addLine("Initialising...");
         telemetry.update();
-        handler = new NewRobot_v8_Abstract(hardwareMap, telemetry);
+        handler = new NewRobot_v8_Abstract(this, hardwareMap, telemetry);
         telemetry.addData(">", "Touch Play to start OpMode");
         telemetry.update();
     }

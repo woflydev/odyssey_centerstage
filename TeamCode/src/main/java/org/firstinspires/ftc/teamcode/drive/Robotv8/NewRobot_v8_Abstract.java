@@ -65,13 +65,13 @@ public class NewRobot_v8_Abstract {
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
 
-    public NewRobot_v8_Abstract(HardwareMap map) {
+    public NewRobot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map) {
         TELEMETRY_GIVEN = false;
         //telemetry.addLine("Initialising...");
         hardwareMap = map;
 
         if (RobotConstants.USE_DRIVE) {
-            stack = new Robotv8_Fullstack();
+            stack = parentStack;
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
@@ -105,14 +105,14 @@ public class NewRobot_v8_Abstract {
         //telemetry.clear();
     }
 
-    public NewRobot_v8_Abstract(HardwareMap map, Telemetry t) {
+    public NewRobot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
         telemetry = t;
         hardwareMap = map;
         TELEMETRY_GIVEN = true;
         telemetry.addLine("Initialising...");
 
         if (RobotConstants.USE_DRIVE) {
-            stack = new Robotv8_Fullstack();
+            stack = parentStack;
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
