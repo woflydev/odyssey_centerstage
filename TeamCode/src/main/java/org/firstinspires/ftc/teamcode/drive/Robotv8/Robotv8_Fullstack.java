@@ -301,18 +301,6 @@ public class Robotv8_Fullstack extends OpMode {
         }
     }
 
-    public void Macros() {
-        if (gamepad1.dpad_right && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.MAX_OUTTAKE_HEIGHT); // thi function handles both grab and deposit, but requires two presses for each process
-        } else if (gamepad1.dpad_down && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.JUNCTION_LOW);
-        } else if (gamepad1.dpad_left && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.JUNCTION_MID);
-        } else if (gamepad1.dpad_up && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.JUNCTION_HIGH);
-        }
-    }
-
     public void ArmStandby() {
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT;
@@ -447,6 +435,12 @@ public class Robotv8_Fullstack extends OpMode {
             drive.followTrajectory(handler.TILE_TO_BACKDROP);
         } else if (gamepad1.left_stick_button) {
             drive.followTrajectory(handler.BACKDROP_TO_TILE);
+        } else if (gamepad1.dpad_down && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_LOW);
+        } else if (gamepad1.dpad_left && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_MID);
+        } else if (gamepad1.dpad_up && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_HIGH);
         }
     }
 
@@ -521,9 +515,6 @@ public class Robotv8_Fullstack extends OpMode {
 
             List<Integer> lastTrackingEncPositions = new ArrayList<>();
             List<Integer> lastTrackingEncVels = new ArrayList<>();
-
-            // TODO: if desired, use setLocalizer() to change the localization method
-            setLocalizer(new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0)));
 
             trajectorySequenceRunner = new TrajectorySequenceRunner(
                     follower, HEADING_PID, batteryVoltageSensor,
