@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_TestingOpMode;
 
 @TeleOp()
-public class NewRobot_v8_TestingOpMode_v1 extends Robotv8_TestingOpMode {
+public class NewRobot_v8_HangOpMode_v1 extends Robotv8_TestingOpMode {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
@@ -34,6 +34,7 @@ public class NewRobot_v8_TestingOpMode_v1 extends Robotv8_TestingOpMode {
         }
     }
 
+    
     public void loop() {
         RuntimeConfig();
 

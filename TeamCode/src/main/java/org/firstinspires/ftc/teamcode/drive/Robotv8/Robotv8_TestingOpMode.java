@@ -71,11 +71,9 @@ public class Robotv8_TestingOpMode extends OpMode {
         return rot;
     }
 
-    public void MoveElbow() {
-        if (targetElbowPosition - 1 < 0) {
-            servoElbowR.setPosition(targetElbowPosition);
-            servoElbowL.setPosition(Math.abs(targetElbowPosition - 1)); // servos are mounted facing each other
-        }
+    public void MoveElbow(double targetPos) {
+        servoElbowR.setPosition(targetPos);
+        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
         Delay(50);
     }
 
@@ -89,6 +87,11 @@ public class Robotv8_TestingOpMode extends OpMode {
         servoHangL = hardwareMap.get(CRServo.class, "hangL");
         servoHangL.setDirection(DcMotorSimple.Direction.REVERSE);
         servoHangL.setPower(0);
+
+        servoElbowR = hardwareMap.get(Servo.class, "elbowR");
+        servoElbowL = hardwareMap.get(Servo.class, "elbowL");
+        MoveElbow(RobotConstants.ELBOW_ACTIVE);
+
 
         // -------------------------------------------------------------- IMU INIT
 
