@@ -59,6 +59,8 @@ import java.util.List;
 
 @TeleOp()
 public class Robotv8_Fullstack extends OpMode {
+    public NewRobot_v8_Abstract handler;
+
     public RobotState state = RobotState.IDLE;
 
     public DcMotorEx backLM = null;
@@ -205,6 +207,7 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.addData("Status", "INITIALIZING ROBOT...");    //
         telemetry.update();
 
+        handler = new NewRobot_v8_Abstract(this, hardwareMap, telemetry);
         InitializeBlock();
 
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");

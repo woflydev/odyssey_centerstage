@@ -22,6 +22,12 @@ public class NewRobot_v8_HangOpMode_v1 extends Robotv8_TestingOpMode {
             }
         }
 
+        if (gamepad1.left_trigger > 0.2) {
+            intake.setPower(gamepad1.left_trigger);
+        } else {
+            intake.setPower(0);
+        }
+
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
 
         if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
@@ -43,6 +49,7 @@ public class NewRobot_v8_HangOpMode_v1 extends Robotv8_TestingOpMode {
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
+        telemetry.addData("Intake Speed: ", gamepad1.left_trigger);
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");

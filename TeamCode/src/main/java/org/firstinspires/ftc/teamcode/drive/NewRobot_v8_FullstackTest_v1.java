@@ -10,17 +10,6 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 @TeleOp()
 public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
-
-    NewRobot_v8_Abstract handler;
-
-    public void init() {
-        telemetry.addLine("Initialising...");
-        telemetry.update();
-        handler = new NewRobot_v8_Abstract(this, hardwareMap, telemetry);
-        telemetry.addData(">", "Touch Play to start OpMode");
-        telemetry.update();
-    }
-
     public void loop() {
         PassiveArmResetCheck();
         RuntimeConfig();
