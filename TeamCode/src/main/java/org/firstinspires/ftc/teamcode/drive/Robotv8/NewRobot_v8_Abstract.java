@@ -20,6 +20,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.List;
+import java.util.function.Function;
 
 public class NewRobot_v8_Abstract {
     // Z-angle
@@ -40,7 +41,7 @@ public class NewRobot_v8_Abstract {
 
     public static Pose2d INTER_POINT = new Pose2d(-0.87, 0.89 * (PLAYING_BLUE ? 1 : -1), -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
 
-    public Trajectory[] STRIPE_TO_PIXEL = new Trajectory[PIXEL_LOCATIONS.length];
+    public Trajectory[] TILE_TO_PIXEL = new Trajectory[PIXEL_LOCATIONS.length];
 
 
     // Location of the robot when it is about to drop a pixel on the leftmost slot
@@ -92,28 +93,14 @@ public class NewRobot_v8_Abstract {
         frontPipeline = new FieldPipeline(0);
 
         if (RobotConstants.USE_DRIVE) {
-            for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
-                STRIPE_TO_PIXEL[i] = stack.drive.trajectoryBuilder(TILE_LOCATION)
-                        .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
-                        .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
-                        .build();
-
-                // Note, the robot turns 180 degrees before moving to the backdrop
-
-                PIXEL_TO_BACKDROP[i] = stack.drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
-                        .strafeTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec())
-                        .build();
+            for (int i = 0; i < TILE_TO_PIXEL.length; i++) {
+                TILE_TO_PIXEL[i] = path(TILE_LOCATION, PIXEL_LOCATIONS[i]);
+                PIXEL_TO_BACKDROP[i] = path(PIXEL_LOCATIONS[i], PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
             }
 
-            TILE_TO_BACKDROP = stack.drive.trajectoryBuilder(TILE_LOCATION)
-                    .strafeTo(INTER_POINT.vec())
-                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
-                    .build();
+            TILE_TO_BACKDROP = path(TILE_LOCATION, PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
 
-            BACKDROP_TO_TILE = stack.drive.trajectoryBuilder(TILE_LOCATION, true)
-                    .strafeTo(INTER_POINT.vec())
-                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
-                    .build();
+            BACKDROP_TO_TILE = path(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION, TILE_LOCATION);
         }
         //telemetry.clear();
     }
@@ -147,8 +134,8 @@ public class NewRobot_v8_Abstract {
         frontPipeline = new FieldPipeline(0);
 
         if (RobotConstants.USE_DRIVE) {
-            for (int i = 0; i < STRIPE_TO_PIXEL.length; i++) {
-                STRIPE_TO_PIXEL[i] = stack.drive.trajectoryBuilder(TILE_LOCATION)
+            for (int i = 0; i < TILE_TO_PIXEL.length; i++) {
+                TILE_TO_PIXEL[i] = stack.drive.trajectoryBuilder(TILE_LOCATION)
                         .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
                         .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
                         .build();
@@ -306,6 +293,32 @@ public class NewRobot_v8_Abstract {
                 }
             }
             telemetry.update();
+        }
+    }
+
+    public Trajectory path(Pose2d start, Pose2d end) {
+        // Same side of the truss
+        if (start.getX() * end.getX() >= 0) {
+            return stack.drive.trajectoryBuilder(start)
+                    .splineTo(end.vec(), end.getHeading())
+                    .build();
+        } else {
+            double avgY = (start.getY() + end.getY()) / 2;
+            Double[] diffY = RobotConstants.PATH_Y;
+            for (int i = 0; i < diffY.length; i++) {
+                diffY[i] = Math.abs(diffY[i] - avgY);
+            }
+
+            Function<Double, Double> cmpFn = (Double x) -> x;
+
+            double pathValue = RobotConstants.PATH_Y[FieldPipeline.maxOfArr(diffY, cmpFn, false)];
+            return stack.drive.trajectoryBuilder(start)
+                    .splineTo(new Vector2d(((start.getX() >= 0) ? 1 : -1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
+                            ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
+                    .splineTo(new Vector2d(((start.getX() >= 0) ? -1 : 1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
+                            ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
+                    .splineTo(end.vec(), end.getHeading())
+                    .build();
         }
     }
 

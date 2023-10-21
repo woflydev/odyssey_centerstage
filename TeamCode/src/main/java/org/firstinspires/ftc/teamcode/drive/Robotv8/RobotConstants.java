@@ -68,4 +68,10 @@ public class RobotConstants {
 
     public static final double INTAKE_POWER = 0.5;
     public static final double INTAKE_TIME = 1;
+
+    public static final double TRUSS_WIDTH = 0.69;
+
+    public static final Double[] PATH_Y = {-1.46, -0.83, 0d, 0.83, 1.46};
+
+    public static final double HEADING = Math.PI / 2;
 }
