@@ -10,10 +10,10 @@ public class NewRobot_v8_HangOpMode_v1 extends Robotv8_TestingOpMode {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            if (gamepad1.right_trigger >= 0.6) {
+            if (gamepad1.right_bumper) {
                 servoHangR.setPower(1);
                 servoHangL.setPower(1);
-            } else if (gamepad1.left_trigger >= 0.6) {
+            } else if (gamepad1.left_bumper) {
                 servoHangR.setPower(-1);
                 servoHangL.setPower(-1);
             } else {

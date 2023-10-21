@@ -58,9 +58,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TeleOp()
-public class Robotv8_Fullstack extends OpMode {
-    public NewRobot_v8_Abstract handler;
-
+public class Robotv8_FullstackTesting extends OpMode {
     public RobotState state = RobotState.IDLE;
 
     public DcMotorEx backLM = null;
@@ -190,7 +188,7 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.update();
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                RevHubOrientationOnRobot.LogoFacingDirection.LEFT,
                 RevHubOrientationOnRobot.UsbFacingDirection.UP
         ));
 
@@ -207,9 +205,6 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.addData("Status", "INITIALIZING ROBOT...");    //
         telemetry.update();
 
-        Delay(2000);
-
-        handler = new NewRobot_v8_Abstract(this, hardwareMap, telemetry);
         InitializeBlock();
 
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
@@ -219,6 +214,52 @@ public class Robotv8_Fullstack extends OpMode {
     public void loop() {
         // yes
     }
+
+    public void Mecanum() {
+        double frontLeftPower;
+        double backLeftPower;
+        double frontRightPower;
+        double backRightPower;
+
+        double yAxis;
+        double xAxis;
+        double rotateAxis;
+
+        int dir = fieldCentricRed ? 1 : -1;
+
+        // all negative when field centric red
+        yAxis = gamepad1.left_stick_y * dir;
+        xAxis = -gamepad1.left_stick_x * 1.1 * dir;
+        rotateAxis = -gamepad1.right_stick_x * dir;
+
+        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+        // Rotate the movement direction counter to the bot's rotation
+        double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
+        double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
+        frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
+        backLeftPower = (rotY - rotX + rotateAxis) / denominator;
+        frontRightPower = (rotY - rotX - rotateAxis) / denominator;
+        backRightPower = (rotY + rotX - rotateAxis) / denominator;
+
+        double stable_v1 = Stabilize(backLeftPower, current_v1);
+        double stable_v2 = Stabilize(frontRightPower, current_v2);
+        double stable_v3 = Stabilize(frontLeftPower, current_v3);
+        double stable_v4 = Stabilize(backRightPower, current_v4);
+
+        current_v1 = stable_v1;
+        current_v2 = stable_v2;
+        current_v3 = stable_v3;
+        current_v4 = stable_v4;
+
+        frontLM.setPower(stable_v3 / driveSpeedModifier);
+        frontRM.setPower(stable_v2 / driveSpeedModifier);
+        backLM.setPower(stable_v1 / driveSpeedModifier);
+        backRM.setPower(stable_v4 / driveSpeedModifier);
+    }
+
     public void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
@@ -416,9 +457,7 @@ public class Robotv8_Fullstack extends OpMode {
                 servoClaw.setPosition(RobotConstants.CLAW_OPEN);
             }
             Delay(200);
-        }
-
-        else if (gamepad1.dpad_right && gamepad1.left_bumper) {
+        } else if (gamepad1.dpad_right && gamepad1.left_bumper) {
             if (!transferStageDeployed) {
                 transferStageDeployed = true;
                 servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
@@ -443,13 +482,8 @@ public class Robotv8_Fullstack extends OpMode {
                 MoveElbow(RobotConstants.ELBOW_STANDBY);
                 servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
             }
-        } else if (gamepad1.right_stick_button) {
-            drive.followTrajectory(handler.TILE_TO_BACKDROP);
-        } else if (gamepad1.left_stick_button) {
-            drive.followTrajectory(handler.BACKDROP_TO_TILE);
         }
     }
-
     public static class AutoMecanumDrive extends MecanumDrive {
         public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
         public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
@@ -523,7 +557,7 @@ public class Robotv8_Fullstack extends OpMode {
             List<Integer> lastTrackingEncVels = new ArrayList<>();
 
             // TODO: if desired, use setLocalizer() to change the localization method
-            setLocalizer(new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0)));
+            //setLocalizer(new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0)));
 
             trajectorySequenceRunner = new TrajectorySequenceRunner(
                     follower, HEADING_PID, batteryVoltageSensor,

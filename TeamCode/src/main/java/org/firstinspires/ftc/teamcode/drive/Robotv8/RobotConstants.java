@@ -51,7 +51,7 @@ public class RobotConstants {
     // -------------------------------------------------------------- VISION
 
     public static final boolean USE_VIEWPORT = true;
-    public static final boolean USE_DRIVE = false;
+    public static final boolean USE_DRIVE = true;
     public static final boolean USE_BACK = false;
 
     public static final double FIELD_LENGTH = 3.58;
@@ -74,4 +74,6 @@ public class RobotConstants {
     public static final Double[] PATH_Y = {-1.46, -0.83, 0d, 0.83, 1.46};
 
     public static final double HEADING = Math.PI / 2;
+
+    public static final int SLIDE_SPEED = 4500;
 }

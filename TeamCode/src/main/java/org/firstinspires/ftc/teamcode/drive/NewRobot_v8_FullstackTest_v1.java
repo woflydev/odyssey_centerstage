@@ -7,12 +7,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.NewRobot_v8_Abstract;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
 
 @TeleOp()
-public class NewRobot_v8_FullstackTest_v1 extends Robotv8_Fullstack {
+public class NewRobot_v8_FullstackTest_v1 extends Robotv8_FullstackTesting {
     public void loop() {
         PassiveArmResetCheck();
         RuntimeConfig();
+        Mecanum();
         //Macros();
 
         // TELEMETRY

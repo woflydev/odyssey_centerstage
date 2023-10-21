@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.drive.localizer;
 import android.annotation.SuppressLint;
 import android.util.Size;
 
+import androidx.annotation.NonNull;
+
 import com.acmerobotics.roadrunner.drive.Drive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.localization.Localizer;
@@ -31,6 +33,8 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 public class CameraLocalizer implements Localizer {
     public Pose2d poseEstimate;
     public Pose2d lastEstimate;
+    public Pose2d poseVelocity;
+
     public HardwareMap hardwareMap;
     private static double CAMERA_HEIGHT = 0.313;
 
@@ -65,7 +69,7 @@ public class CameraLocalizer implements Localizer {
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(Math.PI / 2), 0, 0,
                     (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)),
-            new AprilTagMetadata(10, "Back 2", 0.127,
+            new AprilTagMetadata(9, "Back 2", 0.127,
                     new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float) RobotConstants.WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(Math.PI / 2), 0, 0,
@@ -77,7 +81,7 @@ public class CameraLocalizer implements Localizer {
                     (float) Math.cos(Math.PI / 2), 0, 0,
                     (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
             ),
-            new AprilTagMetadata(11, "Back 2a", 0.1,
+            new AprilTagMetadata(10, "Back 2a", 0.1,
                     new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float)RobotConstants.SMALL_WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
                     (float) Math.cos(Math.PI / 2), 0, 0,
@@ -136,6 +140,7 @@ public class CameraLocalizer implements Localizer {
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
 
+    @NonNull
     public Pose2d getPoseEstimate() {
         return this.poseEstimate;
     }
@@ -145,13 +150,14 @@ public class CameraLocalizer implements Localizer {
     }
 
     public Pose2d getPoseVelocity() {
-        return poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
+        return poseVelocity;
     }
 
     public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
         this.lastEstimate = startingPose;
+        this.poseVelocity = new Pose2d(0, 0, 0);
         this.TELEMETRY_GIVEN = false;
 
         this.currentPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
@@ -174,6 +180,7 @@ public class CameraLocalizer implements Localizer {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
         this.lastEstimate = startingPose;
+        this.poseVelocity = new Pose2d(0, 0, 0);
         this.t = t;
         this.TELEMETRY_GIVEN = true;
 
@@ -196,6 +203,7 @@ public class CameraLocalizer implements Localizer {
     public void update() {
         lastEstimate = poseEstimate;
         poseEstimate = analyseDetections();
+        poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
     }
 
     private void initAprilTag() {
@@ -339,16 +347,14 @@ public class CameraLocalizer implements Localizer {
                 isBlind = true;
             }
             previousPositions = new ArrayList<>();
-            //currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
+            currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
-
-        Pose2d currentPose = new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
         //int index = 0;
         /*if (this.TELEMETRY_GIVEN) {
             this.t.addData("Position: ",  currentPose);
             this.t.update();
         }*/
-        return currentPose;
+        return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
     }
 
     public VectorF vectorFromPose(AprilTagDetection detection) {
