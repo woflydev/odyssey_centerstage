@@ -86,6 +86,10 @@ public class Robotv8_TestingOpMode extends OpMode {
         servoHangR.setDirection(DcMotorSimple.Direction.FORWARD);
         servoHangR.setPower(0);
 
+        servoHangL = hardwareMap.get(CRServo.class, "hangL");
+        servoHangL.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoHangL.setPower(0);
+
         // -------------------------------------------------------------- IMU INIT
 
         telemetry.addData("Status", "CALIBRATING IMU...");

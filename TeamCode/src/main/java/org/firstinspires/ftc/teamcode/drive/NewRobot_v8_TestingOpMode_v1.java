@@ -12,10 +12,13 @@ public class NewRobot_v8_TestingOpMode_v1 extends Robotv8_TestingOpMode {
         if (adjustmentAllowed) { // lining up arm for topmost cone
             if (gamepad1.right_trigger >= 0.6) {
                 servoHangR.setPower(1);
+                servoHangL.setPower(1);
             } else if (gamepad1.left_trigger >= 0.6) {
                 servoHangR.setPower(-1);
+                servoHangL.setPower(-1);
             } else {
                 servoHangR.setPower(0);
+                servoHangL.setPower(0);
             }
         }
 
