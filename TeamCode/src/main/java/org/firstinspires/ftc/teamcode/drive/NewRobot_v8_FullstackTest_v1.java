@@ -18,6 +18,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_FullstackTesting {
         //Macros();
 
         // TELEMETRY
+        telemetry.addData("IMU: ", GetHeading());
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
         /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
