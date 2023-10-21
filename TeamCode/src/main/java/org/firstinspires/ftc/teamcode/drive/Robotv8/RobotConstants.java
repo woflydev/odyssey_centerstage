@@ -19,6 +19,7 @@ public class RobotConstants {
     public static final String FRONT_CAMERA = "Webcam 1";
     public static final String BACK_CAMERA = "Webcam 2";
 
+    public static final int MAX_OUTTAKE_SPEED = 800;
     public static final int MAX_OUTTAKE_HEIGHT = 3200;
     public static final int MIN_OUTTAKE_HEIGHT = 0;
     public static final int ARM_ADJUSTMENT_INCREMENT = 25; // used to be 50
@@ -27,12 +28,12 @@ public class RobotConstants {
 
     public static final double CLAW_CLOSE = 0.47;
     public static final double CLAW_OPEN = 0.6;
-    public static final double WRIST_PICKUP = 0.65;
-    public static final double WRIST_STANDBY = 0.94;
-    public static final double WRIST_ACTIVE = 0.22;
-    public static final double ELBOW_PICKUP = 0.12;
+    public static final double WRIST_PICKUP = 0.9;
+    public static final double WRIST_STANDBY = 0.39;
+    public static final double WRIST_ACTIVE = 0.29;
+    public static final double ELBOW_PICKUP = 0.08;
     public static final double ELBOW_STANDBY = 0.15;
-    public static final double ELBOW_ACTIVE = 0.54;
+    public static final double ELBOW_ACTIVE = 0.53;
     public static final double PLANE_STANDBY = 0.1;
     public static final double PLANE_ACTIVE = 0.0;
 
@@ -74,6 +75,4 @@ public class RobotConstants {
     public static final Double[] PATH_Y = {-1.46, -0.83, 0d, 0.83, 1.46};
 
     public static final double HEADING = Math.PI / 2;
-
-    public static final int SLIDE_SPEED = 4500;
 }

@@ -8,8 +8,6 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
-import static org.firstinspires.ftc.teamcode.drive.draft.AprilTagRoadRunner.BACK_CAMERA;
-import static org.firstinspires.ftc.teamcode.drive.draft.AprilTagRoadRunner.FRONT_CAMERA;
 import static java.lang.Thread.sleep;
 
 import androidx.annotation.NonNull;
@@ -47,7 +45,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -351,8 +348,8 @@ public class Robotv8_Fullstack extends OpMode {
             armL.setTargetPosition(10);
             targetOuttakePosition = 10;
             armRuntime.reset();
-            armR.setVelocity(RobotConstants.SLIDE_SPEED);
-            armL.setVelocity(RobotConstants.SLIDE_SPEED);
+            armR.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
+            armL.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
             /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
                 armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
 
@@ -374,8 +371,8 @@ public class Robotv8_Fullstack extends OpMode {
             armR.setTargetPosition(targetOuttakePosition);
             armL.setTargetPosition(targetOuttakePosition);
             armRuntime.reset();
-            armR.setVelocity(RobotConstants.SLIDE_SPEED);
-            armL.setVelocity(RobotConstants.SLIDE_SPEED); // velocity used to be 1800, could be faster
+            armR.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
+            armL.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED); // velocity used to be 1800, could be faster
         }
     }
 

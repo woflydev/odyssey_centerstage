@@ -1,24 +1,28 @@
 package org.firstinspires.ftc.teamcode.drive;
 
-import static java.lang.Thread.sleep;
-
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.NewRobot_v8_Abstract;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
 
 @TeleOp()
-public class NewRobot_v8_FullstackTest_v1 extends Robotv8_FullstackTesting {
+public class NewRobot_v8_FullRobot_v2 extends Robotv8_FullstackTesting {
     public void loop() {
+        double targetIntakePower = 0;
+        if (gamepad1.left_trigger > 0.2) {
+            targetIntakePower = 0.4;
+            if (gamepad1.left_bumper) {
+                targetIntakePower = 0.6;
+            }
+        }
+        intake.setPower(targetIntakePower);
+
         PassiveArmResetCheck();
         RuntimeConfig();
         Mecanum();
-        //Macros();
+        Macros();
 
         // TELEMETRY
-        telemetry.addData("IMU: ", GetHeading());
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
         /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
@@ -32,7 +36,7 @@ public class NewRobot_v8_FullstackTest_v1 extends Robotv8_FullstackTesting {
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
         telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
-        //telemetry.addData("IMU Yaw: ", GetHeading());
+        telemetry.addData("IMU Yaw: ", GetHeading());
 
         telemetry.update();
     }

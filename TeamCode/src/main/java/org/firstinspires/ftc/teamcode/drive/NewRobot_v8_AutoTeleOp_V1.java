@@ -31,7 +31,7 @@ public class NewRobot_v8_AutoTeleOp_V1 extends Robotv8_Fullstack {
 
         PassiveArmResetCheck();
         RuntimeConfig();
-        Macros();
+        Macros(handler);
 
         // TELEMETRY
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());

@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_TestingOpMode;
 
 @TeleOp()
-public class NewRobot_v8_HangOpMode_v1 extends Robotv8_TestingOpMode {
+public class NewRobot_v8_HangIntakeNoDrive_v1 extends Robotv8_TestingOpMode {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
@@ -22,11 +22,15 @@ public class NewRobot_v8_HangOpMode_v1 extends Robotv8_TestingOpMode {
             }
         }
 
+        double targetIntakePower = 0;
         if (gamepad1.left_trigger > 0.2) {
-            intake.setPower(gamepad1.left_trigger);
-        } else {
-            intake.setPower(0);
+            targetIntakePower = 0.4;
+            if (gamepad1.left_bumper) {
+                targetIntakePower = 0.6;
+            }
         }
+
+        intake.setPower(targetIntakePower);
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
 
@@ -49,7 +53,7 @@ public class NewRobot_v8_HangOpMode_v1 extends Robotv8_TestingOpMode {
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
-        telemetry.addData("Intake Speed: ", gamepad1.left_trigger);
+        //telemetry.addData("Intake Speed: ", gamepad1.left_trigger);
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
