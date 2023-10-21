@@ -218,20 +218,20 @@ public class Robotv8_Fullstack extends OpMode {
     public void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            if (gamepad1.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+            if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
                     UpdateOuttake(false, 0);
                 }
-            } else if (gamepad1.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+            } else if (gamepad2.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
                     UpdateOuttake(false, 0);
                 }
-            } else if (gamepad1.dpad_down) {
+            } else if (gamepad2.dpad_down) {
                 targetOuttakePosition = 30;
                 UpdateOuttake(true, 0);
-            } else if (gamepad1.dpad_up) {
+            } else if (gamepad2.dpad_up) {
                 targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
                 UpdateOuttake(false, 0);
             } /*else if (gamepad1.right_bumper || gamepad1.left_bumper) {
@@ -239,21 +239,21 @@ public class Robotv8_Fullstack extends OpMode {
                 armL.setVelocity(0);
             }*/
 
-            if (gamepad1.square) {
+            if (gamepad2.square) {
                 targetClawPosition -= 0.02;
                 servoClaw.setPosition(targetClawPosition);
                 Delay(50);
-            } else if (gamepad1.circle) {
+            } else if (gamepad2.circle) {
                 targetClawPosition += 0.02;
                 servoClaw.setPosition(targetClawPosition);
                 Delay(50);
             }
 
-            if (gamepad1.right_bumper) {
+            if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
-            } else if (gamepad1.left_bumper) {
+            } else if (gamepad2.left_bumper) {
                 targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
@@ -266,17 +266,46 @@ public class Robotv8_Fullstack extends OpMode {
                 targetElbowPosition -= 0.02;
                 MoveElbow(targetElbowPosition);
             }
+
+            if (gamepad2.cross) {
+                if (!planeTriggered) {
+                    planeTriggered = true;
+                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
+                } else {
+                    planeTriggered = false;
+                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+                }
+                Delay(250);
+            }
+
+            if (gamepad1.dpad_up) {
+                intake.setPower(0.5);
+            } else {
+                intake.setPower(0);
+            }
         }
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
 
-        if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
+        /*if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
             fieldCentricRed = !fieldCentricRed;
             Delay(50);
-        }
+        }*/
 
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
+        }
+    }
+
+    public void Macros() {
+        if (gamepad1.dpad_right && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.MAX_OUTTAKE_HEIGHT); // thi function handles both grab and deposit, but requires two presses for each process
+        } else if (gamepad1.dpad_down && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_LOW);
+        } else if (gamepad1.dpad_left && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_MID);
+        } else if (gamepad1.dpad_up && gamepad1.left_bumper) {
+            GrabAndDeposit(RobotConstants.JUNCTION_HIGH);
         }
     }
 
@@ -318,8 +347,8 @@ public class Robotv8_Fullstack extends OpMode {
             armL.setTargetPosition(10);
             targetOuttakePosition = 10;
             armRuntime.reset();
-            armR.setVelocity(2800);
-            armL.setVelocity(2800);
+            armR.setVelocity(500);
+            armL.setVelocity(500);
             /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
                 armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
 
@@ -341,13 +370,13 @@ public class Robotv8_Fullstack extends OpMode {
             armR.setTargetPosition(targetOuttakePosition);
             armL.setTargetPosition(targetOuttakePosition);
             armRuntime.reset();
-            armR.setVelocity(2800);
-            armL.setVelocity(2800); // velocity used to be 1800, could be faster
+            armR.setVelocity(500);
+            armL.setVelocity(500); // velocity used to be 1800, could be faster
         }
     }
 
     public void PassiveArmResetCheck() {
-        if ((armL.getCurrentPosition() <= 15 && armR.getCurrentPosition() <= 15) && targetOuttakePosition <= 30) {
+        if ((armL.getCurrentPosition() <= 30 && armR.getCurrentPosition() <= 30) && targetOuttakePosition <= 30) {
             armR.setVelocity(0);
             armL.setVelocity(0);
             resetTimer.reset();
