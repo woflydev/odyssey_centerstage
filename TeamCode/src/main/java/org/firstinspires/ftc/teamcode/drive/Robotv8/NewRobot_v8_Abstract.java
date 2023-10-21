@@ -1,8 +1,6 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
 import android.annotation.SuppressLint;
-
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
@@ -10,14 +8,11 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
-import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -26,7 +21,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.List;
 
-public class NewRobot_v9_Abstract {
+public class NewRobot_v8_Abstract {
     // Z-angle
     private static double YAW_ANGLE = 0;
     private static int ACQUISITION_TIME = 10;
@@ -69,7 +64,7 @@ public class NewRobot_v9_Abstract {
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
 
-    public NewRobot_v9_Abstract(HardwareMap map) {
+    public NewRobot_v8_Abstract(HardwareMap map) {
         TELEMETRY_GIVEN = false;
         //telemetry.addLine("Initialising...");
         hardwareMap = map;
@@ -123,7 +118,7 @@ public class NewRobot_v9_Abstract {
         //telemetry.clear();
     }
 
-    public NewRobot_v9_Abstract(HardwareMap map, Telemetry t) {
+    public NewRobot_v8_Abstract(HardwareMap map, Telemetry t) {
         telemetry = t;
         hardwareMap = map;
         TELEMETRY_GIVEN = true;
@@ -318,8 +313,13 @@ public class NewRobot_v9_Abstract {
         transferPixel(pixelColour, frontPipeline.spikeMark, true);
     }
     public void transferPixel(int pixelColour, int pixelSlot, boolean fromTile) {
-        //activateIntake()
-        //wait until desired pixel is in the slot
+        stack.ArmStandby();
+
+        stack.intake.setPower(RobotConstants.INTAKE_POWER);
+        stack.Delay(RobotConstants.INTAKE_TIME);
+
+        stack.Grab();
+
         if (fromTile) {
             stack.drive.followTrajectory(TILE_TO_BACKDROP);
         } else {
@@ -331,7 +331,7 @@ public class NewRobot_v9_Abstract {
                         .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
                         .build()
         );
-        stack.GrabAndDeposit((int) (frontPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
+        stack.Deposit((int) (frontPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
 
     }
 }

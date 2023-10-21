@@ -47,7 +47,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.NewRobot_v9_Abstract;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
@@ -309,33 +308,45 @@ public class Robotv8_Fullstack extends OpMode {
         }
     }
 
+    public void ArmStandby() {
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT;
+        UpdateOuttake(true, 300);
+        Delay(350); // elbow should come down after the slide is near done
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+    }
+
+    public void Grab() {
+        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+        MoveElbow(RobotConstants.ELBOW_PICKUP);
+        Delay(200);
+        //MoveElbow(RobotConstants.ELBOW_STANDBY);
+        //Delay(200);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+        Delay(300);
+    }
+
+    public void Deposit(int height) {
+        // TODO: test if this reinforcement actually works
+        //servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+
+        MoveElbow(RobotConstants.ELBOW_ACTIVE);
+
+        Delay(100);
+
+        targetOuttakePosition = height;
+        UpdateOuttake(false, 0);
+    }
+
     public void GrabAndDeposit(int height) {
         if (!transferStageDeployed) {
+            Grab();
+            Deposit(height);
             transferStageDeployed = true;
-            servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-            MoveElbow(RobotConstants.ELBOW_PICKUP);
-            Delay(200);
-            MoveElbow(RobotConstants.ELBOW_STANDBY);
-            Delay(200);
-            servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-            Delay(300);
-            // TODO: test if this reinforcement actually works
-            servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-            servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
-
-            MoveElbow(RobotConstants.ELBOW_ACTIVE);
-
-            Delay(100);
-
-            targetOuttakePosition = height;
-            UpdateOuttake(false, 0);
         } else {
-            servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-            targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT;
-            UpdateOuttake(true, 300);
-            Delay(350); // elbow should come down after the slide is near done
-            MoveElbow(RobotConstants.ELBOW_STANDBY);
-            servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+            ArmStandby();
             transferStageDeployed = false;
         }
     }
@@ -382,7 +393,7 @@ public class Robotv8_Fullstack extends OpMode {
             resetTimer.reset();
         }
     }
-    public void Macros(NewRobot_v9_Abstract handler) {
+    public void Macros(NewRobot_v8_Abstract handler) {
         // test transfer stage macro
         if (gamepad1.dpad_left) {
             if (!wristActive) {
