@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.localizer;
 
+import static java.lang.Thread.sleep;
+
 import android.annotation.SuppressLint;
 import android.util.Size;
 
@@ -204,6 +206,11 @@ public class CameraLocalizer implements Localizer {
         lastEstimate = poseEstimate;
         poseEstimate = analyseDetections();
         poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
+        Delay(SLEEP_TIME);
+    }
+
+    public void Delay(double time) {
+        try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
     }
 
     private void initAprilTag() {
