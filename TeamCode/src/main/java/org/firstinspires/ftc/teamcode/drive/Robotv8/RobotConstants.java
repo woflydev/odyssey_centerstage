@@ -75,4 +75,8 @@ public class RobotConstants {
     public static final Double[] PATH_Y = {-1.46, -0.83, 0d, 0.83, 1.46};
 
     public static final double HEADING = Math.PI / 2;
+
+    public static final double BACKDROP_ANGLE = - Math.PI / 2;
+
+    public static final double TAG_WALL_ANGLE = Math.PI / 2;
 }
