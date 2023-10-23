@@ -42,7 +42,9 @@ public class CameraLocalizer implements Localizer {
 
     private static int SLEEP_TIME = 20;
 
-    private static int STARTUP_TIME = 5000;
+    private static int STARTUP_TIME = 1000;
+
+    private static TimeUnit TIME_UNIT = TimeUnit.MILLISECONDS;
 
     private static float CORRECTION_FACTOR = 1;
 
@@ -173,9 +175,6 @@ public class CameraLocalizer implements Localizer {
         this.BACK_CAMERA = back;
 
         initAprilTag();
-        while (elapsedTime.time() < STARTUP_TIME) {
-            analyseDetections();
-        }
     }
 
     public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t) {
@@ -197,16 +196,17 @@ public class CameraLocalizer implements Localizer {
         this.BACK_CAMERA = back;
 
         initAprilTag();
-        while (elapsedTime.time() < STARTUP_TIME) {
-            analyseDetections();
-        }
+
+        elapsedTime.reset();
     }
 
     public void update() {
-        lastEstimate = poseEstimate;
-        poseEstimate = analyseDetections();
-        poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
-        Delay(SLEEP_TIME);
+        if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME) {
+            lastEstimate = poseEstimate;
+            poseEstimate = analyseDetections();
+            poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
+            Delay(SLEEP_TIME);
+        }
     }
 
     public void Delay(double time) {

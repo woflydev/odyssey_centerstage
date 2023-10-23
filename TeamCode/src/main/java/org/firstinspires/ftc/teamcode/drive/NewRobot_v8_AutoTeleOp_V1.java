@@ -4,27 +4,12 @@ import static java.lang.Thread.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.NewRobot_v8_Abstract;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
-
-import android.annotation.SuppressLint;
 
 
 @TeleOp(name = "Concept: AutoTeleOp_V1", group = "Concept")
 public class NewRobot_v8_AutoTeleOp_V1 extends Robotv8_Fullstack {
-
-    NewRobot_v8_Abstract handler;
-
-    @SuppressLint("DefaultLocale")
-    public void init() {
-        telemetry.addLine("Initialising...");
-        telemetry.update();
-        handler = new NewRobot_v8_Abstract(this, hardwareMap, telemetry);
-        telemetry.addData(">", "Touch Play to start OpMode");
-        telemetry.update();
-    }
-
 
     public void loop() {
 

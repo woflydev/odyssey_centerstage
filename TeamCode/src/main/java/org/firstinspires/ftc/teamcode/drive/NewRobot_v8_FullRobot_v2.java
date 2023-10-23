@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.drive;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Robotv8_FullstackTesting;
 
 @TeleOp()
 public class NewRobot_v8_FullRobot_v2 extends Robotv8_FullstackTesting {

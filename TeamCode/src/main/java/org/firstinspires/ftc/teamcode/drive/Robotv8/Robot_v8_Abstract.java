@@ -22,7 +22,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.List;
 import java.util.function.Function;
 
-public class NewRobot_v8_Abstract {
+public class Robot_v8_Abstract {
     // Z-angle
     private static double YAW_ANGLE = 0;
     private static int ACQUISITION_TIME = 10;
@@ -65,7 +65,7 @@ public class NewRobot_v8_Abstract {
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
 
-    public NewRobot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map) {
+    public Robot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map) {
         TELEMETRY_GIVEN = false;
         //telemetry.addLine("Initialising...");
         hardwareMap = map;
@@ -74,15 +74,11 @@ public class NewRobot_v8_Abstract {
             stack = parentStack;
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
-        stack.drive.setLocalizer(localizer);
 
         //telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         //telemetry.addData(">", "Touch Play to start OpMode");
 
         localizer.update();
-        if (!localizer.isBlind && RobotConstants.USE_DRIVE) {
-            stack.drive.setPoseEstimate(localizer.poseEstimate);
-        }
         frontPipeline = new FieldPipeline(0);
         if (RobotConstants.USE_BACK) {
             backPipeline = new FieldPipeline(1);
@@ -106,7 +102,7 @@ public class NewRobot_v8_Abstract {
         //telemetry.clear();
     }
 
-    public NewRobot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
+    public Robot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
         telemetry = t;
         hardwareMap = map;
         TELEMETRY_GIVEN = true;
@@ -116,15 +112,10 @@ public class NewRobot_v8_Abstract {
             stack = parentStack;
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
-        stack.drive.setLocalizer(localizer);
 
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch Play to start OpMode");
 
         localizer.update();
-        if (!localizer.isBlind && RobotConstants.USE_DRIVE) {
-            stack.drive.setPoseEstimate(localizer.poseEstimate);
-        }
+
         frontPipeline = new FieldPipeline(0);
         if (RobotConstants.USE_BACK) {
             backPipeline = new FieldPipeline(1);
@@ -159,7 +150,9 @@ public class NewRobot_v8_Abstract {
                     .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
                     .build();
         }
-        telemetry.clear();
+        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Touch Play to start OpMode");
+        telemetry.update();
     }
 
     private void initCameras(OpenCvPipeline frontPipeline) {
