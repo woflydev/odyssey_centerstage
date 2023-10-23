@@ -198,8 +198,13 @@ public class Robotv8_Fullstack extends OpMode {
         handler = new Robot_v8_Abstract(this, hardwareMap, telemetry);
         drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
 
-        if (!handler.localizer.isBlind && RobotConstants.USE_DRIVE) {
-            drive.setPoseEstimate(handler.localizer.poseEstimate);
+        if (RobotConstants.USE_DRIVE) {
+            handler.initialisePaths();
+            if (!handler.localizer.isBlind) {
+                drive.setPoseEstimate(handler.localizer.poseEstimate);
+            } else {
+                drive.setPoseEstimate(Robot_v8_Abstract.STARTING_POSE);
+            }
         }
 
         Delay(500);

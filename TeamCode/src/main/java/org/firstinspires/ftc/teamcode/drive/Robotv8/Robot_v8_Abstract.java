@@ -30,6 +30,8 @@ public class Robot_v8_Abstract {
 
     public static boolean PLAYING_BLUE = true;
 
+    public static Pose2d STARTING_POSE = new Pose2d(0, 0, 0);
+
     public static Pose2d TILE_LOCATION = new Pose2d(-0.89,  -1.62 * (PLAYING_BLUE ? 1 : -1), 0).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
     public static Pose2d[] PIXEL_LOCATIONS = {
             new Pose2d(- RobotConstants.FIELD_LENGTH / 2 + RobotConstants.PIXEL_SPACE, -0.2, - Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE),
@@ -73,7 +75,7 @@ public class Robot_v8_Abstract {
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;
         }
-        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
+        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, STARTING_POSE, telemetry);
 
         //telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         //telemetry.addData(">", "Touch Play to start OpMode");
@@ -88,17 +90,6 @@ public class Robot_v8_Abstract {
         }
 
         frontPipeline = new FieldPipeline(0);
-
-        if (RobotConstants.USE_DRIVE) {
-            for (int i = 0; i < TILE_TO_PIXEL.length; i++) {
-                TILE_TO_PIXEL[i] = path(TILE_LOCATION, PIXEL_LOCATIONS[i]);
-                PIXEL_TO_BACKDROP[i] = path(PIXEL_LOCATIONS[i], PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
-            }
-
-            TILE_TO_BACKDROP = path(TILE_LOCATION, PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
-
-            BACKDROP_TO_TILE = path(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION, TILE_LOCATION);
-        }
         //telemetry.clear();
     }
 
@@ -113,7 +104,6 @@ public class Robot_v8_Abstract {
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
 
-
         localizer.update();
 
         frontPipeline = new FieldPipeline(0);
@@ -126,30 +116,6 @@ public class Robot_v8_Abstract {
 
         frontPipeline = new FieldPipeline(0);
 
-        if (RobotConstants.USE_DRIVE) {
-            for (int i = 0; i < TILE_TO_PIXEL.length; i++) {
-                TILE_TO_PIXEL[i] = stack.drive.trajectoryBuilder(TILE_LOCATION)
-                        .splineTo(INTER_POINT.vec(), INTER_POINT.minus(TILE_LOCATION).getHeading())
-                        .splineTo(PIXEL_LOCATIONS[i].vec(), PIXEL_LOCATIONS[i].minus(INTER_POINT).getHeading())
-                        .build();
-
-                // Note, the robot turns 180 degrees before moving to the backdrop
-
-                PIXEL_TO_BACKDROP[i] = stack.drive.trajectoryBuilder(PIXEL_LOCATIONS[i])
-                        .strafeTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec())
-                        .build();
-            }
-
-            TILE_TO_BACKDROP = stack.drive.trajectoryBuilder(TILE_LOCATION)
-                    .strafeTo(INTER_POINT.vec())
-                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
-                    .build();
-
-            BACKDROP_TO_TILE = stack.drive.trajectoryBuilder(TILE_LOCATION, true)
-                    .strafeTo(INTER_POINT.vec())
-                    .splineTo(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec(), (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).minus(INTER_POINT).getHeading())
-                    .build();
-        }
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch Play to start OpMode");
         telemetry.update();
@@ -254,11 +220,7 @@ public class Robot_v8_Abstract {
 
     public void update() {
         localizer.update();
-        tagTelemetry(localizer.currentDetections);
-        if (TELEMETRY_GIVEN) {
-            telemetry.addData("Pose: ", localizer.getPoseEstimate());
-            telemetry.update();
-        }
+        //tagTelemetry(localizer.currentDetections);
     }
 
     public void update(Gamepad gamepad1) {
@@ -289,6 +251,17 @@ public class Robot_v8_Abstract {
             }
             telemetry.update();
         }
+    }
+
+    public void initialisePaths() {
+        for (int i = 0; i < TILE_TO_PIXEL.length; i++) {
+            TILE_TO_PIXEL[i] = path(TILE_LOCATION, PIXEL_LOCATIONS[i]);
+            PIXEL_TO_BACKDROP[i] = path(PIXEL_LOCATIONS[i], PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
+        }
+
+        TILE_TO_BACKDROP = path(TILE_LOCATION, PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
+
+        BACKDROP_TO_TILE = path(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION, TILE_LOCATION);
     }
 
     public Trajectory path(Pose2d start, Pose2d end) {

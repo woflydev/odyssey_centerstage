@@ -76,50 +76,50 @@ public class CameraLocalizer implements Localizer {
             new AprilTagMetadata(9, "Back 2", 0.127,
                     new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float) RobotConstants.WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(Math.PI / 2), 0, 0,
-                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
+                    (float) Math.cos(Math.PI / 2 / 2), 0, 0,
+                    (float) Math.sin(Math.PI / 2 / 2), ACQUISITION_TIME)
             ),
             new AprilTagMetadata(8, "Back 1a", 0.1,
                     new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float)-RobotConstants.SMALL_WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(Math.PI / 2), 0, 0,
-                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)
+                    (float) Math.cos(Math.PI / 2 / 2), 0, 0,
+                    (float) Math.sin(Math.PI / 2 / 2), ACQUISITION_TIME)
             ),
             new AprilTagMetadata(10, "Back 2a", 0.1,
                     new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float)RobotConstants.SMALL_WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(Math.PI / 2), 0, 0,
-                    (float) Math.sin(Math.PI / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(Math.PI / 2 / 2), 0, 0,
+                    (float) Math.sin(Math.PI / 2 / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(1, "Backdrop 1", 0.05,
                     new VectorF((float) RobotConstants.BACKDROP_DEPTH, (float) 1.003F, (float) RobotConstants.TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
-                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(- Math.PI / 4), 0, 0,
+                    (float) Math.sin(- Math.PI / 4), ACQUISITION_TIME)),
             new AprilTagMetadata(2, "Backdrop 2", 0.05,
                     new VectorF((float) RobotConstants.BACKDROP_DEPTH, 0.88F, (float) RobotConstants.TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
-                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(- Math.PI / 4), 0, 0,
+                    (float) Math.sin(- Math.PI / 4), ACQUISITION_TIME)),
             new AprilTagMetadata(3, "Backdrop 3", 0.05,
                     new VectorF((float) RobotConstants.BACKDROP_DEPTH, 0.74F, (float) RobotConstants.TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
-                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(- Math.PI / 4), 0, 0,
+                    (float) Math.sin(- Math.PI / 4), ACQUISITION_TIME)),
             new AprilTagMetadata(4, "Backdrop 4", 0.05,
                     new VectorF((float) RobotConstants.BACKDROP_DEPTH, -0.75F, (float) RobotConstants.TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
-                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(- Math.PI / 4), 0, 0,
+                    (float) Math.sin(- Math.PI / 4), ACQUISITION_TIME)),
             new AprilTagMetadata(5, "Backdrop 5", 0.05,
                     new VectorF((float) RobotConstants.BACKDROP_DEPTH, -0.9F, (float) RobotConstants.TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
-                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(- Math.PI / 4), 0, 0,
+                    (float) Math.sin(- Math.PI / 4), ACQUISITION_TIME)),
             new AprilTagMetadata(6, "Backdrop 6", 0.05,
                     new VectorF((float) RobotConstants.BACKDROP_DEPTH, -1.05F, (float) RobotConstants.TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(3 * Math.PI / 2), 0, 0,
-                    (float) Math.sin(3 * Math.PI / 2), ACQUISITION_TIME))
+                    (float) Math.cos(- Math.PI / 4), 0, 0,
+                    (float) Math.sin(- Math.PI / 4), ACQUISITION_TIME))
     };
 
     private int AVERAGE_LENGTH = 3;
@@ -205,6 +205,9 @@ public class CameraLocalizer implements Localizer {
             lastEstimate = poseEstimate;
             poseEstimate = analyseDetections();
             poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
+            if (TELEMETRY_GIVEN) {
+                t.addData("Pose", poseEstimate);
+            }
             Delay(SLEEP_TIME);
         }
     }
