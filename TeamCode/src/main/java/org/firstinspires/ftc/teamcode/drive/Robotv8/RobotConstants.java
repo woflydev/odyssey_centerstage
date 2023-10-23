@@ -19,7 +19,7 @@ public class RobotConstants {
     public static final String FRONT_CAMERA = "Webcam 1";
     public static final String BACK_CAMERA = "Webcam 2";
 
-    public static final int MAX_OUTTAKE_SPEED = 800;
+    public static final int MAX_OUTTAKE_SPEED = 2800;
     public static final int MAX_OUTTAKE_HEIGHT = 3200;
     public static final int MIN_OUTTAKE_HEIGHT = 0;
     public static final int ARM_ADJUSTMENT_INCREMENT = 25; // used to be 50
