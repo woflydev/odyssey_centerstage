@@ -9,13 +9,6 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Robotv8_FullstackTes
 public class NewRobot_v8_FullRobot_v2 extends Robotv8_FullstackTesting {
     public void loop() {
         double targetIntakePower = 0;
-        if (gamepad1.left_trigger > 0.2) {
-            targetIntakePower = 0.4;
-            if (gamepad1.left_bumper) {
-                targetIntakePower = 0.6;
-            }
-        }
-        intake.setPower(targetIntakePower);
 
         PassiveArmResetCheck();
         RuntimeConfig();

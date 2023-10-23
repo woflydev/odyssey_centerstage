@@ -341,25 +341,35 @@ public class Robotv8_FullstackTesting extends OpMode {
     }
 
     public void Macros() {
+        if (gamepad1.left_trigger > 0.2) {
+            intake.setPower(0.4);
+            if (gamepad1.left_bumper && !transferStageDeployed) {
+                intake.setPower(0);
+                GrabAndReady();
+            }
+        } else {
+            intake.setPower(0);
+        }
+
         if (gamepad1.dpad_right && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.MAX_OUTTAKE_HEIGHT); // this function handles both grab and deposit, but requires two presses for each process
+            DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT); // this function handles both grab and deposit, but requires two presses for each process
         } else if (gamepad1.dpad_down && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.JUNCTION_LOW);
+            DepositSequence(RobotConstants.JUNCTION_LOW);
         } else if (gamepad1.dpad_left && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.JUNCTION_MID);
+            DepositSequence(RobotConstants.JUNCTION_MID);
         } else if (gamepad1.dpad_up && gamepad1.left_bumper) {
-            GrabAndDeposit(RobotConstants.JUNCTION_HIGH);
+            DepositSequence(RobotConstants.JUNCTION_HIGH);
         }
         Delay(50); // debounce inputs
     }
 
-    public void GrabAndDeposit(int height) {
+    public void DepositSequence(int height) {
         if (!transferStageDeployed) {
             intake.setPower(0); // make sure intake is not running
-            GrabAndReady();
+            // grabbing is handled in Macros - intake
+            RaiseAndPrime(height);
             transferStageDeployed = true;
         } else {
-            RaiseAndPrime(height);
             DropAndReset();
             transferStageDeployed = false;
         }
@@ -368,14 +378,14 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public void GrabAndReady() {
         servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+        Delay(300);
         MoveElbow(RobotConstants.ELBOW_PICKUP);
         Delay(200);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(300);
+        Delay(100);
 
         // primes the elbow
         MoveElbow(RobotConstants.ELBOW_STANDBY);
-        Delay(200);
     }
 
     public void RaiseAndPrime(int height) {

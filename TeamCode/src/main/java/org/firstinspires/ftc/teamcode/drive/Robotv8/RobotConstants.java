@@ -31,7 +31,7 @@ public class RobotConstants {
     public static final double WRIST_PICKUP = 0.9;
     public static final double WRIST_STANDBY = 0.39;
     public static final double WRIST_ACTIVE = 0.29;
-    public static final double ELBOW_PICKUP = 0.08;
+    public static final double ELBOW_PICKUP = 0.05;
     public static final double ELBOW_STANDBY = 0.15;
     public static final double ELBOW_ACTIVE = 0.53;
     public static final double PLANE_STANDBY = 0.1;
