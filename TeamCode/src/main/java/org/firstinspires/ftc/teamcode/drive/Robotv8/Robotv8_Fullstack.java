@@ -217,9 +217,13 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(2000);
 
         InitializeBlock();
+        MainInit();
 
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
         telemetry.update();
+    }
+    public void start() {
+        MainStart();
     }
 
     public void loop() {
@@ -246,11 +250,24 @@ public class Robotv8_Fullstack extends OpMode {
         MainLoop();
     }
     public void stop() {
+        MainStop();
         handler.stop();
+    }
+
+    public void MainInit() {
+
+    }
+
+    public void MainStart() {
+
     }
 
     public void MainLoop() {
 
+    }
+
+    public void MainStop() {
+        
     }
 
     public void RuntimeConfig() {
