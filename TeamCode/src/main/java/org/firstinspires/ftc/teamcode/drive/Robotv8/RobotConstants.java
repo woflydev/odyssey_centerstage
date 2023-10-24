@@ -26,13 +26,13 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double CLAW_CLOSE = 0.8;
-    public static final double CLAW_OPEN = 0.6;
-    public static final double WRIST_PICKUP = 0.9;
-    public static final double WRIST_STANDBY = 0.39;
+    public static final double CLAW_CLOSE = 0.75;
+    public static final double CLAW_OPEN = 0.49;
+    public static final double WRIST_PICKUP = 0.878;
+    public static final double WRIST_STANDBY = 0.46;
     public static final double WRIST_ACTIVE = 0.29;
     public static final double ELBOW_PICKUP = 0.05;
-    public static final double ELBOW_STANDBY = 0.15;
+    public static final double ELBOW_STANDBY = 0.17;
     public static final double ELBOW_ACTIVE = 0.53;
     public static final double PLANE_STANDBY = 0.1;
     public static final double PLANE_ACTIVE = 0.0;
@@ -40,6 +40,8 @@ public class RobotConstants {
     public static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
     public static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed
     public static final double PRECISION_DRIVE_SPEED_MODIFIER = 3.35;
+
+    public static final double MAX_MANUAL_INTAKE_POWER = 0.6;
 
     public static final double PPR = 537.7; // gobuilda motor 85203 Series
 

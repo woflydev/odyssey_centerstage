@@ -10,10 +10,10 @@ public class NewRobot_v8_FullRobot_v2 extends Robotv8_FullstackTesting {
     public void loop() {
         double targetIntakePower = 0;
 
-        PassiveArmResetCheck();
-        RuntimeConfig();
         Mecanum();
+        RuntimeConfig();
         Macros();
+        PassiveArmResetCheck();
 
         // TELEMETRY
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
@@ -27,6 +27,7 @@ public class NewRobot_v8_FullRobot_v2 extends Robotv8_FullstackTesting {
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
         telemetry.addData("Target Claw Position: ", targetClawPosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
+        telemetry.addData("Current Outtake State: ", outtakeState);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
         telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
         telemetry.addData("IMU Yaw: ", GetHeading());
