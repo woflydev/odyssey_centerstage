@@ -352,14 +352,14 @@ public class Robotv8_FullstackTesting extends OpMode {
         }
 
         if (gamepad1.dpad_right && gamepad1.left_bumper) {
-            DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT); // this function handles both grab and deposit, but requires two presses for each process
+            DepositSequence(RobotConstants.JUNCTION_LOW); // this function handles both grab and deposit, but requires two presses for each process
         } else if (gamepad1.dpad_down && gamepad1.left_bumper) {
             DepositSequence(RobotConstants.JUNCTION_LOW);
-        } else if (gamepad1.dpad_left && gamepad1.left_bumper) {
+        } /*else if (gamepad1.dpad_left && gamepad1.left_bumper) {
             DepositSequence(RobotConstants.JUNCTION_MID);
         } else if (gamepad1.dpad_up && gamepad1.left_bumper) {
             DepositSequence(RobotConstants.JUNCTION_HIGH);
-        }
+        }*/
         Delay(50); // debounce inputs
     }
 
