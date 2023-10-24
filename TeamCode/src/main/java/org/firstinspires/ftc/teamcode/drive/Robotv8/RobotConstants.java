@@ -26,7 +26,7 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double CLAW_CLOSE = 0.47;
+    public static final double CLAW_CLOSE = 0.8;
     public static final double CLAW_OPEN = 0.6;
     public static final double WRIST_PICKUP = 0.9;
     public static final double WRIST_STANDBY = 0.39;
