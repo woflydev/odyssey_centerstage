@@ -8,8 +8,6 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Robotv8_FullstackTes
 @TeleOp()
 public class NewRobot_v8_FullRobot_v2 extends Robotv8_FullstackTesting {
     public void loop() {
-        double targetIntakePower = 0;
-
         Mecanum();
         RuntimeConfig();
         Macros();

@@ -465,16 +465,16 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public void PassiveArmResetCheck() {
         if (targetOuttakePosition <= 30) {
-            if ((armL.getCurrentPosition() <= 20 && armR.getCurrentPosition() <= 20) && (armL.getCurrentPosition() >= -5 && armR.getCurrentPosition() <= -5)) {
+            if ((armL.getCurrentPosition() <= 10 && armR.getCurrentPosition() <= 10) && (armL.getCurrentPosition() >= 0 && armR.getCurrentPosition() <= 0)) {
                 armR.setVelocity(0);
                 armL.setVelocity(0);
-            } else if ((armL.getCurrentPosition() <= 210 && armR.getCurrentPosition() <= 210) && (armL.getCurrentPosition() >= -100 && armR.getCurrentPosition() <= -100)) {
+            } else if ((armL.getCurrentPosition() <= 210 && armR.getCurrentPosition() <= 210) && (armL.getCurrentPosition() >= -100 && armR.getCurrentPosition() >= -100)) {
                 armR.setTargetPosition(10);
                 armL.setTargetPosition(10);
                 targetOuttakePosition = 10;
 
-                armR.setVelocity(1000);
-                armL.setVelocity(1000);
+                armR.setVelocity(800);
+                armL.setVelocity(800);
             }
         }
     }
