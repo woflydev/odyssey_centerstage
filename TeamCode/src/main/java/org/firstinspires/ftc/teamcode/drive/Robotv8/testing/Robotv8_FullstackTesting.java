@@ -79,7 +79,6 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public final ElapsedTime encoderRuntime = new ElapsedTime();
     public final ElapsedTime armRuntime = new ElapsedTime();
-    public final ElapsedTime resetTimer = new ElapsedTime();
 
     public double targetClawPosition = RobotConstants.CLAW_OPEN;
     public double targetWristPosition = RobotConstants.WRIST_PICKUP;
@@ -428,7 +427,7 @@ public class Robotv8_FullstackTesting extends OpMode {
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
 
         targetOuttakePosition = 10;
-        UpdateOuttake(false, 0);
+        UpdateOuttake(true, 0);
     }
 
     public void UpdateOuttake(boolean reset, double delay) { // test new function
@@ -448,7 +447,7 @@ public class Robotv8_FullstackTesting extends OpMode {
                 }
             }*/
 
-            if ((armL.getCurrentPosition() <= 30 || armR.getCurrentPosition() <= 30) || armRuntime.seconds() >= RobotConstants.ARM_RESET_TIMEOUT) {
+            if ((armL.getCurrentPosition() <= 20 || armR.getCurrentPosition() <= 20) || armRuntime.seconds() >= RobotConstants.ARM_RESET_TIMEOUT) {
                 armR.setVelocity(0);
                 armL.setVelocity(0);
             }
@@ -465,10 +464,18 @@ public class Robotv8_FullstackTesting extends OpMode {
     }
 
     public void PassiveArmResetCheck() {
-        if ((armL.getCurrentPosition() <= 50 && armR.getCurrentPosition() <= 50) && targetOuttakePosition <= 30) {
-            armR.setVelocity(0);
-            armL.setVelocity(0);
-            resetTimer.reset();
+        if (targetOuttakePosition <= 30) {
+            if ((armL.getCurrentPosition() <= 20 && armR.getCurrentPosition() <= 20) && (armL.getCurrentPosition() >= -5 && armR.getCurrentPosition() <= -5)) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            } else if ((armL.getCurrentPosition() <= 210 && armR.getCurrentPosition() <= 210) && (armL.getCurrentPosition() >= -100 && armR.getCurrentPosition() <= -100)) {
+                armR.setTargetPosition(10);
+                armL.setTargetPosition(10);
+                targetOuttakePosition = 10;
+
+                armR.setVelocity(1000);
+                armL.setVelocity(1000);
+            }
         }
     }
 
