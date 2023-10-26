@@ -142,7 +142,7 @@ public class CameraLocalizer implements Localizer {
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
 
-    private boolean stop = false;
+    private boolean stopTrigger = false;
 
     @NonNull
     public Pose2d getPoseEstimate() {
@@ -201,7 +201,7 @@ public class CameraLocalizer implements Localizer {
     }
 
     public void update() {
-        if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME && !stop) {
+        if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME && !stopTrigger) {
             lastEstimate = poseEstimate;
             poseEstimate = analyseDetections();
             poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
@@ -213,8 +213,10 @@ public class CameraLocalizer implements Localizer {
     }
 
     public void stop() {
-        stop = true;
+        stopTrigger = true;
+        analyseDetections(); // TODO: this is called here to stop while loops, hopefully
         visionPortal.close();
+        t.addData("Vision portal closed!", "");
     }
 
     public void Delay(double time) {
@@ -305,7 +307,10 @@ public class CameraLocalizer implements Localizer {
         normals.toArray(normalArr);
         positions.toArray(posArr);*/
 
-        if (notNullTags > 0) {
+        if (stopTrigger) { // TODO: check if this works, might be while loop
+            t.addData("STOP TRIGGER SET!", "TRUE");
+            return new Pose2d(0, 0, 0);
+        } else if (notNullTags > 0) {
             heading /= notNullTags;
             previousHeadings.add(heading);
 

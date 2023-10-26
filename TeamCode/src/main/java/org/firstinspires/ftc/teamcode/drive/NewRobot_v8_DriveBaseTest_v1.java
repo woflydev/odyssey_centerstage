@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 public class NewRobot_v8_DriveBaseTest_v1 extends Robotv8_Fullstack {
     public void MainLoop() {
         Mecanum();
-        Macros();
+        RuntimeConfig();
         //Add drive.followTrajectory stuff here
 
         if (gamepad1.start) {
@@ -28,9 +28,5 @@ public class NewRobot_v8_DriveBaseTest_v1 extends Robotv8_Fullstack {
         telemetry.addData("IMU Yaw: ", GetHeading());
 
         telemetry.update();
-    }
-
-    public void MainStop() {
-        
     }
 }

@@ -237,6 +237,7 @@ public class Robotv8_Abstract {
     public void stop() {
         localizer.stop();
     }
+
     @SuppressLint("DefaultLocale")
     public void tagTelemetry(List<AprilTagDetection> detections) {
         if (TELEMETRY_GIVEN) {

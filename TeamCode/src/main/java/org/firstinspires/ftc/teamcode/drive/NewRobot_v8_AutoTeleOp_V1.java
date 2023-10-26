@@ -40,9 +40,5 @@ public class NewRobot_v8_AutoTeleOp_V1 extends Robotv8_Fullstack {
         // Share the CPU.
         //sleep(SLEEP_TIME);
     }
-
-    public void stop() {
-        handler.stop();
-    }
 }
 
