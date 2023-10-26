@@ -321,6 +321,7 @@ public class Robotv8_Fullstack extends OpMode {
                 Delay(50);
             }
 
+            // FLAP (FOR TUNING VALUES) -----------------------------------------------
             if (gamepad2.dpad_right) {
                 targetFlapPosition += 0.02;
                 servoFlap.setPosition(targetFlapPosition);
