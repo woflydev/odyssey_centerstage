@@ -87,6 +87,7 @@ public class Robotv8_Fullstack extends OpMode {
     public double targetWristPosition = RobotConstants.WRIST_PICKUP;
     public double targetElbowPosition = RobotConstants.ELBOW_STANDBY;
     public double targetPlanePosition = RobotConstants.PLANE_STANDBY;
+    public double targetFlapPosition = RobotConstants.FLAP_CLOSE;
     public int targetOuttakePosition = 0;
 
     public boolean planeTriggered = false;
@@ -318,6 +319,14 @@ public class Robotv8_Fullstack extends OpMode {
                 targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
+            }
+
+            if (gamepad2.dpad_right) {
+                targetFlapPosition += 0.02;
+                servoFlap.setPosition(targetFlapPosition);
+            } else if (gamepad2.dpad_left) {
+                targetFlapPosition -= 0.02;
+                servoFlap.setPosition(targetFlapPosition);
             }
 
             // PLANE -------------------------------------------------------------------

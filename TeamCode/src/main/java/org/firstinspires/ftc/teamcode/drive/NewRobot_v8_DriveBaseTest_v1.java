@@ -8,53 +8,9 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 @TeleOp()
 public class NewRobot_v8_DriveBaseTest_v1 extends Robotv8_Fullstack {
-    public void Mecanum() {
-        double frontLeftPower;
-        double backLeftPower;
-        double frontRightPower;
-        double backRightPower;
-
-        double yAxis;
-        double xAxis;
-        double rotateAxis;
-
-        int dir = fieldCentricRed ? 1 : -1;
-
-        // all negative when field centric red
-        yAxis = gamepad1.left_stick_y * dir;
-        xAxis = -gamepad1.left_stick_x * 1.1 * dir;
-        rotateAxis = -gamepad1.right_stick_x * dir;
-
-        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-        // Rotate the movement direction counter to the bot's rotation
-        double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
-        double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
-
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
-        frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
-        backLeftPower = (rotY - rotX + rotateAxis) / denominator;
-        frontRightPower = (rotY - rotX - rotateAxis) / denominator;
-        backRightPower = (rotY + rotX - rotateAxis) / denominator;
-
-        double stable_v1 = Stabilize(backLeftPower, current_v1);
-        double stable_v2 = Stabilize(frontRightPower, current_v2);
-        double stable_v3 = Stabilize(frontLeftPower, current_v3);
-        double stable_v4 = Stabilize(backRightPower, current_v4);
-
-        current_v1 = stable_v1;
-        current_v2 = stable_v2;
-        current_v3 = stable_v3;
-        current_v4 = stable_v4;
-
-        frontLM.setPower(stable_v3 / driveSpeedModifier);
-        frontRM.setPower(stable_v2 / driveSpeedModifier);
-        backLM.setPower(stable_v1 / driveSpeedModifier);
-        backRM.setPower(stable_v4 / driveSpeedModifier);
-    }
-
-    public void loop() {
+    public void MainLoop() {
         Mecanum();
+        Macros();
         //Add drive.followTrajectory stuff here
 
         if (gamepad1.start) {
@@ -72,5 +28,9 @@ public class NewRobot_v8_DriveBaseTest_v1 extends Robotv8_Fullstack {
         telemetry.addData("IMU Yaw: ", GetHeading());
 
         telemetry.update();
+    }
+
+    public void MainStop() {
+        
     }
 }
