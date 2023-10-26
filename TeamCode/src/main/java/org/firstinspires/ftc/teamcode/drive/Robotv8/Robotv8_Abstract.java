@@ -23,7 +23,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import java.util.List;
 import java.util.function.Function;
 
-public class Robot_v8_Abstract {
+public class Robotv8_Abstract {
     // Z-angle
     private static double YAW_ANGLE = 0;
     private static int ACQUISITION_TIME = 10;
@@ -68,7 +68,7 @@ public class Robot_v8_Abstract {
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
 
-    public Robot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map) {
+    public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map) {
         TELEMETRY_GIVEN = false;
         //telemetry.addLine("Initialising...");
         hardwareMap = map;
@@ -94,7 +94,7 @@ public class Robot_v8_Abstract {
         //telemetry.clear();
     }
 
-    public Robot_v8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
+    public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
         telemetry = t;
         hardwareMap = map;
         TELEMETRY_GIVEN = true;
@@ -235,7 +235,7 @@ public class Robot_v8_Abstract {
     }
 
     public void stop() {
-        localizer.visionPortal.close();
+        localizer.stop();
     }
     @SuppressLint("DefaultLocale")
     public void tagTelemetry(List<AprilTagDetection> detections) {
