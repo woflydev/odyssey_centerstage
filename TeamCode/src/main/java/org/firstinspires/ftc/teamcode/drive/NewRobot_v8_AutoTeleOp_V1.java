@@ -4,7 +4,7 @@ import static java.lang.Thread.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 
@@ -16,7 +16,8 @@ public class NewRobot_v8_AutoTeleOp_V1 extends Robotv8_Fullstack {
 
         PassiveArmResetCheck();
         RuntimeConfig();
-        Macros(handler);
+        Macros();
+        MacroDrive(handler);
 
         // TELEMETRY
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());

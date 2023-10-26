@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Robotv8.Constants;
+package org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo;
 
 public enum RobotState {
     IDLE,

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Robotv8.Constants;
+package org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo;
 
 public class RobotConstants {
     // -------------------------------------------------------------- ROBOT CONFIG
@@ -10,6 +10,7 @@ public class RobotConstants {
     public static final String ARM_R = "armR";
     public static final String ARM_L = "armL";
     public static final String INTAKE_MOTOR = "intake";
+    public static final String SERVO_FLAP = "flap";
     public static final String SERVO_CLAW = "claw";
     public static final String SERVO_WRIST = "wrist";
     public static final String SERVO_ELBOW_L = "elbowL";
@@ -26,6 +27,8 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
+    public static final double FLAP_CLOSE = 0.5;
+    public static final double FLAP_OPEN = 1;
     public static final double CLAW_CLOSE = 0.75;
     public static final double CLAW_OPEN = 0.49;
     public static final double WRIST_PICKUP = 0.88;

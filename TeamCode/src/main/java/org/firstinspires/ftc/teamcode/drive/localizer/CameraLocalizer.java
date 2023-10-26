@@ -28,7 +28,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 
 public class CameraLocalizer implements Localizer {
     public Pose2d poseEstimate;

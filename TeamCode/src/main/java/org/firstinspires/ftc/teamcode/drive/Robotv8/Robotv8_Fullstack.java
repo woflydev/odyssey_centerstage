@@ -45,9 +45,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.OuttakeState;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotState;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.OuttakeState;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -68,6 +68,7 @@ public class Robotv8_Fullstack extends OpMode {
     public DcMotorEx backRM = null;
     public DcMotorEx frontLM = null;
     public DcMotorEx frontRM = null;
+    public Servo servoFlap = null;
     public Servo servoClaw = null;
     public Servo servoWrist = null;
     public Servo servoElbowR = null;
@@ -169,6 +170,7 @@ public class Robotv8_Fullstack extends OpMode {
         armR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        servoFlap = hardwareMap.get(Servo.class, RobotConstants.SERVO_FLAP);
         servoElbowR = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_R);
         servoElbowL = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_L);
         servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
@@ -176,9 +178,8 @@ public class Robotv8_Fullstack extends OpMode {
         servoPlane = hardwareMap.get(Servo.class, RobotConstants.SERVO_PLANE);
 
         clawOpen = true;
-        wristActive = false;
-        elbowActive = false;
         transferStageDeployed = false;
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
@@ -453,6 +454,8 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void GrabAndReady() {
+        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
+        Delay(200);
         servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
         MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
         Delay(400);
@@ -479,6 +482,7 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void DropAndReset() {
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         Delay(350); // elbow should come down after the slide is near done
         MoveElbow(RobotConstants.ELBOW_STANDBY);
