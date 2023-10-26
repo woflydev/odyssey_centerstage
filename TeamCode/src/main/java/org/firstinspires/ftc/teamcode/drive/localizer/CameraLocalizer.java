@@ -142,6 +142,8 @@ public class CameraLocalizer implements Localizer {
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
 
+    private boolean stop = false;
+
     @NonNull
     public Pose2d getPoseEstimate() {
         return this.poseEstimate;
@@ -199,7 +201,7 @@ public class CameraLocalizer implements Localizer {
     }
 
     public void update() {
-        if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME) {
+        if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME && !stop) {
             lastEstimate = poseEstimate;
             poseEstimate = analyseDetections();
             poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
@@ -208,6 +210,11 @@ public class CameraLocalizer implements Localizer {
             }
             Delay(SLEEP_TIME);
         }
+    }
+
+    public void stop() {
+        stop = true;
+        visionPortal.close();
     }
 
     public void Delay(double time) {

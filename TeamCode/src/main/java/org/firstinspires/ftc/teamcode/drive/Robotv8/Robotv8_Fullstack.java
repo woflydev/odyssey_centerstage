@@ -59,7 +59,7 @@ import java.util.List;
 
 @TeleOp()
 public class Robotv8_Fullstack extends OpMode {
-    public Robot_v8_Abstract handler;
+    public Robotv8_Abstract handler;
 
     public RobotState state = RobotState.IDLE;
     public OuttakeState outtakeState = OuttakeState.IDLE;
@@ -201,7 +201,7 @@ public class Robotv8_Fullstack extends OpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
-        handler = new Robot_v8_Abstract(this, hardwareMap, telemetry);
+        handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
         drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
 
         if (RobotConstants.USE_DRIVE) {
@@ -209,7 +209,7 @@ public class Robotv8_Fullstack extends OpMode {
             if (!handler.localizer.isBlind) {
                 drive.setPoseEstimate(handler.localizer.poseEstimate);
             } else {
-                drive.setPoseEstimate(Robot_v8_Abstract.STARTING_POSE);
+                drive.setPoseEstimate(Robotv8_Abstract.STARTING_POSE);
             }
         }
 
@@ -439,7 +439,7 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(5); // debounce
     }
 
-    public void MacroDrive(Robot_v8_Abstract handler) {
+    public void MacroDrive(Robotv8_Abstract handler) {
         if (gamepad1.right_stick_button) {
             drive.followTrajectory(handler.TILE_TO_BACKDROP);
         }
@@ -580,7 +580,7 @@ public class Robotv8_Fullstack extends OpMode {
         private List<Integer> lastEncPositions = new ArrayList<>();
         private List<Integer> lastEncVels = new ArrayList<>();
 
-        public AutoMecanumDrive(Robot_v8_Abstract handler, HardwareMap hardwareMap, DcMotorEx frontLM, DcMotorEx frontRM, DcMotorEx backLM, DcMotorEx backRM, IMU i) {
+        public AutoMecanumDrive(Robotv8_Abstract handler, HardwareMap hardwareMap, DcMotorEx frontLM, DcMotorEx frontRM, DcMotorEx backLM, DcMotorEx backRM, IMU i) {
             super(DriveConstants.kV, DriveConstants.kA, DriveConstants.kStatic,
                     TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
             follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
