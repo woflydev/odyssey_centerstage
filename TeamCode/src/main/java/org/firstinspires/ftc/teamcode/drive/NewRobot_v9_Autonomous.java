@@ -7,13 +7,17 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 @Autonomous(name="Final RoadRunner Autonomous", group="Final")
 public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
 
-    public void start() {
+    public void MainInit() {
+
+    }
+
+    public void MainStart() {
         handler.initTask(2);
+        // Go back to starting position
     }
 
     public void MainLoop() {
-        PassiveArmResetCheck();
-        RuntimeConfig();
-        Macros(handler);
+        // Get Pixel
+        // Go to
     }
 }
