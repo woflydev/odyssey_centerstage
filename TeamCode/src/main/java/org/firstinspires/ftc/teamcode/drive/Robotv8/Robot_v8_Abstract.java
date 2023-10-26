@@ -299,7 +299,7 @@ public class Robot_v8_Abstract {
         stack.intake.setPower(RobotConstants.INTAKE_POWER);
         stack.Delay(RobotConstants.INTAKE_TIME);
 
-        stack.Grab();
+        stack.GrabAndReady();
 
         if (fromTile) {
             stack.drive.followTrajectory(TILE_TO_BACKDROP);
@@ -312,7 +312,7 @@ public class Robot_v8_Abstract {
                         .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
                         .build()
         );
-        stack.Deposit((int) (frontPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
+        stack.DepositSequence((int) (frontPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
 
     }
 }
