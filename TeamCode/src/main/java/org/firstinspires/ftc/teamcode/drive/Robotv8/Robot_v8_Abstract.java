@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 
@@ -294,7 +295,7 @@ public class Robot_v8_Abstract {
         transferPixel(pixelColour, frontPipeline.spikeMark, true);
     }
     public void transferPixel(int pixelColour, int pixelSlot, boolean fromTile) {
-        stack.ArmStandby();
+        stack.DropAndReset();
 
         stack.intake.setPower(RobotConstants.INTAKE_POWER);
         stack.Delay(RobotConstants.INTAKE_TIME);

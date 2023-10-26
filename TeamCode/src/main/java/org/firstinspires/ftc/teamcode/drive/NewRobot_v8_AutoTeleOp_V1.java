@@ -4,7 +4,7 @@ import static java.lang.Thread.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 

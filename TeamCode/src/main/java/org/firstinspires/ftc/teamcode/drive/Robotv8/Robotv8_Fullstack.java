@@ -45,6 +45,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.OuttakeState;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotState;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -53,8 +56,6 @@ import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.net.ssl.SSLEngineResult;
 
 @TeleOp()
 public class Robotv8_Fullstack extends OpMode {
@@ -296,10 +297,7 @@ public class Robotv8_Fullstack extends OpMode {
             } else if (gamepad2.dpad_up) {
                 targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
                 UpdateOuttake(false, 0);
-            } /*else if (gamepad1.right_bumper || gamepad1.left_bumper) {
-                armR.setVelocity(0);
-                armL.setVelocity(0);
-            }*/
+            }
 
             if (gamepad2.square) {
                 targetClawPosition -= 0.02;
@@ -321,14 +319,7 @@ public class Robotv8_Fullstack extends OpMode {
                 Delay(50);
             }
 
-            if (gamepad1.triangle) {
-                targetElbowPosition += 0.02;
-                MoveElbow(targetElbowPosition);
-            } else if (gamepad1.cross) {
-                targetElbowPosition -= 0.02;
-                MoveElbow(targetElbowPosition);
-            }
-
+            // PLANE -------------------------------------------------------------------
             if (gamepad2.cross) {
                 if (!planeTriggered) {
                     planeTriggered = true;
@@ -340,20 +331,17 @@ public class Robotv8_Fullstack extends OpMode {
                 Delay(250);
             }
 
-            if (gamepad1.dpad_up) {
-                intake.setPower(0.5);
-            } else {
-                intake.setPower(0);
+            // ELBOW ------------------------------------------------------------------
+            if (gamepad1.triangle) {
+                targetElbowPosition += 0.02;
+                MoveElbow(targetElbowPosition);
+            } else if (gamepad1.cross) {
+                targetElbowPosition -= 0.02;
+                MoveElbow(targetElbowPosition);
             }
         }
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
-
-        /*if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
-            fieldCentricRed = !fieldCentricRed;
-            Delay(50);
-        }*/
-
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
         }
@@ -404,15 +392,53 @@ public class Robotv8_Fullstack extends OpMode {
         backRM.setPower(stable_v4 / driveSpeedModifier);
     }
 
-    public void ArmStandby() {
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        targetOuttakePosition = RobotConstants.MIN_OUTTAKE_HEIGHT;
-        UpdateOuttake(true, 300);
-        Delay(350); // elbow should come down after the slide is near done
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+    public void Macros() {
+        // INTAKE
+        if (gamepad1.left_trigger > 0.2) {
+            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else {
+            intake.setPower(0);
+        }
+
+        // GRAB
+        if (gamepad1.left_bumper && outtakeState == OuttakeState.IDLE) {
+            intake.setPower(0);
+            GrabAndReady();
+            outtakeState = OuttakeState.GRABBED_AND_READY;
+        }
+
+        // DEPLOY & RESET DEPENDING ON STATE
+        if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
+            if (gamepad1.dpad_right) {
+                DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT);
+            } else if (gamepad1.dpad_down) {
+                DepositSequence(RobotConstants.JUNCTION_LOW);
+            } else if (gamepad1.dpad_left) {
+                DepositSequence(RobotConstants.JUNCTION_MID);
+            } else if (gamepad1.dpad_up) {
+                DepositSequence(RobotConstants.JUNCTION_HIGH);
+            }
+        }
+
+        // RESET
+        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
+            DropAndReset();
+            outtakeState = OuttakeState.IDLE;
+        }
+
+        Delay(5); // debounce
     }
 
+    public void MacroDrive(Robot_v8_Abstract handler) {
+        if (gamepad1.right_stick_button) {
+            drive.followTrajectory(handler.TILE_TO_BACKDROP);
+        }
+        if (gamepad1.left_stick_button) {
+            drive.followTrajectory(handler.BACKDROP_TO_TILE);
+        }
+    }
+
+    // INTAKE/OUTTAKE SEQUENCE FUNCTIONS --------------------------------------------------
     public void DepositSequence(int height) {
         if (outtakeState == OuttakeState.GRABBED_AND_READY) {
             intake.setPower(0); // make sure intake is not running
@@ -462,6 +488,8 @@ public class Robotv8_Fullstack extends OpMode {
         UpdateOuttake(true, 0);
     }
 
+
+    // HELPER FUNCTIONS ------------------------------------------------------------------
     public void UpdateOuttake(boolean reset, double delay) { // test new function
         if (reset) {
             Delay(delay);
@@ -498,54 +526,20 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void PassiveArmResetCheck() {
-        if ((armL.getCurrentPosition() <= 30 && armR.getCurrentPosition() <= 30) && targetOuttakePosition <= 30) {
-            armR.setVelocity(0);
-            armL.setVelocity(0);
-            resetTimer.reset();
-        }
-    }
+        if (targetOuttakePosition <= 30) {
+            if ((armL.getCurrentPosition() <= 10 && armR.getCurrentPosition() <= 10) && (armL.getCurrentPosition() >= 0 && armR.getCurrentPosition() <= 0)) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            } else if ((armL.getCurrentPosition() <= 210 && armR.getCurrentPosition() <= 210) && (armL.getCurrentPosition() >= -100 && armR.getCurrentPosition() >= -100)) {
+                armR.setTargetPosition(10);
+                armL.setTargetPosition(10);
+                targetOuttakePosition = 10;
 
-    public void Macros(Robot_v8_Abstract handler) {
-        if (gamepad1.left_trigger > 0.2) {
-            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else {
-            intake.setPower(0);
-        }
-
-        if (gamepad1.left_bumper && outtakeState == OuttakeState.IDLE) {
-            intake.setPower(0);
-            GrabAndReady();
-            outtakeState = OuttakeState.GRABBED_AND_READY;
-        }
-
-        if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
-            if (gamepad1.dpad_right) {
-                DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT);
-            } else if (gamepad1.dpad_down) {
-                DepositSequence(RobotConstants.JUNCTION_LOW);
-            } else if (gamepad1.dpad_left) {
-                DepositSequence(RobotConstants.JUNCTION_MID);
-            } else if (gamepad1.dpad_up) {
-                DepositSequence(RobotConstants.JUNCTION_HIGH);
+                armR.setVelocity(800);
+                armL.setVelocity(800);
             }
         }
-
-        // it should not be able to drop and reset if it's ready to deposit
-        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
-            DropAndReset();
-            outtakeState = OuttakeState.IDLE;
-        }
-
-    if (gamepad1.right_stick_button) {
-        drive.followTrajectory(handler.TILE_TO_BACKDROP);
     }
-    if (gamepad1.left_stick_button) {
-        drive.followTrajectory(handler.BACKDROP_TO_TILE);
-    }
-
-        Delay(5); // debounce
-    }
-
 
     public static class AutoMecanumDrive extends MecanumDrive {
         public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);

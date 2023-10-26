@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Robotv8.testing;
+package org.firstinspires.ftc.teamcode.drive.Deprecated;
 
 import android.annotation.SuppressLint;
 
@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -20,6 +20,7 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 import java.util.List;
 
+@Deprecated()
 public class NewRobot_v8_AbstractTesting {
     // Z-angle
     private static double YAW_ANGLE = 0;

@@ -15,7 +15,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
-@TeleOp()
+@Deprecated()
 public class NewRobot_v6_Test_v1 extends OpMode {
     // -------------------------------------------------------------- SYSTEM VAR
     private DcMotorEx backLM = null;

@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Robotv8_TestingOpMode;
 
 @TeleOp()

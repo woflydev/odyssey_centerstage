@@ -3,12 +3,12 @@ package org.firstinspires.ftc.teamcode.drive;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Constants.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 @TeleOp()
 public class NewRobot_v8_DriveBaseTest_v1 extends Robotv8_Fullstack {
-    private void Mecanum() {
+    public void Mecanum() {
         double frontLeftPower;
         double backLeftPower;
         double frontRightPower;
