@@ -270,6 +270,12 @@ public class Robotv8_FullstackTesting extends OpMode {
     public void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
+            if (gamepad1.right_trigger >= 0.5) {
+                driveSpeedModifier = 2.5;
+            } else {
+                driveSpeedModifier = 1;
+            }
+
             if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
@@ -392,8 +398,10 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public void Macros() {
         // INTAKE
-        if (gamepad1.left_trigger > 0.2) {
+        if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
             intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else if (gamepad2.cross) {
+            intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
         } else {
             intake.setPower(0);
         }
@@ -403,6 +411,12 @@ public class Robotv8_FullstackTesting extends OpMode {
             intake.setPower(0);
             GrabAndReady();
             outtakeState = OuttakeState.GRABBED_AND_READY;
+        }
+
+        // RESET
+        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
+            DropAndReset();
+            outtakeState = OuttakeState.IDLE;
         }
 
         // DEPLOY & RESET DEPENDING ON STATE
@@ -416,12 +430,6 @@ public class Robotv8_FullstackTesting extends OpMode {
             } else if (gamepad1.dpad_up) {
                 DepositSequence(RobotConstants.JUNCTION_HIGH);
             }
-        }
-
-        // RESET
-        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
-            DropAndReset();
-            outtakeState = OuttakeState.IDLE;
         }
 
         Delay(5); // debounce
@@ -443,21 +451,26 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public void GrabAndReady() {
         servoFlap.setPosition(RobotConstants.FLAP_OPEN);
-        Delay(200);
+        Delay(600);
+
+        // transfer stage sequence
         servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
         MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
-        Delay(400);
+        Delay(200);
         MoveElbow(RobotConstants.ELBOW_PICKUP);
 
-        Delay(50);
+        Delay(100);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         Delay(100);
 
         // primes the elbow
         MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(100);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
     public void RaiseAndPrime(int height) {
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
@@ -470,12 +483,15 @@ public class Robotv8_FullstackTesting extends OpMode {
     }
 
     public void DropAndReset() {
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(350); // elbow should come down after the slide is near done
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        Delay(300); // wait for claw to open
 
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+
+        Delay(350); // elbow should come down after the slide is near done
+
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         targetOuttakePosition = 10;
         UpdateOuttake(true, 0);
     }

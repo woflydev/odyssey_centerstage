@@ -27,19 +27,19 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double FLAP_CLOSE = 0.5;
-    public static final double FLAP_OPEN = 1;
-    public static final double CLAW_CLOSE = 0.75;
-    public static final double CLAW_OPEN = 0.49;
-    public static final double WRIST_PICKUP = 0.88;
+    public static final double FLAP_CLOSE = 0.8;
+    public static final double FLAP_OPEN = 0.44;
+    public static final double CLAW_CLOSE = 0.72;
+    public static final double CLAW_OPEN = 0.53;
+    public static final double WRIST_PICKUP = 0.22;
     public static final double WRIST_PICKUP_BACK = 0.2;
-    public static final double WRIST_STANDBY = 0.46;
-    public static final double WRIST_ACTIVE = 0.29;
-    public static final double ELBOW_PICKUP = 0.05;
+    public static final double WRIST_STANDBY = 0.48;
+    public static final double WRIST_ACTIVE = 0.8;
+    public static final double ELBOW_PICKUP = 0.27;
     public static final double ELBOW_PICKUP_BACK = 0.77;
-    public static final double ELBOW_STANDBY = 0.17;
+    public static final double ELBOW_STANDBY = 0.43;
     public static final double ELBOW_STANDBY_BACK = 0.75;
-    public static final double ELBOW_ACTIVE = 0.53;
+    public static final double ELBOW_ACTIVE = 0.77;
     public static final double PLANE_STANDBY = 0.1;
     public static final double PLANE_ACTIVE = 0.0;
 
@@ -53,9 +53,9 @@ public class RobotConstants {
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
-    public static final int JUNCTION_LOW = 1300;
-    public static final int JUNCTION_MID = 2200;
-    public static final int JUNCTION_HIGH = 3100;
+    public static final int JUNCTION_LOW = 900;
+    public static final int JUNCTION_MID = 1300;
+    public static final int JUNCTION_HIGH = 2000;
 
     // -------------------------------------------------------------- VISION
 

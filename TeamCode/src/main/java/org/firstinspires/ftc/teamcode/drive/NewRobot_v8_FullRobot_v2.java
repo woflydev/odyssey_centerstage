@@ -4,23 +4,28 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
 
 @TeleOp()
-public class NewRobot_v8_FullRobot_v2 extends Robotv8_Fullstack {
+public class NewRobot_v8_FullRobot_v2 extends Robotv8_FullstackTesting {
     public void MainLoop() {
         Mecanum();
         RuntimeConfig();
         Macros();
-        MacroDrive(handler);
+        //MacroDrive(handler);
         PassiveArmResetCheck();
 
-        // TELEMETRY
+        if (gamepad1.start) {
+            imu.resetYaw();
+        }
+
+        /*// TELEMETRY
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
-        /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
+        *//*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
-        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
+        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*//*
         telemetry.addData("Target Wrist Position: ", targetWristPosition);
         telemetry.addData("Target Elbow Position: ", targetElbowPosition);
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
@@ -31,6 +36,6 @@ public class NewRobot_v8_FullRobot_v2 extends Robotv8_Fullstack {
         telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
         telemetry.addData("IMU Yaw: ", GetHeading());
 
-        telemetry.update();
+        telemetry.update();*/
     }
 }
