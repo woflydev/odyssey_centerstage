@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 @TeleOp(name = "Concept: AutoTeleOp_V1", group = "Concept")
 public class NewRobot_v8_AutoTeleOp_V1 extends Robotv8_Fullstack {
 
-    public void loop() {
+    public void MainLoop() {
 
 
         PassiveArmResetCheck();

@@ -7,7 +7,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
 @TeleOp()
 public class NewRobot_v8_FullRobot_v2 extends Robotv8_Fullstack {
-    public void loop() {
+    public void MainLoop() {
         Mecanum();
         RuntimeConfig();
         Macros();
