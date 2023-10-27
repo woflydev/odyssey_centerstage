@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo;
 
 public class RobotConstants {
+    // -------------------------------------------------------------- CONTROLLER CONFIG
+    public static final double JOYSTICK_DEADZONE = 0.03;
+
     // -------------------------------------------------------------- ROBOT CONFIG
 
     public static final String FRONT_LEFT = "frontL";

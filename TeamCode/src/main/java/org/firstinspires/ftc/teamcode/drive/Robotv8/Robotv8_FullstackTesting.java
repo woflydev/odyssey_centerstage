@@ -270,8 +270,9 @@ public class Robotv8_FullstackTesting extends OpMode {
     public void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            if (gamepad1.right_trigger >= 0.5) {
-                driveSpeedModifier = 2.5;
+            // slow down driving with analog trigger
+            if (gamepad1.right_trigger >= 0.2) {
+                driveSpeedModifier = gamepad1.right_trigger + 1.3;
             } else {
                 driveSpeedModifier = 1;
             }
@@ -336,10 +337,10 @@ public class Robotv8_FullstackTesting extends OpMode {
             }
 
             // ELBOW ------------------------------------------------------------------
-            if (gamepad1.triangle) {
+            if (gamepad1.dpad_up) {
                 targetElbowPosition += 0.02;
                 MoveElbow(targetElbowPosition);
-            } else if (gamepad1.cross) {
+            } else if (gamepad1.dpad_down) {
                 targetElbowPosition -= 0.02;
                 MoveElbow(targetElbowPosition);
             }
@@ -349,6 +350,67 @@ public class Robotv8_FullstackTesting extends OpMode {
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
         }
+    }
+
+    private volatile boolean drivebaseMacroActive = false;
+    public void TurnToHeadingAsync(double targetHeading) {
+        if (drivebaseMacroActive) {
+            return; // A macro is already in progress
+        }
+
+        drivebaseMacroActive = true;
+
+        double frontLeftPower;
+        double backLeftPower;
+        double frontRightPower;
+        double backRightPower;
+
+        double currentHeading;
+        double error;
+        double Kp = 0.03; // Adjust this gain as needed
+
+        currentHeading = GetHeading();
+        error = targetHeading - currentHeading;
+
+        while (Math.abs(error) > 0.02) {
+            currentHeading = GetHeading();
+            error = targetHeading - currentHeading;
+
+            // Determine the direction of rotation (clockwise or counterclockwise)
+            double rotatePower;
+            if (error > 180) {
+                // If error is more than 180 degrees, rotate in the opposite direction
+                rotatePower = -Math.abs(error) * Kp;
+            } else {
+                rotatePower = Math.abs(error) * Kp;
+            }
+
+            // Apply the rotation power to the robot
+            frontLeftPower = -rotatePower;
+            backLeftPower = -rotatePower;
+            frontRightPower = rotatePower;
+            backRightPower = rotatePower;
+
+            // Update motor powers
+            frontLM.setPower(frontLeftPower);
+            frontRM.setPower(frontRightPower);
+            backLM.setPower(backLeftPower);
+            backRM.setPower(backRightPower);
+
+            // Allow other controls to run in parallel
+            // For example, you can continue reading gamepad input here
+
+            // Sleep for a short duration to avoid busy-waiting
+            Delay(20); // Adjust the sleep duration as needed
+        }
+
+        // Stop the robot
+        frontLM.setPower(0);
+        frontRM.setPower(0);
+        backLM.setPower(0);
+        backRM.setPower(0);
+
+        drivebaseMacroActive = false;
     }
 
     public void Mecanum() {
@@ -390,17 +452,28 @@ public class Robotv8_FullstackTesting extends OpMode {
         current_v3 = stable_v3;
         current_v4 = stable_v4;
 
-        frontLM.setPower(stable_v3 / driveSpeedModifier);
-        frontRM.setPower(stable_v2 / driveSpeedModifier);
-        backLM.setPower(stable_v1 / driveSpeedModifier);
-        backRM.setPower(stable_v4 / driveSpeedModifier);
+        if (gamepad1.dpad_right) {
+            double targetHeading = 270;
+            TurnToHeadingAsync(targetHeading);
+        } else if (gamepad1.dpad_left) {
+            double targetHeading = 90;
+            TurnToHeadingAsync(targetHeading);
+        }
+
+        // TODO: test if deadzone works
+        if (Math.abs(gamepad1.left_stick_y) >= RobotConstants.JOYSTICK_DEADZONE && Math.abs(gamepad1.left_stick_x) >= RobotConstants.JOYSTICK_DEADZONE) {
+            frontLM.setPower(stable_v3 / driveSpeedModifier);
+            frontRM.setPower(stable_v2 / driveSpeedModifier);
+            backLM.setPower(stable_v1 / driveSpeedModifier);
+            backRM.setPower(stable_v4 / driveSpeedModifier);
+        }
     }
 
     public void Macros() {
         // INTAKE
         if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
             intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else if (gamepad2.cross) {
+        } else if (gamepad1.square || gamepad2.cross) {
             intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
         } else {
             intake.setPower(0);
@@ -421,13 +494,11 @@ public class Robotv8_FullstackTesting extends OpMode {
 
         // DEPLOY & RESET DEPENDING ON STATE
         if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
-            if (gamepad1.dpad_right) {
-                DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT);
-            } else if (gamepad1.dpad_down) {
+            if (gamepad1.cross) {
                 DepositSequence(RobotConstants.JUNCTION_LOW);
-            } else if (gamepad1.dpad_left) {
+            } else if (gamepad1.circle) {
                 DepositSequence(RobotConstants.JUNCTION_MID);
-            } else if (gamepad1.dpad_up) {
+            } else if (gamepad1.triangle) {
                 DepositSequence(RobotConstants.JUNCTION_HIGH);
             }
         }
