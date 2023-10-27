@@ -68,7 +68,7 @@ public class Robotv8_Abstract {
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
 
-    public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map) {
+    public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map)  {
         TELEMETRY_GIVEN = false;
         //telemetry.addLine("Initialising...");
         hardwareMap = map;

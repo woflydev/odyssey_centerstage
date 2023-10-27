@@ -254,6 +254,7 @@ public class Robotv8_FullstackTesting extends OpMode {
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
+        telemetry.addData("Target Flap Position: ", targetFlapPosition);
         telemetry.addData("Target Wrist Position: ", targetWristPosition);
         telemetry.addData("Target Elbow Position: ", targetElbowPosition);
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
