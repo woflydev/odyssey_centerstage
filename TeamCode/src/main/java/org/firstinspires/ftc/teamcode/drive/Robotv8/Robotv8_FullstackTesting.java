@@ -58,11 +58,10 @@ import java.util.Arrays;
 import java.util.List;
 
 @TeleOp()
-public class Robotv8_Fullstack extends OpMode {
+public class Robotv8_FullstackTesting extends OpMode {
     public Robotv8_Abstract handler;
 
     public RobotState state = RobotState.IDLE;
-    public boolean active = true;
     public OuttakeState outtakeState = OuttakeState.IDLE;
 
     public DcMotorEx backLM = null;
@@ -105,8 +104,6 @@ public class Robotv8_Fullstack extends OpMode {
     public double driveSpeedModifier = 1;
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
-
-    public AutoMecanumDrive drive;
 
     public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
@@ -202,18 +199,6 @@ public class Robotv8_Fullstack extends OpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
-        handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
-        drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
-
-        if (RobotConstants.USE_DRIVE) {
-            handler.initialisePaths();
-            if (!handler.localizer.isBlind) {
-                drive.setPoseEstimate(handler.localizer.poseEstimate);
-            } else {
-                drive.setPoseEstimate(Robotv8_Abstract.STARTING_POSE);
-            }
-        }
-
         Delay(500);
     }
 
@@ -234,18 +219,15 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void loop() {
-        if (active) {
-            StatusTelemetry();
+        StatusTelemetry();
 
-            // Optional, to see position output
-            handler.update();
-            MainLoop();
-        }
+        // Optional, to see position output
+        //handler.update();
+        MainLoop();
     }
     public void stop() {
-        active = false;
-        handler.stop();
         MainStop();
+        handler.stop();
     }
 
     public void MainInit() {
@@ -261,6 +243,7 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void MainStop() {
+        
     }
 
     public void StatusTelemetry() {
@@ -441,15 +424,6 @@ public class Robotv8_Fullstack extends OpMode {
         }
 
         Delay(5); // debounce
-    }
-
-    public void MacroDrive(Robotv8_Abstract handler) {
-        if (gamepad1.right_stick_button) {
-            drive.followTrajectory(handler.TILE_TO_BACKDROP);
-        }
-        if (gamepad1.left_stick_button) {
-            drive.followTrajectory(handler.BACKDROP_TO_TILE);
-        }
     }
 
     // INTAKE/OUTTAKE SEQUENCE FUNCTIONS --------------------------------------------------

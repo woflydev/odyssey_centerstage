@@ -138,11 +138,10 @@ public class CameraLocalizer implements Localizer {
 
     private long blindTime = 0;
     public boolean isBlind = false;
+    public boolean stopTrigger = false;
 
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
-
-    private boolean stopTrigger = false;
 
     @NonNull
     public Pose2d getPoseEstimate() {
