@@ -19,6 +19,8 @@ public class RobotConstants {
     public static final String SERVO_ELBOW_L = "elbowL";
     public static final String SERVO_ELBOW_R = "elbowR";
     public static final String SERVO_PLANE = "plane";
+    public static final String SERVO_HANG_R = "hangR";
+    public static final String SERVO_HANG_L = "hangL";
     public static final String HUB_IMU = "imu";
     public static final String FRONT_CAMERA = "Webcam 1";
     public static final String BACK_CAMERA = "Webcam 2";
@@ -32,15 +34,15 @@ public class RobotConstants {
 
     public static final double FLAP_CLOSE = 0.8;
     public static final double FLAP_OPEN = 0.44;
-    public static final double CLAW_CLOSE = 0.72;
-    public static final double CLAW_OPEN = 0.53;
-    public static final double WRIST_PICKUP = 0.22;
+    public static final double CLAW_CLOSE = 0.775;
+    public static final double CLAW_OPEN = 0.52;
+    public static final double WRIST_PICKUP = 0.18;
     public static final double WRIST_PICKUP_BACK = 0.2;
-    public static final double WRIST_STANDBY = 0.48;
+    public static final double WRIST_STANDBY = 0.50;
     public static final double WRIST_ACTIVE = 0.8;
-    public static final double ELBOW_PICKUP = 0.27;
+    public static final double ELBOW_PICKUP = 0.29;
     public static final double ELBOW_PICKUP_BACK = 0.77;
-    public static final double ELBOW_STANDBY = 0.43;
+    public static final double ELBOW_STANDBY = 0.41;
     public static final double ELBOW_STANDBY_BACK = 0.75;
     public static final double ELBOW_ACTIVE = 0.77;
     public static final double PLANE_STANDBY = 0.1;
@@ -52,13 +54,14 @@ public class RobotConstants {
 
     public static final double MAX_MANUAL_INTAKE_POWER = 0.6;
 
-    public static final double PPR = 537.7; // gobuilda motor 85203 Series
+    public static final double PPR = 375; // gobuilda motor 85203 Series
+    public static final double WHEEL_CIRCUMFERENCE = 28.9026524; // in mm
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
-    public static final int JUNCTION_LOW = 900;
-    public static final int JUNCTION_MID = 1300;
-    public static final int JUNCTION_HIGH = 2000;
+    public static final int JUNCTION_LOW = 700;
+    public static final int JUNCTION_MID = 1100;
+    public static final int JUNCTION_HIGH = 1600;
 
     // -------------------------------------------------------------- VISION
 

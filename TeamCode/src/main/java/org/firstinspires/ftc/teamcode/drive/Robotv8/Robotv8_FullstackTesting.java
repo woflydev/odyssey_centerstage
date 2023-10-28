@@ -30,6 +30,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -74,6 +75,8 @@ public class Robotv8_FullstackTesting extends OpMode {
     public Servo servoElbowR = null;
     public Servo servoElbowL = null;
     public Servo servoPlane = null;
+    public CRServo servoHangR = null;
+    public CRServo servoHangL = null;
     public DcMotorEx armR = null;
     public DcMotorEx armL = null;
     public IMU imu = null;
@@ -176,6 +179,14 @@ public class Robotv8_FullstackTesting extends OpMode {
         servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
         servoPlane = hardwareMap.get(Servo.class, RobotConstants.SERVO_PLANE);
 
+        servoHangR = hardwareMap.get(CRServo.class, RobotConstants.SERVO_HANG_R);
+        servoHangR.setDirection(DcMotorSimple.Direction.FORWARD);
+        servoHangR.setPower(0);
+
+        servoHangL = hardwareMap.get(CRServo.class, RobotConstants.SERVO_HANG_L);
+        servoHangL.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoHangL.setPower(0);
+
         clawOpen = true;
         transferStageDeployed = false;
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
@@ -243,17 +254,17 @@ public class Robotv8_FullstackTesting extends OpMode {
     }
 
     public void MainStop() {
-        
+
     }
 
     public void StatusTelemetry() {
         // TELEMETRY
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
-        /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
+        telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
-        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
+        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());
         telemetry.addData("Target Flap Position: ", targetFlapPosition);
         telemetry.addData("Target Wrist Position: ", targetWristPosition);
         telemetry.addData("Target Elbow Position: ", targetElbowPosition);
@@ -305,6 +316,7 @@ public class Robotv8_FullstackTesting extends OpMode {
                 Delay(50);
             }
 
+            // todo: relinquish wrist control in favour of hanging
             if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
@@ -314,6 +326,17 @@ public class Robotv8_FullstackTesting extends OpMode {
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
             }
+
+            /*if (gamepad2.right_bumper) {
+                servoHangR.setPower(1);
+                servoHangL.setPower(1);
+            } else if (gamepad2.left_bumper) {
+                servoHangR.setPower(-1);
+                servoHangL.setPower(-1);
+            } else {
+                servoHangR.setPower(0);
+                servoHangL.setPower(0);
+            }*/
 
             // FLAP (FOR TUNING VALUES) -----------------------------------------------
             if (gamepad2.dpad_right) {
@@ -452,20 +475,21 @@ public class Robotv8_FullstackTesting extends OpMode {
         current_v3 = stable_v3;
         current_v4 = stable_v4;
 
-        if (gamepad1.dpad_right) {
+        /*if (gamepad1.dpad_right) {
             double targetHeading = 270;
             TurnToHeadingAsync(targetHeading);
         } else if (gamepad1.dpad_left) {
             double targetHeading = 90;
             TurnToHeadingAsync(targetHeading);
-        }
+        }*/
+        frontLM.setPower(stable_v3 / driveSpeedModifier);
+        frontRM.setPower(stable_v2 / driveSpeedModifier);
+        backLM.setPower(stable_v1 / driveSpeedModifier);
+        backRM.setPower(stable_v4 / driveSpeedModifier);
 
         // TODO: test if deadzone works
         if (Math.abs(gamepad1.left_stick_y) >= RobotConstants.JOYSTICK_DEADZONE && Math.abs(gamepad1.left_stick_x) >= RobotConstants.JOYSTICK_DEADZONE) {
-            frontLM.setPower(stable_v3 / driveSpeedModifier);
-            frontRM.setPower(stable_v2 / driveSpeedModifier);
-            backLM.setPower(stable_v1 / driveSpeedModifier);
-            backRM.setPower(stable_v4 / driveSpeedModifier);
+
         }
     }
 
@@ -473,7 +497,7 @@ public class Robotv8_FullstackTesting extends OpMode {
         // INTAKE
         if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
             intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else if (gamepad1.square || gamepad2.cross) {
+        } else if (gamepad1.square) {
             intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
         } else {
             intake.setPower(0);
@@ -522,7 +546,7 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public void GrabAndReady() {
         servoFlap.setPosition(RobotConstants.FLAP_OPEN);
-        Delay(600);
+        Delay(700);
 
         // transfer stage sequence
         servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
@@ -530,9 +554,9 @@ public class Robotv8_FullstackTesting extends OpMode {
         Delay(200);
         MoveElbow(RobotConstants.ELBOW_PICKUP);
 
-        Delay(100);
+        Delay(200);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(100);
+        Delay(250);
 
         // primes the elbow
         MoveElbow(RobotConstants.ELBOW_STANDBY);
