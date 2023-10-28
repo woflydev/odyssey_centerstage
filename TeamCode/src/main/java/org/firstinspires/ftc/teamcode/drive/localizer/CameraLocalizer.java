@@ -279,6 +279,10 @@ public class CameraLocalizer implements Localizer {
     }
     @SuppressLint("DefaultLocale")
     public Pose2d analyseDetections() {
+        if (stopTrigger) { // TODO: check if this works, might be while loop
+            t.addData("STOP TRIGGER SET!", "TRUE");
+            return new Pose2d(0, 0, 0);
+        }
         currentDetections = aprilTag.getDetections();
         //telemetry.addData("# AprilTags Detected", currentDetections.size());
 
@@ -306,10 +310,7 @@ public class CameraLocalizer implements Localizer {
         normals.toArray(normalArr);
         positions.toArray(posArr);*/
 
-        if (stopTrigger) { // TODO: check if this works, might be while loop
-            t.addData("STOP TRIGGER SET!", "TRUE");
-            return new Pose2d(0, 0, 0);
-        } else if (notNullTags > 0) {
+        if (notNullTags > 0) {
             heading /= notNullTags;
             previousHeadings.add(heading);
 
