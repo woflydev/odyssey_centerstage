@@ -35,7 +35,7 @@ public class RobotConstants {
     public static final double FLAP_CLOSE = 0.8;
     public static final double FLAP_OPEN = 0.44;
     public static final double CLAW_CLOSE = 0.775;
-    public static final double CLAW_OPEN = 0.52;
+    public static final double CLAW_OPEN = 0.55;
     public static final double WRIST_PICKUP = 0.18;
     public static final double WRIST_PICKUP_BACK = 0.2;
     public static final double WRIST_STANDBY = 0.50;
@@ -55,7 +55,7 @@ public class RobotConstants {
     public static final double MAX_MANUAL_INTAKE_POWER = 0.6;
 
     public static final double PPR = 375; // gobuilda motor 85203 Series
-    public static final double WHEEL_CIRCUMFERENCE = 28.9026524; // in mm
+    public static final double ENCODER_TICKS_PER_TILE = 800; // in encoder ticks
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 

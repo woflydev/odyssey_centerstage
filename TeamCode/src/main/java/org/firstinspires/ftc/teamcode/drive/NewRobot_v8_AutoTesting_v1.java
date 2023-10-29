@@ -5,15 +5,13 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConsta
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
 
 @Autonomous(name="Autonomous Testing", group="Final")
 public class NewRobot_v8_AutoTesting_v1 extends Robotv8_FullstackTesting {
 
-    private double CMtoTicks(double in) {
-        return PPR / WHEEL_CIRCUMFERENCE * in;
+    private double TilesToTicks(double input) {
+        return ENCODER_TICKS_PER_TILE * input;
     }
 
     private void EncoderMove(double power, double left, double right, boolean strafe, boolean strafeRight, double safetyTimeout) {
@@ -24,18 +22,18 @@ public class NewRobot_v8_AutoTesting_v1 extends Robotv8_FullstackTesting {
         int frontRMTarget;
 
         if (!strafe) {
-            backLMTarget = backLM.getCurrentPosition() - (int)(CMtoTicks(left));
-            frontLMTarget = frontLM.getCurrentPosition() - (int)(CMtoTicks(left));
-            backRMTarget = backRM.getCurrentPosition() - (int)(CMtoTicks(right));
-            frontRMTarget = frontRM.getCurrentPosition() - (int)(CMtoTicks(right) * PPR);
+            backLMTarget = backLM.getCurrentPosition() - (int)(TilesToTicks(left));
+            frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left));
+            backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right));
+            frontRMTarget = frontRM.getCurrentPosition() - (int)(TilesToTicks(right));
         }
 
         else {
             int dir = strafeRight ? 1 : -1;
-            backLMTarget = backLM.getCurrentPosition() + (int)(CMtoTicks(left) * dir);
-            frontLMTarget = frontLM.getCurrentPosition() - (int)(CMtoTicks(left) * dir);
-            backRMTarget = backRM.getCurrentPosition() - (int)(CMtoTicks(right) * dir);
-            frontRMTarget = frontRM.getCurrentPosition() + (int)(CMtoTicks(right) * dir);
+            backLMTarget = backLM.getCurrentPosition() + (int)(TilesToTicks(left) * dir);
+            frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left) * dir);
+            backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right) * dir);
+            frontRMTarget = frontRM.getCurrentPosition() + (int)(TilesToTicks(right) * dir);
         }
 
         backLM.setTargetPosition(backLMTarget);
@@ -83,19 +81,14 @@ public class NewRobot_v8_AutoTesting_v1 extends Robotv8_FullstackTesting {
         Delay(5);
     }
 
-    public void MainInit() {
-
-    }
-
+    // runs on start press, only once
     public void MainStart() {
         //handler.initTask(2);
-        // Go back to starting position
 
         GrabAndReady();
-        EncoderMove(0.8, 87, 87, false, false, 5);
-        //Turn(90);
-        EncoderMove(0.8, -35, 35, false, false, 5);
-        EncoderMove(0.8, -85, -85, false, false, 6);
+        EncoderMove(0.8, 1, 1, false, false, 5);
+        EncoderMove(0.8, -1, 1, false, false, 4);
+        EncoderMove(1, -1, -1, false, false, 5);
         //RaiseAndPrime(JUNCTION_LOW);
         Delay(1000);
         DropAndReset();
