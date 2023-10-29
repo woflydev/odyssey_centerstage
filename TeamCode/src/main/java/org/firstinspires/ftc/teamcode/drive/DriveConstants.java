@@ -59,6 +59,7 @@ public class DriveConstants {
     public static double kV = 1.0 / rpmToVelocity(MAX_RPM);
     public static double kA = 0;
     public static double kStatic = 0;
+    public static double wheelBase = TRACK_WIDTH;
 
     /*
      * These values are used to generate the trajectories for you robot. To ensure proper operation,

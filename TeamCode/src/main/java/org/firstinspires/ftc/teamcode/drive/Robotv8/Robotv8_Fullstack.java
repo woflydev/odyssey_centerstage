@@ -637,6 +637,7 @@ public class Robotv8_Fullstack extends OpMode {
                     lastEncPositions, lastEncVels, lastTrackingEncPositions, lastTrackingEncVels
             );
         }
+
         public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
             return new TrajectoryBuilder(startPose, VEL_CONSTRAINT, ACCEL_CONSTRAINT);
         }

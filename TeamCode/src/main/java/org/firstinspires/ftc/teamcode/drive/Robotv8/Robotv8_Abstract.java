@@ -76,7 +76,7 @@ public class Robotv8_Abstract {
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;
         }
-        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, STARTING_POSE, telemetry);
+        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, STARTING_POSE, telemetry, stack);
 
         //telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         //telemetry.addData(">", "Touch Play to start OpMode");
@@ -103,7 +103,7 @@ public class Robotv8_Abstract {
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;
         }
-        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry);
+        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry, stack);
 
         localizer.update();
 

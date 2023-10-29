@@ -8,6 +8,9 @@ import android.util.Size;
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.util.Angle;
+import com.acmerobotics.roadrunner.kinematics.Kinematics;
+import com.acmerobotics.roadrunner.kinematics.MecanumKinematics;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -17,6 +20,8 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
@@ -32,8 +37,10 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 
 public class CameraLocalizer implements Localizer {
     public Pose2d poseEstimate;
-    public Pose2d lastEstimate;
     public Pose2d poseVelocity;
+
+    private ArrayList<Double> lastWheelPositions = new ArrayList<>();
+    private Double lastExtHeading = Double.NaN;
 
     public HardwareMap hardwareMap;
     private static double CAMERA_HEIGHT = 0.313;
@@ -51,6 +58,8 @@ public class CameraLocalizer implements Localizer {
 
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
+
+    private boolean useExternalHeading = true;
 
     /**
      * {@link #aprilTag} is the variable to store our instance of the AprilTag processor.
@@ -122,23 +131,15 @@ public class CameraLocalizer implements Localizer {
 
     private int AVERAGE_LENGTH = 3;
 
-    private VectorF previousPosition;
-
-    private ArrayList<VectorF> previousPositions;
-
-    private VectorF currentPosition;
-
-    private VectorF currentVelocity;
-
-    private double currentHeading;
-
-    private ArrayList<Double> previousHeadings;
+    private ArrayList<Pose2d> previousPoses = new ArrayList<>();
 
     public List<AprilTagDetection> currentDetections;
 
     private long blindTime = 0;
     public boolean isBlind = false;
     public boolean stopTrigger = false;
+
+    public Robotv8_Fullstack stack;
 
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
@@ -156,43 +157,30 @@ public class CameraLocalizer implements Localizer {
         return poseVelocity;
     }
 
-    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose) {
+    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Robotv8_Fullstack stack) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
-        this.lastEstimate = startingPose;
         this.poseVelocity = new Pose2d(0, 0, 0);
         this.TELEMETRY_GIVEN = false;
 
-        this.currentPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
-        this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);;
-        this.previousPositions = new ArrayList<>();
-        this.currentVelocity = new VectorF(0, 0, 0);
-        this.currentHeading = startingPose.getHeading();
-        this.previousHeadings = new ArrayList<>();
-
         this.FRONT_CAMERA = front;
         this.BACK_CAMERA = back;
+        this.stack = stack;
 
         initAprilTag();
     }
 
-    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t) {
+    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t, Robotv8_Fullstack stack) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
-        this.lastEstimate = startingPose;
         this.poseVelocity = new Pose2d(0, 0, 0);
         this.t = t;
         this.TELEMETRY_GIVEN = true;
 
-        this.currentPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);
-        this.previousPosition = new VectorF((float) startingPose.getX(), (float) startingPose.getY(), (float)CAMERA_HEIGHT);;
-        this.previousPositions = new ArrayList<>();
-        this.currentVelocity = new VectorF(0, 0, 0);
-        this.currentHeading = startingPose.getHeading();
-        this.previousHeadings = new ArrayList<>();
-
         this.FRONT_CAMERA = front;
         this.BACK_CAMERA = back;
+
+        this.stack = stack;
 
         initAprilTag();
 
@@ -201,9 +189,7 @@ public class CameraLocalizer implements Localizer {
 
     public void update() {
         if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME && !stopTrigger) {
-            lastEstimate = poseEstimate;
-            poseEstimate = analyseDetections();
-            poseVelocity = poseEstimate.minus(lastEstimate).div(SLEEP_TIME);
+            analyseDetections();
             if (TELEMETRY_GIVEN) {
                 t.addData("Pose", poseEstimate);
             }
@@ -278,31 +264,30 @@ public class CameraLocalizer implements Localizer {
 
     }
     @SuppressLint("DefaultLocale")
-    public Pose2d analyseDetections() {
+    public void analyseDetections() {
         if (stopTrigger) { // TODO: check if this works, might be while loop
             t.addData("STOP TRIGGER SET!", "TRUE");
-            return new Pose2d(0, 0, 0);
-        }
-        currentDetections = aprilTag.getDetections();
-        //telemetry.addData("# AprilTags Detected", currentDetections.size());
+        } else {
+            currentDetections = aprilTag.getDetections();
+            //telemetry.addData("# AprilTags Detected", currentDetections.size());
 
-        double heading = 0;
-        int notNullTags = 0;
+            double heading = 0;
+            int notNullTags = 0;
 
-        ArrayList<VectorF> normals = new ArrayList<VectorF>();
-        //ArrayList<VectorF> positions = new ArrayList<VectorF>();
+            VectorF avgPos = new VectorF(0, 0, 0);
+            //ArrayList<VectorF> positions = new ArrayList<VectorF>();
 
-        //tagTelemetry(currentDetections, this.t);
-        // Step through the list of detections and display info for each one.
-        for (AprilTagDetection detection : currentDetections) {
-            if (detection.metadata != null) {
+            //tagTelemetry(currentDetections, this.t);
+            // Step through the list of detections and display info for each one.
+            for (AprilTagDetection detection : currentDetections) {
+                if (detection.metadata != null) {
 
-                normals.add(vectorFromPose(detection, false));
-                //positions.add(detection.metadata.fieldPosition.multiplied(FEET_TO_METERS));
-                heading += yawFromPose(detection);
-                notNullTags++;
+                    avgPos.add(vectorFromPose(detection, false));
+                    //positions.add(detection.metadata.fieldPosition.multiplied(FEET_TO_METERS));
+                    heading += yawFromPose(detection);
+                    notNullTags++;
+                }
             }
-        }
 
         /*VectorF[] normalArr = new VectorF[normals.size()];
         VectorF[] posArr = new VectorF[positions.size()];
@@ -310,72 +295,87 @@ public class CameraLocalizer implements Localizer {
         normals.toArray(normalArr);
         positions.toArray(posArr);*/
 
-        if (notNullTags > 0) {
-            heading /= notNullTags;
-            previousHeadings.add(heading);
+            if (notNullTags > 0) {
+                avgPos.multiply(1 / (float) notNullTags);
+                heading /= notNullTags;
+                Pose2d roughPose = new Pose2d(avgPos.get(0), avgPos.get(1), heading);
 
-            while (previousHeadings.size() > AVERAGE_LENGTH) {
-                previousHeadings.remove(0);
-            }
-
-            currentHeading = 0;
-
-            for (int i = 0; i < previousHeadings.size(); i++) {
-                currentHeading += previousHeadings.get(i) / previousHeadings.size();
-            }
-
-            /*if (notNullTags > 1) {
-                currentPosition = intersectionEstimate(normalArr, posArr);
-            } else {
-                currentPosition = normalArr[0].multiplied((float) firstDetection.ftcPose.range * FEET_TO_METERS);
-            }*/
-            VectorF tmpPosition = new VectorF(0, 0, 0);
-
-            for (int i = 0; i < normals.size(); i++) {
-                tmpPosition.add(normals.get(i));
-            }
-            tmpPosition.multiply(1 / (float) normals.size());
-            previousPositions.add(tmpPosition);
-
-            while (previousPositions.size() > AVERAGE_LENGTH) {
-                previousPositions.remove(0);
-            }
-
-            VectorF avgPos = new VectorF(0, 0, 0);
-
-            for (VectorF pos : previousPositions) {
-                avgPos.add(pos);
-            }
-
-            avgPos.multiply( 1 / (float)previousPositions.size());
-
-            previousPosition = currentPosition;
-            /*if (TELEMETRY_GIVEN) {
-                for (int j = 0; j < previousPositions.size(); j++) {
-                    this.t.addData("Previous position: ", String.format("X: %6.3f, Y: %6.3f", previousPositions.get(j).get(0), previousPositions.get(j).get(1)));
+                Pose2d previousAvg = previousPoses.size() > 0 ? new Pose2d(0, 0, 0) : roughPose;
+                for (Pose2d pose : previousPoses) {
+                    previousAvg = previousAvg.plus(pose.times(1 / (float) previousPoses.size()));
                 }
-                this.t.addData("Smoothed position: ", avgPos);
-            }*/
 
-            currentPosition = avgPos;
+                poseEstimate = roughPose.plus(previousAvg).times(0.5);
+                previousPoses.add(poseEstimate);
 
-            currentVelocity = currentPosition.subtracted(previousPosition).multiplied(1 / (float) SLEEP_TIME);
-            isBlind = false;
-        } else {
-            // Assumes constant velocity if no April tags can be seen
-            if (!isBlind) {
-                blindTime = elapsedTime.time(timeUnit);
-                isBlind = true;
+                while (previousPoses.size() > AVERAGE_LENGTH) {
+                    previousPoses.remove(0);
+                }
+
+                poseVelocity = poseEstimate.minus(previousPoses.get(previousPoses.size() - 1)).div(SLEEP_TIME);
+                isBlind = false;
+            } else {
+                // Assumes constant velocity if no April tags can be seen
+                if (!isBlind) {
+                    blindTime = elapsedTime.time(timeUnit);
+                    isBlind = true;
+                }
+                MecanumLocalization();
             }
-            previousPositions = new ArrayList<>();
-            currentPosition = previousPosition.added(currentVelocity.multiplied(elapsedTime.time(timeUnit) - blindTime));
         }
-        //int index = 0;
-        /*if (this.TELEMETRY_GIVEN) {
-            this.t.addData("Position: ",  currentPose);
-            this.t.update();
-        }*/
-        return new Pose2d(currentPosition.get(0), currentPosition.get(1), currentHeading);
+    }
+
+    public void MecanumLocalization() {
+        List<Double> wheelPositions = stack.drive.getWheelPositions();
+        Double extHeading = useExternalHeading ? stack.drive.getExternalHeading() : Double.NaN;
+        if (lastWheelPositions.size() > 0) {
+            ArrayList<Double> wheelDeltas = differences((ArrayList<Double>) wheelPositions, lastWheelPositions);
+            Pose2d robotPoseDelta = MecanumKinematics.wheelToRobotVelocities(
+                    wheelDeltas,
+                    DriveConstants.TRACK_WIDTH,
+                    DriveConstants.wheelBase,
+                    Robotv8_Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
+            );
+            Double finalHeadingDelta = useExternalHeading ?
+                    Angle.normDelta(extHeading - lastExtHeading) :
+                    robotPoseDelta.getHeading();
+            poseEstimate = Kinematics.relativeOdometryUpdate(
+                    poseEstimate,
+                    new Pose2d(robotPoseDelta.getX(), robotPoseDelta.getY(), finalHeadingDelta)
+            );
+        }
+
+        List<Double> wheelVelocities = stack.drive.getWheelVelocities();
+        Double extHeadingVel = stack.drive.getExternalHeadingVelocity();
+        if (wheelVelocities != null) {
+            poseVelocity = MecanumKinematics.wheelToRobotVelocities(
+                    wheelVelocities,
+                    DriveConstants.TRACK_WIDTH,
+                    DriveConstants.wheelBase,
+                    Robotv8_Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
+            );
+            if (useExternalHeading && extHeadingVel != null) {
+                if (poseVelocity == null) {
+                    throw new NullPointerException();
+                }
+                poseVelocity = new Pose2d(poseVelocity.getX(), poseVelocity.getY(), extHeadingVel);
+            }
+        }
+
+        lastWheelPositions = (ArrayList<Double>) wheelPositions;
+        lastExtHeading = extHeading;
+    }
+
+    public ArrayList<Double> differences(ArrayList<Double> first, ArrayList<Double> second) {
+        if (first.size() != second.size()) {
+            throw new IllegalArgumentException();
+        }
+
+        ArrayList<Double> tmp = new ArrayList<>();
+        for (int i = 0; i < first.size(); i++) {
+            tmp.add(first.get(i) - second.get(i));
+        }
+        return tmp;
     }
 
     public VectorF vectorFromPose(AprilTagDetection detection) {
