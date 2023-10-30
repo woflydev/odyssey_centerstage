@@ -139,7 +139,9 @@ public class Robotv8_Abstract {
                     @Override
                     public void onOpened() {
                         // Usually this is where you'll want to start streaming from the camera (see section 4)
-                        frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        if (RobotConstants.STREAMING) {
+                            frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        }
                         frontCamera.setPipeline(frontPipeline);
                         //telemetry.addLine("Front camera opened!");
                         //telemetry.update();
@@ -183,7 +185,9 @@ public class Robotv8_Abstract {
                     @Override
                     public void onOpened() {
                         // Usually this is where you'll want to start streaming from the camera (see section 4)
-                        frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        if (RobotConstants.STREAMING) {
+                            frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        }
                         frontCamera.setPipeline(frontPipeline);
                         //telemetry.addLine("Front camera opened!");
                         //telemetry.update();
@@ -205,7 +209,9 @@ public class Robotv8_Abstract {
                     @Override
                     public void onOpened() {
                         // Usually this is where you'll want to start streaming from the camera (see section 4)
-                        backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        if (RobotConstants.STREAMING) {
+                            backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        }
                         backCamera.setPipeline(backPipeline);
                     }
 

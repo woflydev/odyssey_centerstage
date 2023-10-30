@@ -93,4 +93,6 @@ public class RobotConstants {
     public static final double BACKDROP_ANGLE = - Math.PI / 2;
 
     public static final double TAG_WALL_ANGLE = Math.PI / 2;
+
+    public static final boolean STREAMING = false;
 }
