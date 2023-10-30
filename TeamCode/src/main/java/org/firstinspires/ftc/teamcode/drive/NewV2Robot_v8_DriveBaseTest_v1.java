@@ -2,13 +2,10 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
+import org.firstinspires.ftc.teamcode.drive.Deprecated.Robotv8_FullstackTesting_v2;
 
 @TeleOp()
-public class NewRobot_v8_DriveBaseTest_v1 extends Robotv8_FullstackTesting {
+public class NewV2Robot_v8_DriveBaseTest_v1 extends Robotv8_FullstackTesting_v2 {
     public void MainLoop() {
         Mecanum();
         RuntimeConfig();

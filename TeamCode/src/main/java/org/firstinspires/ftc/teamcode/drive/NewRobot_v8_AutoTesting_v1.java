@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
 
 @Autonomous(name="Autonomous Testing", group="Final")
 public class NewRobot_v8_AutoTesting_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
@@ -69,15 +68,15 @@ public class NewRobot_v8_AutoTesting_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
         backRM.setPower(0);
         frontRM.setPower(0);
 
-        backLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
         backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        backLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     // this function is removed from the FSM
@@ -119,22 +118,44 @@ public class NewRobot_v8_AutoTesting_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
     public void MainStart() {
         //handler.initTask(2);
 
-        GrabAndReady();
+        EncoderMove(0.6, 2.3, 2.3, false, false, 4);
+        Delay(100);
+        EncoderMove(0.8, -1, 1, false, false, 2);
+        Delay(100);
+        EncoderMove(0.8, 2.8, 2.8, false, false, 4);
+        Delay(100);
+
+        intake.setPower(0.6);
+        Delay(2000);
+        intake.setPower(0);
+
+        EncoderMove(0.8, -3.8, -3.8, false, false, 4);
+
+        /*GrabAndReady();
         EncoderMove(0.8, 1, 1, false, false, 5);
         Delay(50);
         EncoderMove(0.8, -1, 1, false, false, 4);
         Delay(100);
-        EncoderMove(1, -1.65, -1.65, false, false, 5);
-        Delay(50);
+        EncoderMove(1, -1.65, -1.65, false, false, 4);
+        Delay(100);
 
-        RaiseAndPrime(200);
+        RaiseAndPrime(100);
 
         //RaiseAndPrime(JUNCTION_LOW);
         Delay(500);
         DropAndReset();
         Delay(500);
 
-        EncoderMove(1, 1, 1, true);
+        //EncoderMove(1, 1, 1, true, false, 5);
+        EncoderMove(0.7, -0.3, -0.3, false, false, 2);
+        //EncoderMove(1, 1.7, 1.7, false, false, 5); //NOTE: added onto next one
+        EncoderMove(0.75, 4.4, 4.4, false, false, 5);
+
+        intake.setPower(0.5);
+        Delay(2000);
+        intake.setPower(0);*/
+
+
     }
 
     public void MainLoop() {
