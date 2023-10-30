@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FSM_FullstackTesting;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
 
-@TeleOp()
+@TeleOp(name="TeleOp FSM v3", group="Final")
 public class NewRobot_v8_FSM_FullRobot_v3 extends Robotv8_FSM_FullstackTesting {
     public void MainLoop() {
         Mecanum();
