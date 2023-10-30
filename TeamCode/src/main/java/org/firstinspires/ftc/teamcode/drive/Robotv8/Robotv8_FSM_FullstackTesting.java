@@ -46,7 +46,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.OuttakeState;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_PlaneLauncher;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -59,11 +60,12 @@ import java.util.Arrays;
 import java.util.List;
 
 @TeleOp()
-public class Robotv8_FullstackTesting extends OpMode {
+public class Robotv8_FSM_FullstackTesting extends OpMode {
     public Robotv8_Abstract handler;
 
     public RobotState state = RobotState.IDLE;
-    public OuttakeState outtakeState = OuttakeState.IDLE;
+    public FSM_Outtake outtakeState = FSM_Outtake.IDLE;
+    public FSM_PlaneLauncher planeLauncherState = FSM_PlaneLauncher.IDLE;
 
     public DcMotorEx backLM = null;
     public DcMotorEx backRM = null;
@@ -85,6 +87,8 @@ public class Robotv8_FullstackTesting extends OpMode {
     public final ElapsedTime encoderRuntime = new ElapsedTime();
     public final ElapsedTime armRuntime = new ElapsedTime();
     public final ElapsedTime resetTimer = new ElapsedTime();
+    public final ElapsedTime outtakeFSMTimer = new ElapsedTime();
+    public final ElapsedTime planeLauncherFSMTimer = new ElapsedTime();
 
     public double targetClawPosition = RobotConstants.CLAW_OPEN;
     public double targetWristPosition = RobotConstants.WRIST_PICKUP;
@@ -93,7 +97,6 @@ public class Robotv8_FullstackTesting extends OpMode {
     public double targetFlapPosition = RobotConstants.FLAP_CLOSE;
     public int targetOuttakePosition = 0;
 
-    public boolean planeTriggered = false;
     public boolean clawOpen = false;
     public boolean wristActive = false;
     public boolean elbowActive = false;
@@ -107,30 +110,6 @@ public class Robotv8_FullstackTesting extends OpMode {
     public double driveSpeedModifier = 1;
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
-
-    public void Delay(double time) {
-        try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
-    }
-
-    public static boolean IsPositive(double d) { return !(Double.compare(d, 0.0) < 0); }
-
-    public double Stabilize(double new_accel, double current_accel) {
-        double dev = new_accel - current_accel;
-        return Math.abs(dev) > RobotConstants.MAX_ACCELERATION_DEVIATION ? current_accel + RobotConstants.MAX_ACCELERATION_DEVIATION * dev / Math.abs(dev) : new_accel;
-    }
-
-    public double GetHeading() {
-        double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
-        double rot = (double)(Math.round(-currentHeading + 720) % 360);
-        rot = rot == 0 ? 360 : rot;
-        return rot;
-    }
-
-    public void MoveElbow(double targetPos) {
-        servoElbowR.setPosition(targetPos);
-        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
-        Delay(50);
-    }
 
     public void InitializeBlock() {
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
@@ -348,15 +327,22 @@ public class Robotv8_FullstackTesting extends OpMode {
             }
 
             // PLANE -------------------------------------------------------------------
-            if (gamepad2.cross) {
-                if (!planeTriggered) {
-                    planeTriggered = true;
-                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
-                } else {
-                    planeTriggered = false;
-                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-                }
-                Delay(250);
+            switch (planeLauncherState) {
+                case IDLE:
+                    if (gamepad2.cross) {
+                        servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
+                        planeLauncherFSMTimer.reset();
+
+                        planeLauncherState = FSM_PlaneLauncher.ACTIVE;
+                    }
+                    break;
+                case ACTIVE:
+                    if (planeLauncherFSMTimer.seconds() >= 2) {
+                        servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+
+                        planeLauncherState = FSM_PlaneLauncher.IDLE;
+                    }
+                    break;
             }
 
             // ELBOW ------------------------------------------------------------------
@@ -373,67 +359,6 @@ public class Robotv8_FullstackTesting extends OpMode {
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
         }
-    }
-
-    private volatile boolean drivebaseMacroActive = false;
-    public void TurnToHeadingAsync(double targetHeading) {
-        if (drivebaseMacroActive) {
-            return; // A macro is already in progress
-        }
-
-        drivebaseMacroActive = true;
-
-        double frontLeftPower;
-        double backLeftPower;
-        double frontRightPower;
-        double backRightPower;
-
-        double currentHeading;
-        double error;
-        double Kp = 0.03; // Adjust this gain as needed
-
-        currentHeading = GetHeading();
-        error = targetHeading - currentHeading;
-
-        while (Math.abs(error) > 0.02) {
-            currentHeading = GetHeading();
-            error = targetHeading - currentHeading;
-
-            // Determine the direction of rotation (clockwise or counterclockwise)
-            double rotatePower;
-            if (error > 180) {
-                // If error is more than 180 degrees, rotate in the opposite direction
-                rotatePower = -Math.abs(error) * Kp;
-            } else {
-                rotatePower = Math.abs(error) * Kp;
-            }
-
-            // Apply the rotation power to the robot
-            frontLeftPower = -rotatePower;
-            backLeftPower = -rotatePower;
-            frontRightPower = rotatePower;
-            backRightPower = rotatePower;
-
-            // Update motor powers
-            frontLM.setPower(frontLeftPower);
-            frontRM.setPower(frontRightPower);
-            backLM.setPower(backLeftPower);
-            backRM.setPower(backRightPower);
-
-            // Allow other controls to run in parallel
-            // For example, you can continue reading gamepad input here
-
-            // Sleep for a short duration to avoid busy-waiting
-            Delay(20); // Adjust the sleep duration as needed
-        }
-
-        // Stop the robot
-        frontLM.setPower(0);
-        frontRM.setPower(0);
-        backLM.setPower(0);
-        backRM.setPower(0);
-
-        drivebaseMacroActive = false;
     }
 
     public void Mecanum() {
@@ -475,25 +400,86 @@ public class Robotv8_FullstackTesting extends OpMode {
         current_v3 = stable_v3;
         current_v4 = stable_v4;
 
-        /*if (gamepad1.dpad_right) {
-            double targetHeading = 270;
-            TurnToHeadingAsync(targetHeading);
-        } else if (gamepad1.dpad_left) {
-            double targetHeading = 90;
-            TurnToHeadingAsync(targetHeading);
-        }*/
         frontLM.setPower(stable_v3 / driveSpeedModifier);
         frontRM.setPower(stable_v2 / driveSpeedModifier);
         backLM.setPower(stable_v1 / driveSpeedModifier);
         backRM.setPower(stable_v4 / driveSpeedModifier);
-
-        // TODO: test if deadzone works
-        if (Math.abs(gamepad1.left_stick_y) >= RobotConstants.JOYSTICK_DEADZONE && Math.abs(gamepad1.left_stick_x) >= RobotConstants.JOYSTICK_DEADZONE) {
-
-        }
     }
 
     public void Macros() {
+        // state machine for outtake sequences
+        switch (outtakeState) {
+            case IDLE:
+                if (gamepad1.left_bumper) {
+                    servoFlap.setPosition(RobotConstants.FLAP_OPEN);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = FSM_Outtake.FLAP_OPENING;
+                }
+                break;
+            case FLAP_OPENING:
+                // amount of time the servo takes to activate from the previous state
+                if (outtakeFSMTimer.milliseconds() >= 700) {
+                    servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = FSM_Outtake.WRIST_PICKING;
+                }
+                break;
+            case WRIST_PICKING:
+                if (outtakeFSMTimer.milliseconds() >= 200) {
+                    MoveElbow(RobotConstants.ELBOW_PICKUP);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = FSM_Outtake.ELBOW_PICKING;
+                }
+                break;
+            case ELBOW_PICKING:
+                if (outtakeFSMTimer.milliseconds() >= 200) {
+                    servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = FSM_Outtake.CLAW_CLOSING;
+                }
+                break;
+            case CLAW_CLOSING:
+                if (outtakeFSMTimer.milliseconds() >= 250) {
+                    outtakeFSMTimer.reset();
+                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    Delay(100);
+                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+
+                    outtakeState = FSM_Outtake.GRABBED_AND_READY;
+                }
+                break;
+            case GRABBED_AND_READY:
+                HandleDeposit();
+                outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
+                break;
+            case PRIMED_FOR_DEPOSIT:
+                if (gamepad1.cross || gamepad1.circle || gamepad1.triangle) {
+                    outtakeState = FSM_Outtake.CLAW_OPENING;
+                }
+                break;
+            case CLAW_OPENING:
+                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                outtakeFSMTimer.reset();
+                outtakeState = FSM_Outtake.OUTTAKE_RESET;
+                break;
+            case OUTTAKE_RESET:
+                if (outtakeFSMTimer.milliseconds() >= 300) {
+                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+                    targetOuttakePosition = 10;
+                    UpdateOuttake(true, 0);
+
+                    outtakeState = FSM_Outtake.IDLE;
+                }
+                break;
+        }
+
         // INTAKE
         if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
             intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
@@ -503,92 +489,38 @@ public class Robotv8_FullstackTesting extends OpMode {
             intake.setPower(0);
         }
 
-        // GRAB
-        if (gamepad1.left_bumper && outtakeState == OuttakeState.IDLE) {
-            intake.setPower(0);
-            GrabAndReady();
-            outtakeState = OuttakeState.GRABBED_AND_READY;
-        }
-
         // RESET
-        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
-            DropAndReset();
-            outtakeState = OuttakeState.IDLE;
-        }
-
-        // DEPLOY & RESET DEPENDING ON STATE
-        if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
-            if (gamepad1.cross) {
-                DepositSequence(RobotConstants.JUNCTION_LOW);
-            } else if (gamepad1.circle) {
-                DepositSequence(RobotConstants.JUNCTION_MID);
-            } else if (gamepad1.triangle) {
-                DepositSequence(RobotConstants.JUNCTION_HIGH);
-            }
+        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT)) {
+            outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
         }
 
         Delay(5); // debounce
     }
 
-    // INTAKE/OUTTAKE SEQUENCE FUNCTIONS --------------------------------------------------
-    public void DepositSequence(int height) {
-        if (outtakeState == OuttakeState.GRABBED_AND_READY) {
-            intake.setPower(0); // make sure intake is not running
-            RaiseAndPrime(height);
-            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
-
-        } else {
-            DropAndReset();
-            outtakeState = OuttakeState.IDLE;
+    public void HandleDeposit() {
+        if (gamepad1.cross) {
+            RaiseAndPrime(RobotConstants.JUNCTION_LOW);
+        } else if (gamepad1.circle) {
+            RaiseAndPrime(RobotConstants.JUNCTION_MID);
+        } else if (gamepad1.triangle) {
+            RaiseAndPrime(RobotConstants.JUNCTION_HIGH);
         }
-        Delay(50);
-    }
-
-    public void GrabAndReady() {
-        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
-        Delay(700);
-
-        // transfer stage sequence
-        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
-        Delay(200);
-        MoveElbow(RobotConstants.ELBOW_PICKUP);
-
-        Delay(200);
-        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(250);
-
-        // primes the elbow
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        Delay(100);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
     public void RaiseAndPrime(int height) {
+        intake.setPower(0); // make sure intake is not running
+
+        targetOuttakePosition = height;
+        UpdateOuttake(false, 0);
+
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
         MoveElbow(RobotConstants.ELBOW_ACTIVE);
 
-        Delay(100);
-
-        targetOuttakePosition = height;
-        UpdateOuttake(false, 0);
-    }
-
-    public void DropAndReset() {
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(300); // wait for claw to open
-
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-
-        Delay(350); // elbow should come down after the slide is near done
-
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
-        targetOuttakePosition = 10;
-        UpdateOuttake(true, 0);
+        outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
+        Delay(50); // debounce
     }
 
 
@@ -644,6 +576,31 @@ public class Robotv8_FullstackTesting extends OpMode {
         }
     }
 
+    public void Delay(double time) {
+        try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
+    }
+
+    public static boolean IsPositive(double d) { return !(Double.compare(d, 0.0) < 0); }
+
+    public double Stabilize(double new_accel, double current_accel) {
+        double dev = new_accel - current_accel;
+        return Math.abs(dev) > RobotConstants.MAX_ACCELERATION_DEVIATION ? current_accel + RobotConstants.MAX_ACCELERATION_DEVIATION * dev / Math.abs(dev) : new_accel;
+    }
+
+    public double GetHeading() {
+        double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+        double rot = (double)(Math.round(-currentHeading + 720) % 360);
+        rot = rot == 0 ? 360 : rot;
+        return rot;
+    }
+
+    public void MoveElbow(double targetPos) {
+        servoElbowR.setPosition(targetPos);
+        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
+        Delay(50);
+    }
+
+    // ROADRUNNER DRIVE SUBCLASS ------------------------------------------------------------------
     public static class AutoMecanumDrive extends MecanumDrive {
         public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
         public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
