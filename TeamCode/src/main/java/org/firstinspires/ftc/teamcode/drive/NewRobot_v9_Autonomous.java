@@ -12,7 +12,7 @@ public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
     }
 
     public void MainStart() {
-        handler.initTask(2);
+        //handler.initTask(2);
         // Go back to starting position
     }
 

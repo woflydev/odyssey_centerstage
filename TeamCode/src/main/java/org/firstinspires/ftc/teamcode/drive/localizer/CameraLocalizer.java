@@ -186,6 +186,20 @@ public class CameraLocalizer implements Localizer {
 
         elapsedTime.reset();
     }
+    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t) {
+        this.hardwareMap = map;
+        this.poseEstimate = startingPose;
+        this.poseVelocity = new Pose2d(0, 0, 0);
+        this.t = t;
+        this.TELEMETRY_GIVEN = true;
+
+        this.FRONT_CAMERA = front;
+        this.BACK_CAMERA = back;
+
+        initAprilTag();
+
+        elapsedTime.reset();
+    }
 
     public void update() {
         if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME && !stopTrigger) {

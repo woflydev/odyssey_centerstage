@@ -107,6 +107,7 @@ public class Robotv8_Abstract {
 
         localizer.update();
 
+        // Code below causes it to crash when stopping
         frontPipeline = new FieldPipeline(0);
         if (RobotConstants.USE_BACK) {
             backPipeline = new FieldPipeline(1);
@@ -114,8 +115,6 @@ public class Robotv8_Abstract {
         } else {
             initCameras(frontPipeline);
         }
-
-        frontPipeline = new FieldPipeline(0);
 
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch Play to start OpMode");
@@ -142,6 +141,8 @@ public class Robotv8_Abstract {
                         // Usually this is where you'll want to start streaming from the camera (see section 4)
                         frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                         frontCamera.setPipeline(frontPipeline);
+                        //telemetry.addLine("Front camera opened!");
+                        //telemetry.update();
                     }
 
                     @Override
@@ -184,6 +185,8 @@ public class Robotv8_Abstract {
                         // Usually this is where you'll want to start streaming from the camera (see section 4)
                         frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                         frontCamera.setPipeline(frontPipeline);
+                        //telemetry.addLine("Front camera opened!");
+                        //telemetry.update();
                     }
 
                     @Override
@@ -219,6 +222,13 @@ public class Robotv8_Abstract {
         );
     }
 
+    private void closeCameras() {
+        frontCamera.closeCameraDevice();
+        if (RobotConstants.USE_BACK) {
+            backCamera.closeCameraDevice();
+        }
+    }
+
     public void update() {
         localizer.update();
         telemetry.addLine("Updating!");
@@ -228,6 +238,8 @@ public class Robotv8_Abstract {
 
     public void update(Gamepad gamepad1) {
         localizer.update();
+        telemetry.addLine("Updating!");
+        telemetry.update();
         tagTelemetry(localizer.currentDetections);
         if (gamepad1.dpad_down) {
             localizer.visionPortal.stopStreaming();
@@ -238,6 +250,7 @@ public class Robotv8_Abstract {
 
     public void stop() {
         localizer.stop();
+        closeCameras();
     }
 
     @SuppressLint("DefaultLocale")

@@ -261,6 +261,8 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void MainStop() {
+        //telemetry.addLine("Main stop reached!");
+        //telemetry.update();
     }
 
     public void StatusTelemetry() {
