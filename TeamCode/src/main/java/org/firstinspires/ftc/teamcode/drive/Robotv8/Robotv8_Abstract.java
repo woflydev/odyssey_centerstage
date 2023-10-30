@@ -130,31 +130,32 @@ public class Robotv8_Abstract {
                     hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA)
             );
         }
-
-        frontCamera.openCameraDeviceAsync(
-                new OpenCvCamera.AsyncCameraOpenListener() {
-                    @Override
-                    public void onOpened() {
-                        // Usually this is where you'll want to start streaming from the camera (see section 4)
-                        if (RobotConstants.STREAMING) {
-                            frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        if (RobotConstants.OPEN_CAMERA) {
+            frontCamera.openCameraDeviceAsync(
+                    new OpenCvCamera.AsyncCameraOpenListener() {
+                        @Override
+                        public void onOpened() {
+                            // Usually this is where you'll want to start streaming from the camera (see section 4)
+                            if (RobotConstants.STREAMING) {
+                                frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                            }
+                            frontCamera.setPipeline(frontPipeline);
+                            //telemetry.addLine("Front camera opened!");
+                            //telemetry.update();
                         }
-                        frontCamera.setPipeline(frontPipeline);
-                        //telemetry.addLine("Front camera opened!");
-                        //telemetry.update();
-                    }
 
-                    @Override
-                    public void onError(int errorCode) {
-                        /*
-                         * This will be called if the camera could not be opened
-                         */
-                        if (TELEMETRY_GIVEN) {
-                            telemetry.addLine("Front camera could not be opened.");
+                        @Override
+                        public void onError(int errorCode) {
+                            /*
+                             * This will be called if the camera could not be opened
+                             */
+                            if (TELEMETRY_GIVEN) {
+                                telemetry.addLine("Front camera could not be opened.");
+                            }
                         }
                     }
-                }
-        );
+            );
+        }
     }
 
     private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
@@ -177,52 +178,54 @@ public class Robotv8_Abstract {
             );
         }
 
-        frontCamera.openCameraDeviceAsync(
-                new OpenCvCamera.AsyncCameraOpenListener() {
-                    @Override
-                    public void onOpened() {
-                        // Usually this is where you'll want to start streaming from the camera (see section 4)
-                        if (RobotConstants.STREAMING) {
-                            frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+        if (RobotConstants.OPEN_CAMERA) {
+            frontCamera.openCameraDeviceAsync(
+                    new OpenCvCamera.AsyncCameraOpenListener() {
+                        @Override
+                        public void onOpened() {
+                            // Usually this is where you'll want to start streaming from the camera (see section 4)
+                            if (RobotConstants.STREAMING) {
+                                frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                            }
+                            frontCamera.setPipeline(frontPipeline);
+                            //telemetry.addLine("Front camera opened!");
+                            //telemetry.update();
                         }
-                        frontCamera.setPipeline(frontPipeline);
-                        //telemetry.addLine("Front camera opened!");
-                        //telemetry.update();
-                    }
 
-                    @Override
-                    public void onError(int errorCode) {
-                        /*
-                         * This will be called if the camera could not be opened
-                         */
-                        if (TELEMETRY_GIVEN) {
-                            telemetry.addLine("Front camera could not be opened.");
+                        @Override
+                        public void onError(int errorCode) {
+                            /*
+                             * This will be called if the camera could not be opened
+                             */
+                            if (TELEMETRY_GIVEN) {
+                                telemetry.addLine("Front camera could not be opened.");
+                            }
                         }
                     }
-                }
-        );
-        backCamera.openCameraDeviceAsync(
-                new OpenCvCamera.AsyncCameraOpenListener() {
-                    @Override
-                    public void onOpened() {
-                        // Usually this is where you'll want to start streaming from the camera (see section 4)
-                        if (RobotConstants.STREAMING) {
-                            backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            );
+            backCamera.openCameraDeviceAsync(
+                    new OpenCvCamera.AsyncCameraOpenListener() {
+                        @Override
+                        public void onOpened() {
+                            // Usually this is where you'll want to start streaming from the camera (see section 4)
+                            if (RobotConstants.STREAMING) {
+                                backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                            }
+                            backCamera.setPipeline(backPipeline);
                         }
-                        backCamera.setPipeline(backPipeline);
-                    }
 
-                    @Override
-                    public void onError(int errorCode) {
-                        /*
-                         * This will be called if the camera could not be opened
-                         */
-                        if (TELEMETRY_GIVEN) {
-                            telemetry.addLine("Back camera could not be opened.");
+                        @Override
+                        public void onError(int errorCode) {
+                            /*
+                             * This will be called if the camera could not be opened
+                             */
+                            if (TELEMETRY_GIVEN) {
+                                telemetry.addLine("Back camera could not be opened.");
+                            }
                         }
                     }
-                }
-        );
+            );
+        }
     }
 
     private void closeCameras() {

@@ -5,10 +5,11 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConsta
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FullstackTesting;
 
 @Autonomous(name="Autonomous Testing", group="Final")
-public class NewRobot_v8_AutoTesting_v1 extends Robotv8_FullstackTesting {
+public class NewRobot_v8_AutoTesting_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
 
     private double TilesToTicks(double input) {
         return ENCODER_TICKS_PER_TILE * input;
@@ -77,8 +78,41 @@ public class NewRobot_v8_AutoTesting_v1 extends Robotv8_FullstackTesting {
         frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
 
-        Delay(5);
+    // this function is removed from the FSM
+    public void GrabAndReady() {
+        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
+        Delay(700);
+
+        // transfer stage sequence
+        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+        MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
+        Delay(200);
+        MoveElbow(RobotConstants.ELBOW_PICKUP);
+
+        Delay(200);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+        Delay(250);
+
+        // primes the elbow
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(100);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+    }
+
+    public void DropAndReset() {
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        Delay(300); // wait for claw to open
+
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+
+        Delay(350); // elbow should come down after the slide is near done
+
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+        targetOuttakePosition = 10;
+        UpdateOuttake(true, 0);
     }
 
     // runs on start press, only once
@@ -87,11 +121,20 @@ public class NewRobot_v8_AutoTesting_v1 extends Robotv8_FullstackTesting {
 
         GrabAndReady();
         EncoderMove(0.8, 1, 1, false, false, 5);
-        EncoderMove(0.8, -1.3, 1.3, false, false, 4);
-        EncoderMove(1, -1, -1, false, false, 5);
+        Delay(50);
+        EncoderMove(0.8, -1, 1, false, false, 4);
+        Delay(100);
+        EncoderMove(1, -1.65, -1.65, false, false, 5);
+        Delay(50);
+
+        RaiseAndPrime(200);
+
         //RaiseAndPrime(JUNCTION_LOW);
-        Delay(1000);
+        Delay(500);
         DropAndReset();
+        Delay(500);
+
+        EncoderMove(1, 1, 1, true);
     }
 
     public void MainLoop() {
