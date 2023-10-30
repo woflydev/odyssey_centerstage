@@ -87,7 +87,7 @@ public class NewRobot_v8_AutoTesting_v1 extends Robotv8_FullstackTesting {
 
         GrabAndReady();
         EncoderMove(0.8, 1, 1, false, false, 5);
-        EncoderMove(0.8, -1, 1, false, false, 4);
+        EncoderMove(0.8, -1.3, 1.3, false, false, 4);
         EncoderMove(1, -1, -1, false, false, 5);
         //RaiseAndPrime(JUNCTION_LOW);
         Delay(1000);
