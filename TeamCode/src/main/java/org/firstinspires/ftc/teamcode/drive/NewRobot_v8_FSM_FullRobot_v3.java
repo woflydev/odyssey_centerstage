@@ -13,10 +13,6 @@ public class NewRobot_v8_FSM_FullRobot_v3 extends Robotv8_FSM_FullstackTesting {
         OuttakeSubsystem();
         PassiveArmResetCheck();
 
-        if (gamepad1.start) {
-            imu.resetYaw();
-        }
-
         // telemetry is handled in FSM_FullStackTesting
     }
 }
