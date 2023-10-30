@@ -41,9 +41,6 @@ public class Robotv8_Abstract {
             new Pose2d()
     };
 
-
-    public static Pose2d INTER_POINT = new Pose2d(-0.87, 0.89 * (PLAYING_BLUE ? 1 : -1), -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
-
     public Trajectory[] TILE_TO_PIXEL = new Trajectory[PIXEL_LOCATIONS.length];
 
 
