@@ -109,6 +109,8 @@ public class Robotv8_FullstackTesting extends OpMode {
     public boolean fieldCentricRed = true;
 
     public void Delay(double time) {
+        ElapsedTime timer = new ElapsedTime();
+
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
     }
 
@@ -210,14 +212,14 @@ public class Robotv8_FullstackTesting extends OpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
-        Delay(500);
+        Delay(100);
     }
 
     public void init() {
         telemetry.addData("Status", "INITIALIZING ROBOT...");
         telemetry.update();
 
-        Delay(2000);
+        Delay(100);
 
         InitializeBlock();
         MainInit();

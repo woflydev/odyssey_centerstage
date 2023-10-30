@@ -221,6 +221,8 @@ public class Robotv8_Abstract {
 
     public void update() {
         localizer.update();
+        telemetry.addLine("Updating!");
+        telemetry.update();
         //tagTelemetry(localizer.currentDetections);
     }
 
