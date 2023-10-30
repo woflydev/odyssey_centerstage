@@ -112,6 +112,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
     public boolean fieldCentricRed = true;
 
     public void InitializeBlock() {
+        // NOTE: giant initialization block stored here instead of directly in init.
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
         backLM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_LEFT);
@@ -192,11 +193,10 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         Delay(100);
     }
 
+    // NOTE: SYSTEM METHODS ------------------------------------------------------------------
     public void init() {
         telemetry.addData("Status", "INITIALIZING ROBOT...");
         telemetry.update();
-
-        Delay(100);
 
         InitializeBlock();
         MainInit();
@@ -207,7 +207,6 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
     public void start() {
         MainStart();
     }
-
     public void loop() {
         StatusTelemetry();
 
@@ -219,25 +218,20 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         MainStop();
         handler.stop();
     }
-
     public void MainInit() {
 
     }
-
     public void MainStart() {
 
     }
-
     public void MainLoop() {
 
     }
-
     public void MainStop() {
 
     }
-
     public void StatusTelemetry() {
-        // TELEMETRY
+        // NOTE: Basic robot telemetry is handled here, instead of child classes.
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
         telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
@@ -257,9 +251,56 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         telemetry.update();
     }
 
+    // NOTE: CUSTOM BEHAVIOUR ----------------------------------------------------------------
+    public void Mecanum() {
+        // NOTE: field centric Mecanum drive, tuned for acceleration curves and manual control.
+        double frontLeftPower;
+        double backLeftPower;
+        double frontRightPower;
+        double backRightPower;
+
+        double yAxis;
+        double xAxis;
+        double rotateAxis;
+
+        int dir = fieldCentricRed ? 1 : -1;
+
+        // all negative when field centric red
+        yAxis = gamepad1.left_stick_y * dir;
+        xAxis = -gamepad1.left_stick_x * 1.1 * dir;
+        rotateAxis = -gamepad1.right_stick_x * dir;
+
+        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+        // Rotate the movement direction counter to the bot's rotation
+        double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
+        double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
+        frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
+        backLeftPower = (rotY - rotX + rotateAxis) / denominator;
+        frontRightPower = (rotY - rotX - rotateAxis) / denominator;
+        backRightPower = (rotY + rotX - rotateAxis) / denominator;
+
+        double stable_v1 = Stabilize(backLeftPower, current_v1);
+        double stable_v2 = Stabilize(frontRightPower, current_v2);
+        double stable_v3 = Stabilize(frontLeftPower, current_v3);
+        double stable_v4 = Stabilize(backRightPower, current_v4);
+
+        current_v1 = stable_v1;
+        current_v2 = stable_v2;
+        current_v3 = stable_v3;
+        current_v4 = stable_v4;
+
+        frontLM.setPower(stable_v3 / driveSpeedModifier);
+        frontRM.setPower(stable_v2 / driveSpeedModifier);
+        backLM.setPower(stable_v1 / driveSpeedModifier);
+        backRM.setPower(stable_v4 / driveSpeedModifier);
+    }
+
     public void RuntimeConfig() {
-        // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
-        if (adjustmentAllowed) { // lining up arm for topmost cone
+        // NOTE: manual control logic. slides / claw / hanging / flap / plane / elbow
+        if (adjustmentAllowed) {
             // slow down driving with analog trigger
             if (gamepad1.right_trigger >= 0.2) {
                 driveSpeedModifier = gamepad1.right_trigger + 1.3;
@@ -285,6 +326,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
                 UpdateOuttake(false, 0);
             }
 
+            // claw
             if (gamepad2.square) {
                 targetClawPosition -= 0.02;
                 servoClaw.setPosition(targetClawPosition);
@@ -295,7 +337,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
                 Delay(50);
             }
 
-            // todo: relinquish wrist control in favour of hanging
+            // note: relinquish wrist control in favour of hanging
             if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
@@ -355,59 +397,28 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
             }
         }
 
-        // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
+        // NOTE: INTAKE
+        if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
+            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else if (gamepad1.square) {
+            intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else {
+            intake.setPower(0);
+        }
+
+        // NOTE: MANUAL OUTTAKE RESET
+        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT)) {
+            outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
+        }
+
+        // NOTE: FIELD CENTRIC IMU YAW RESET
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
         }
     }
 
-    public void Mecanum() {
-        double frontLeftPower;
-        double backLeftPower;
-        double frontRightPower;
-        double backRightPower;
-
-        double yAxis;
-        double xAxis;
-        double rotateAxis;
-
-        int dir = fieldCentricRed ? 1 : -1;
-
-        // all negative when field centric red
-        yAxis = gamepad1.left_stick_y * dir;
-        xAxis = -gamepad1.left_stick_x * 1.1 * dir;
-        rotateAxis = -gamepad1.right_stick_x * dir;
-
-        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-        // Rotate the movement direction counter to the bot's rotation
-        double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
-        double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
-
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
-        frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
-        backLeftPower = (rotY - rotX + rotateAxis) / denominator;
-        frontRightPower = (rotY - rotX - rotateAxis) / denominator;
-        backRightPower = (rotY + rotX - rotateAxis) / denominator;
-
-        double stable_v1 = Stabilize(backLeftPower, current_v1);
-        double stable_v2 = Stabilize(frontRightPower, current_v2);
-        double stable_v3 = Stabilize(frontLeftPower, current_v3);
-        double stable_v4 = Stabilize(backRightPower, current_v4);
-
-        current_v1 = stable_v1;
-        current_v2 = stable_v2;
-        current_v3 = stable_v3;
-        current_v4 = stable_v4;
-
-        frontLM.setPower(stable_v3 / driveSpeedModifier);
-        frontRM.setPower(stable_v2 / driveSpeedModifier);
-        backLM.setPower(stable_v1 / driveSpeedModifier);
-        backRM.setPower(stable_v4 / driveSpeedModifier);
-    }
-
-    public void Macros() {
-        // state machine for outtake sequences
+    public void OuttakeSubsystem() {
+        // statemachine for outtake sequences
         switch (outtakeState) {
             case IDLE:
                 if (gamepad1.left_bumper) {
@@ -454,10 +465,10 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
                 }
                 break;
             case GRABBED_AND_READY:
-                HandleDeposit();
-                outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
+                HandleDeposit(); // different deposit heights, the outtake progression is set within this function
                 break;
             case PRIMED_FOR_DEPOSIT:
+                // acts as a stopper to suspend the statemachine until a button is pressed
                 if (gamepad1.cross || gamepad1.circle || gamepad1.triangle) {
                     outtakeState = FSM_Outtake.CLAW_OPENING;
                 }
@@ -468,7 +479,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
                 outtakeState = FSM_Outtake.OUTTAKE_RESET;
                 break;
             case OUTTAKE_RESET:
-                if (outtakeFSMTimer.milliseconds() >= 300) {
+                if (outtakeFSMTimer.milliseconds() >= 300 && outtakeFSMTimer.milliseconds() <= 2000) {
                     servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
                     servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
@@ -479,31 +490,18 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
                 }
                 break;
         }
-
-        // INTAKE
-        if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
-            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else if (gamepad1.square) {
-            intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else {
-            intake.setPower(0);
-        }
-
-        // RESET
-        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT)) {
-            outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
-        }
-
-        Delay(5); // debounce
     }
 
     public void HandleDeposit() {
         if (gamepad1.cross) {
             RaiseAndPrime(RobotConstants.JUNCTION_LOW);
+            outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         } else if (gamepad1.circle) {
             RaiseAndPrime(RobotConstants.JUNCTION_MID);
+            outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         } else if (gamepad1.triangle) {
             RaiseAndPrime(RobotConstants.JUNCTION_HIGH);
+            outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         }
     }
 
@@ -524,7 +522,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
     }
 
 
-    // HELPER FUNCTIONS ------------------------------------------------------------------
+    // NOTE: HELPER METHODS ------------------------------------------------------------------
     public void UpdateOuttake(boolean reset, double delay) { // test new function
         if (reset) {
             Delay(delay);
@@ -600,7 +598,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         Delay(50);
     }
 
-    // ROADRUNNER DRIVE SUBCLASS ------------------------------------------------------------------
+    // NOTE: ROADRUNNER DRIVE SUBCLASS ------------------------------------------------------------------
     public static class AutoMecanumDrive extends MecanumDrive {
         public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
         public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);

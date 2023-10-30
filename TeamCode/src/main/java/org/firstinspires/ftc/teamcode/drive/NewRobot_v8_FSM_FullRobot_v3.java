@@ -10,7 +10,7 @@ public class NewRobot_v8_FSM_FullRobot_v3 extends Robotv8_FSM_FullstackTesting {
     public void MainLoop() {
         Mecanum();
         RuntimeConfig();
-        Macros();
+        OuttakeSubsystem();
         PassiveArmResetCheck();
 
         if (gamepad1.start) {
