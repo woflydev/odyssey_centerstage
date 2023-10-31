@@ -5,7 +5,8 @@ import static java.lang.Thread.sleep;
 import android.annotation.SuppressLint;
 import android.util.Size;
 
-import androidx.annotation.NonNull;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.util.Angle;
@@ -33,16 +34,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 
-public class CameraLocalizer implements Localizer {
-    public Pose2d poseEstimate;
-    public Pose2d poseVelocity;
+@Autonomous(name="April Tag", group="Testing")
+public class CameraOpMode extends OpMode {
 
-    private ArrayList<Double> lastWheelPositions = new ArrayList<>();
-    private Double lastExtHeading = Double.NaN;
-
-    public HardwareMap hardwareMap;
     private static double CAMERA_HEIGHT = 0.313;
 
     private static int SLEEP_TIME = 20;
@@ -53,8 +48,14 @@ public class CameraLocalizer implements Localizer {
 
     private static float CORRECTION_FACTOR = 1;
 
-    private String FRONT_CAMERA;
+    private String FRONT_CAMERA = "Webcam 1";
     private String BACK_CAMERA;
+
+    public Pose2d poseEstimate;
+    public Pose2d poseVelocity;
+
+    private ArrayList<Double> lastWheelPositions = new ArrayList<>();
+    private Double lastExtHeading = Double.NaN;
 
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
@@ -73,60 +74,71 @@ public class CameraLocalizer implements Localizer {
 
     private static int ACQUISITION_TIME = 10;
 
+    public static final double FIELD_LENGTH = 3.58;
+    public static final double WALL_TAG_X = 1.005;
+    public static final double SMALL_WALL_TAG_X = 0.9;
+
+    public static final double BACKDROP_DEPTH = 1.55;
+    public static final double TAG_HEIGHT = 0.12;
+
+    public static final double BACKDROP_ANGLE = - Math.PI / 2;
+
+    public static final double TAG_WALL_ANGLE = Math.PI / 2;
+
     // This assumes the april tag starts facing along the y-axis, may change later
     public static AprilTagMetadata[] tagArray = {
             new AprilTagMetadata(7, "Back 1", 0.127,
-                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float) -RobotConstants.WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
+                    new VectorF((float) - FIELD_LENGTH / 2, (float) -WALL_TAG_X, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.TAG_WALL_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.TAG_WALL_ANGLE / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(TAG_WALL_ANGLE / 2), 0, 0,
+                    (float) Math.sin(TAG_WALL_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(9, "Back 2", 0.127,
-                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float) RobotConstants.WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
+                    new VectorF((float) - FIELD_LENGTH / 2, (float) WALL_TAG_X, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.TAG_WALL_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.TAG_WALL_ANGLE / 2), ACQUISITION_TIME)
+                    (float) Math.cos(TAG_WALL_ANGLE / 2), 0, 0,
+                    (float) Math.sin(TAG_WALL_ANGLE / 2), ACQUISITION_TIME)
             ),
             new AprilTagMetadata(8, "Back 1a", 0.1,
-                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float)-RobotConstants.SMALL_WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
+                    new VectorF((float) - FIELD_LENGTH / 2, (float)-SMALL_WALL_TAG_X, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.TAG_WALL_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.TAG_WALL_ANGLE / 2), ACQUISITION_TIME)
+                    (float) Math.cos(TAG_WALL_ANGLE / 2), 0, 0,
+                    (float) Math.sin(TAG_WALL_ANGLE / 2), ACQUISITION_TIME)
             ),
             new AprilTagMetadata(10, "Back 2a", 0.1,
-                    new VectorF((float) - RobotConstants.FIELD_LENGTH / 2, (float)RobotConstants.SMALL_WALL_TAG_X, (float) RobotConstants.CAMERA_HEIGHT),
+                    new VectorF((float) - FIELD_LENGTH / 2, (float)SMALL_WALL_TAG_X, (float) CAMERA_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.TAG_WALL_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.TAG_WALL_ANGLE / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(TAG_WALL_ANGLE / 2), 0, 0,
+                    (float) Math.sin(TAG_WALL_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(1, "Backdrop 1", 0.05,
-                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, (float) 1.003F, (float) RobotConstants.TAG_HEIGHT),
+                    new VectorF((float) BACKDROP_DEPTH, (float) 1.003F, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.BACKDROP_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(BACKDROP_ANGLE / 2), 0, 0,
+                    (float) Math.sin(BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(2, "Backdrop 2", 0.05,
-                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, 0.88F, (float) RobotConstants.TAG_HEIGHT),
+                    new VectorF((float) BACKDROP_DEPTH, 0.88F, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.BACKDROP_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(BACKDROP_ANGLE / 2), 0, 0,
+                    (float) Math.sin(BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(3, "Backdrop 3", 0.05,
-                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, 0.74F, (float) RobotConstants.TAG_HEIGHT),
+                    new VectorF((float) BACKDROP_DEPTH, 0.74F, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.BACKDROP_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(BACKDROP_ANGLE / 2), 0, 0,
+                    (float) Math.sin(BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(4, "Backdrop 4", 0.05,
-                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, -0.75F, (float) RobotConstants.TAG_HEIGHT),
+                    new VectorF((float) BACKDROP_DEPTH, -0.75F, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.BACKDROP_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(BACKDROP_ANGLE / 2), 0, 0,
+                    (float) Math.sin(BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(5, "Backdrop 5", 0.05,
-                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, -0.9F, (float) RobotConstants.TAG_HEIGHT),
+                    new VectorF((float) BACKDROP_DEPTH, -0.9F, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.BACKDROP_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
+                    (float) Math.cos(BACKDROP_ANGLE / 2), 0, 0,
+                    (float) Math.sin(BACKDROP_ANGLE / 2), ACQUISITION_TIME)),
             new AprilTagMetadata(6, "Backdrop 6", 0.05,
-                    new VectorF((float) RobotConstants.BACKDROP_DEPTH, -1.05F, (float) RobotConstants.TAG_HEIGHT),
+                    new VectorF((float) BACKDROP_DEPTH, -1.05F, (float) TAG_HEIGHT),
                     DistanceUnit.METER, new Quaternion(
-                    (float) Math.cos(RobotConstants.BACKDROP_ANGLE / 2), 0, 0,
-                    (float) Math.sin(RobotConstants.BACKDROP_ANGLE / 2), ACQUISITION_TIME))
+                    (float) Math.cos(BACKDROP_ANGLE / 2), 0, 0,
+                    (float) Math.sin(BACKDROP_ANGLE / 2), ACQUISITION_TIME))
     };
 
     private int AVERAGE_LENGTH = 3;
@@ -135,91 +147,48 @@ public class CameraLocalizer implements Localizer {
 
     public List<AprilTagDetection> currentDetections;
 
-    private long blindTime = 0;
-    public boolean isBlind = false;
     public boolean stopTrigger = false;
+    public boolean isBlind = false;
 
-    public Robotv8_Fullstack stack;
+    public long blindTime;
 
-    private Telemetry t;
-    private boolean TELEMETRY_GIVEN;
-
-    @NonNull
-    public Pose2d getPoseEstimate() {
-        return this.poseEstimate;
-    }
-
-    public void setPoseEstimate(Pose2d newPose) {
-        this.poseEstimate = newPose;
-    }
-
-    public Pose2d getPoseVelocity() {
-        return poseVelocity;
-    }
-
-    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Robotv8_Fullstack stack) {
-        this.hardwareMap = map;
-        this.poseEstimate = startingPose;
-        this.poseVelocity = new Pose2d(0, 0, 0);
-        this.TELEMETRY_GIVEN = false;
-
-        this.FRONT_CAMERA = front;
-        this.BACK_CAMERA = back;
-        this.stack = stack;
-
+    public Pose2d blindPose;
+    public void init() {
         initAprilTag();
-    }
-
-    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t, Robotv8_Fullstack stack) {
-        this.hardwareMap = map;
-        this.poseEstimate = startingPose;
-        this.poseVelocity = new Pose2d(0, 0, 0);
-        this.t = t;
-        this.TELEMETRY_GIVEN = true;
-
-        this.FRONT_CAMERA = front;
-        this.BACK_CAMERA = back;
-
-        this.stack = stack;
-
-        initAprilTag();
-
         elapsedTime.reset();
+        telemetry.addLine("Initialised camera and Vision Portal.");
+        telemetry.update();
+
     }
-    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t) {
-        this.hardwareMap = map;
-        this.poseEstimate = startingPose;
-        this.poseVelocity = new Pose2d(0, 0, 0);
-        this.t = t;
-        this.TELEMETRY_GIVEN = true;
+    public void start() {
 
-        this.FRONT_CAMERA = front;
-        this.BACK_CAMERA = back;
-
-        initAprilTag();
-
-        elapsedTime.reset();
     }
-
-    public void update() {
-        if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME && !stopTrigger) {
-            analyseDetections();
-            if (TELEMETRY_GIVEN) {
-                t.addData("Pose", poseEstimate);
-            }
-            Delay(SLEEP_TIME);
-        }
+    public void loop() {
+        analyseDetections();
+        tagTelemetry(currentDetections);
+        telemetry.addData("Pose: ", poseEstimate);
+        telemetry.update();
     }
-
     public void stop() {
-        stopTrigger = true;
-        analyseDetections(); // TODO: this is called here to stop while loops, hopefully
         visionPortal.close();
-        t.addData("Vision portal closed!", "");
+        telemetry.addData("Vision portal closed!", "");
     }
 
     public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
+    }
+
+    public void tagTelemetry(List<AprilTagDetection> detections) {
+        for (AprilTagDetection detection : detections) {
+            if (detection.metadata != null) {
+                telemetry.addLine(String.format("XYZ %6.3f %6.3f %6.3f  (meter)", detection.ftcPose.x, detection.ftcPose.y, detection.ftcPose.z));
+                telemetry.addLine(String.format("PRY %6.3f %6.3f %6.3f  (deg)", detection.ftcPose.pitch, detection.ftcPose.roll, detection.ftcPose.yaw));
+                telemetry.addLine(String.format("RBE %6.3f %6.3f %6.3f  (meter, deg, deg)", detection.ftcPose.range, detection.ftcPose.bearing, detection.ftcPose.elevation));
+            } else {
+                telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
+                telemetry.addLine(String.format("Center %6.0f %6.0f   (pixels)", detection.center.x, detection.center.y));
+            }
+        }
     }
 
     private void initAprilTag() {
@@ -277,10 +246,11 @@ public class CameraLocalizer implements Localizer {
         //visionPortal.setProcessorEnabled(aprilTag, true);
 
     }
+
     @SuppressLint("DefaultLocale")
     public void analyseDetections() {
         if (stopTrigger) { // TODO: check if this works, might be while loop
-            t.addData("STOP TRIGGER SET!", "TRUE");
+            telemetry.addData("STOP TRIGGER SET!", "TRUE");
         } else {
             currentDetections = aprilTag.getDetections();
             //telemetry.addData("# AprilTags Detected", currentDetections.size());
@@ -329,57 +299,18 @@ public class CameraLocalizer implements Localizer {
                 poseVelocity = poseEstimate.minus(previousPoses.get(previousPoses.size() - 1)).div(SLEEP_TIME);
                 isBlind = false;
             } else {
+
                 // Assumes constant velocity if no April tags can be seen
                 if (!isBlind) {
                     blindTime = elapsedTime.time(timeUnit);
+                    blindPose = poseEstimate;
                     isBlind = true;
                 }
-                MecanumLocalization();
+                telemetry.addLine("Blind! Cannot see any April Tags.");
+                poseEstimate = poseVelocity.times(elapsedTime.time(timeUnit) - blindTime).plus(blindPose);
             }
         }
     }
-
-    public void MecanumLocalization() {
-        List<Double> wheelPositions = stack.drive.getWheelPositions();
-        Double extHeading = useExternalHeading ? stack.drive.getExternalHeading() : Double.NaN;
-        if (lastWheelPositions.size() > 0) {
-            ArrayList<Double> wheelDeltas = differences((ArrayList<Double>) wheelPositions, lastWheelPositions);
-            Pose2d robotPoseDelta = MecanumKinematics.wheelToRobotVelocities(
-                    wheelDeltas,
-                    DriveConstants.TRACK_WIDTH,
-                    DriveConstants.wheelBase,
-                    Robotv8_Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
-            );
-            Double finalHeadingDelta = useExternalHeading ?
-                    Angle.normDelta(extHeading - lastExtHeading) :
-                    robotPoseDelta.getHeading();
-            poseEstimate = Kinematics.relativeOdometryUpdate(
-                    poseEstimate,
-                    new Pose2d(robotPoseDelta.getX(), robotPoseDelta.getY(), finalHeadingDelta)
-            );
-        }
-
-        List<Double> wheelVelocities = stack.drive.getWheelVelocities();
-        Double extHeadingVel = stack.drive.getExternalHeadingVelocity();
-        if (wheelVelocities != null) {
-            poseVelocity = MecanumKinematics.wheelToRobotVelocities(
-                    wheelVelocities,
-                    DriveConstants.TRACK_WIDTH,
-                    DriveConstants.wheelBase,
-                    Robotv8_Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
-            );
-            if (useExternalHeading && extHeadingVel != null) {
-                if (poseVelocity == null) {
-                    throw new NullPointerException();
-                }
-                poseVelocity = new Pose2d(poseVelocity.getX(), poseVelocity.getY(), extHeadingVel);
-            }
-        }
-
-        lastWheelPositions = (ArrayList<Double>) wheelPositions;
-        lastExtHeading = extHeading;
-    }
-
     public ArrayList<Double> differences(ArrayList<Double> first, ArrayList<Double> second) {
         if (first.size() != second.size()) {
             throw new IllegalArgumentException();

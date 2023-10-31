@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.sun.source.doctree.StartElementTree;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
@@ -19,6 +20,7 @@ import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.List;
 import java.util.function.Function;
@@ -53,9 +55,7 @@ public class Robotv8_Abstract {
     public Trajectory TILE_TO_BACKDROP;
     public Trajectory BACKDROP_TO_TILE;
 
-    private OpenCvCamera frontCamera;
-    private OpenCvCamera backCamera;
-    private FieldPipeline frontPipeline;
+    private OpenCvWebcam backCamera;
     private FieldPipeline backPipeline;
 
     private HardwareMap hardwareMap;
@@ -64,6 +64,7 @@ public class Robotv8_Abstract {
     private boolean TELEMETRY_GIVEN;
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
+    public int viewerId;
 
     public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map)  {
         TELEMETRY_GIVEN = false;
@@ -73,21 +74,21 @@ public class Robotv8_Abstract {
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;
         }
+
+        viewerId = hardwareMap.appContext
+                .getResources()
+                .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, STARTING_POSE, telemetry, stack);
 
         //telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         //telemetry.addData(">", "Touch Play to start OpMode");
 
         localizer.update();
-        frontPipeline = new FieldPipeline(0);
         if (RobotConstants.USE_BACK) {
-            backPipeline = new FieldPipeline(1);
-            initCameras(frontPipeline, backPipeline);
-        } else {
-            initCameras(frontPipeline);
+            backPipeline = new FieldPipeline(0);
+            initCameras(backPipeline);
         }
-
-        frontPipeline = new FieldPipeline(0);
         //telemetry.clear();
     }
 
@@ -97,6 +98,10 @@ public class Robotv8_Abstract {
         TELEMETRY_GIVEN = true;
         telemetry.addLine("Initialising...");
 
+        viewerId = hardwareMap.appContext
+                .getResources()
+                .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;
         }
@@ -104,13 +109,9 @@ public class Robotv8_Abstract {
 
         localizer.update();
 
-        // Code below causes it to crash when stopping
-        frontPipeline = new FieldPipeline(0);
         if (RobotConstants.USE_BACK) {
             backPipeline = new FieldPipeline(1);
-            initCameras(frontPipeline, backPipeline);
-        } else {
-            initCameras(frontPipeline);
+            initCameras(backPipeline);
         }
 
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
@@ -118,118 +119,41 @@ public class Robotv8_Abstract {
         telemetry.update();
     }
 
-    private void initCameras(OpenCvPipeline frontPipeline) {
+    private void initCameras(OpenCvPipeline pipeline) {
         if (RobotConstants.USE_VIEWPORT) {
-            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
-                    cameraMonitorViewId
-            );
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA), viewerId);
         } else {
-            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA)
-            );
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA));
         }
-        if (RobotConstants.OPEN_CAMERA) {
-            frontCamera.openCameraDeviceAsync(
-                    new OpenCvCamera.AsyncCameraOpenListener() {
-                        @Override
-                        public void onOpened() {
-                            // Usually this is where you'll want to start streaming from the camera (see section 4)
-                            if (RobotConstants.STREAMING) {
-                                frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                            }
-                            frontCamera.setPipeline(frontPipeline);
-                            //telemetry.addLine("Front camera opened!");
-                            //telemetry.update();
-                        }
+        backCamera.setPipeline(pipeline);
+        backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
 
-                        @Override
-                        public void onError(int errorCode) {
-                            /*
-                             * This will be called if the camera could not be opened
-                             */
-                            if (TELEMETRY_GIVEN) {
-                                telemetry.addLine("Front camera could not be opened.");
-                            }
-                        }
+        telemetry.addLine("Added  cambackera.");
+        telemetry.update();
+
+        if (RobotConstants.OPEN_CAMERA) {
+            backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+                @Override
+                public void onOpened() {
+                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                    telemetry.addLine("Streaming back!");
+                    telemetry.update();
+                }
+
+                @Override
+                public void onError(int errorCode) {
+                    if (TELEMETRY_GIVEN) {
+                        telemetry.addLine("Error in opening camera.");
+                        telemetry.update();
                     }
-            );
+                }
+            });
         }
     }
 
-    private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
-        if (RobotConstants.USE_VIEWPORT) {
-            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
-                    cameraMonitorViewId
-            );
-            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA),
-                    cameraMonitorViewId
-            );
-        } else {
-            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA)
-            );
-            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA)
-            );
-        }
 
-        if (RobotConstants.OPEN_CAMERA) {
-            frontCamera.openCameraDeviceAsync(
-                    new OpenCvCamera.AsyncCameraOpenListener() {
-                        @Override
-                        public void onOpened() {
-                            // Usually this is where you'll want to start streaming from the camera (see section 4)
-                            if (RobotConstants.STREAMING) {
-                                frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                            }
-                            frontCamera.setPipeline(frontPipeline);
-                            //telemetry.addLine("Front camera opened!");
-                            //telemetry.update();
-                        }
-
-                        @Override
-                        public void onError(int errorCode) {
-                            /*
-                             * This will be called if the camera could not be opened
-                             */
-                            if (TELEMETRY_GIVEN) {
-                                telemetry.addLine("Front camera could not be opened.");
-                            }
-                        }
-                    }
-            );
-            backCamera.openCameraDeviceAsync(
-                    new OpenCvCamera.AsyncCameraOpenListener() {
-                        @Override
-                        public void onOpened() {
-                            // Usually this is where you'll want to start streaming from the camera (see section 4)
-                            if (RobotConstants.STREAMING) {
-                                backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                            }
-                            backCamera.setPipeline(backPipeline);
-                        }
-
-                        @Override
-                        public void onError(int errorCode) {
-                            /*
-                             * This will be called if the camera could not be opened
-                             */
-                            if (TELEMETRY_GIVEN) {
-                                telemetry.addLine("Back camera could not be opened.");
-                            }
-                        }
-                    }
-            );
-        }
-    }
 
     private void closeCameras() {
-        frontCamera.closeCameraDevice();
         if (RobotConstants.USE_BACK) {
             backCamera.closeCameraDevice();
         }
@@ -246,7 +170,7 @@ public class Robotv8_Abstract {
         localizer.update();
         telemetry.addLine("Updating!");
         telemetry.update();
-        tagTelemetry(localizer.currentDetections);
+        //tagTelemetry(localizer.currentDetections);
         if (gamepad1.dpad_down) {
             localizer.visionPortal.stopStreaming();
         } else if (gamepad1.dpad_up) {
@@ -314,7 +238,7 @@ public class Robotv8_Abstract {
     }
 
     public void initTask(int pixelColour) {
-        transferPixel(pixelColour, frontPipeline.spikeMark, true);
+        transferPixel(pixelColour, backPipeline.spikeMark, true);
     }
     public void transferPixel(int pixelColour, int pixelSlot, boolean fromTile) {
         stack.DropAndReset();
@@ -335,7 +259,7 @@ public class Robotv8_Abstract {
                         .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
                         .build()
         );
-        stack.DepositSequence((int) (frontPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
+        stack.DepositSequence((int) (backPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
 
     }
 }
