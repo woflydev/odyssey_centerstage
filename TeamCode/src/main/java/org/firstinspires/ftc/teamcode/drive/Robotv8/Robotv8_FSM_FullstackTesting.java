@@ -471,6 +471,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
                 // acts as a stopper to suspend the statemachine until a button is pressed
                 if (gamepad1.cross || gamepad1.circle || gamepad1.triangle) {
                     outtakeState = FSM_Outtake.CLAW_OPENING;
+                    Delay(100); // debounce input
                 }
                 break;
             case CLAW_OPENING:
@@ -496,12 +497,15 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         if (gamepad1.cross) {
             RaiseAndPrime(RobotConstants.JUNCTION_LOW);
             outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
+            Delay(100);
         } else if (gamepad1.circle) {
             RaiseAndPrime(RobotConstants.JUNCTION_MID);
             outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
+            Delay(100);
         } else if (gamepad1.triangle) {
             RaiseAndPrime(RobotConstants.JUNCTION_HIGH);
             outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
+            Delay(100);
         }
     }
 
