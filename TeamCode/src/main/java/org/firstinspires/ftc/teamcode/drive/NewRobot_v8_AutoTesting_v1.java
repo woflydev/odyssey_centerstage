@@ -122,14 +122,14 @@ public class NewRobot_v8_AutoTesting_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
         Delay(100);
         EncoderMove(0.8, -1, 1, false, false, 2);
         Delay(100);
-        EncoderMove(0.8, 2.8, 2.8, false, false, 4);
+        EncoderMove(0.8, 3, 3, false, false, 5);
         Delay(100);
 
         intake.setPower(0.6);
         Delay(2000);
         intake.setPower(0);
 
-        EncoderMove(0.8, -3.8, -3.8, false, false, 4);
+        EncoderMove(0.8, -4.8, -4.8, false, false, 5);
 
         /*GrabAndReady();
         EncoderMove(0.8, 1, 1, false, false, 5);
