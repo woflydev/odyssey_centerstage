@@ -46,6 +46,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Drivetrain;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_PlaneLauncher;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
@@ -66,6 +67,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
     public RobotState state = RobotState.IDLE;
     public FSM_Outtake outtakeState = FSM_Outtake.IDLE;
     public FSM_PlaneLauncher planeLauncherState = FSM_PlaneLauncher.IDLE;
+    public FSM_Drivetrain drivetrainState = FSM_Drivetrain.MANUAL;
 
     public DcMotorEx backLM = null;
     public DcMotorEx backRM = null;
@@ -87,6 +89,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
     public final ElapsedTime encoderRuntime = new ElapsedTime();
     public final ElapsedTime armRuntime = new ElapsedTime();
     public final ElapsedTime resetTimer = new ElapsedTime();
+    public final ElapsedTime drivetrainTimer = new ElapsedTime();
     public final ElapsedTime outtakeFSMTimer = new ElapsedTime();
     public final ElapsedTime planeLauncherFSMTimer = new ElapsedTime();
 
@@ -234,6 +237,7 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         // NOTE: Basic robot telemetry is handled here, instead of child classes.
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
+        telemetry.addData("IMU Raw: ", GetHeadingRaw());
         telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
@@ -298,127 +302,34 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         backRM.setPower(stable_v4 / driveSpeedModifier);
     }
 
-    public void RuntimeConfig() {
-        // NOTE: manual control logic. slides / claw / hanging / flap / plane / elbow
-        if (adjustmentAllowed) {
-            // slow down driving with analog trigger
-            if (gamepad1.right_trigger >= 0.2) {
-                driveSpeedModifier = gamepad1.right_trigger + 1.3;
-            } else {
-                driveSpeedModifier = 1;
-            }
+    public void DrivetrainSubsystem() {
+        switch (drivetrainState) {
+            case MANUAL:
+                Mecanum();
+                if (gamepad1.dpad_right) {
+                    Delay(100);
 
-            if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
-                if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
-                    targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    UpdateOuttake(false, 0);
+                    drivetrainTimer.reset();
+                    drivetrainState = FSM_Drivetrain.ALIGNING_WITH_BACKDROP;
+
+                } else if (gamepad1.dpad_left) {
+                    Delay(100);
+
+                    drivetrainTimer.reset();
+                    drivetrainState = FSM_Drivetrain.ALIGNING_WITH_OUTER_WALL;
                 }
-            } else if (gamepad2.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
-                if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
-                    targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    UpdateOuttake(false, 0);
-                }
-            } else if (gamepad2.dpad_down) {
-                targetOuttakePosition = 30;
-                UpdateOuttake(true, 0);
-            } else if (gamepad2.dpad_up) {
-                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
-                UpdateOuttake(false, 0);
-            }
-
-            // claw
-            if (gamepad2.square) {
-                targetClawPosition -= 0.02;
-                servoClaw.setPosition(targetClawPosition);
-                Delay(50);
-            } else if (gamepad2.circle) {
-                targetClawPosition += 0.02;
-                servoClaw.setPosition(targetClawPosition);
-                Delay(50);
-            }
-
-            // note: relinquish wrist control in favour of hanging
-            if (gamepad2.right_bumper) {
-                targetWristPosition += 0.02;
-                servoWrist.setPosition(targetWristPosition);
-                Delay(50);
-            } else if (gamepad2.left_bumper) {
-                targetWristPosition -= 0.02;
-                servoWrist.setPosition(targetWristPosition);
-                Delay(50);
-            }
-
-            /*if (gamepad2.right_bumper) {
-                servoHangR.setPower(1);
-                servoHangL.setPower(1);
-            } else if (gamepad2.left_bumper) {
-                servoHangR.setPower(-1);
-                servoHangL.setPower(-1);
-            } else {
-                servoHangR.setPower(0);
-                servoHangL.setPower(0);
-            }*/
-
-            // FLAP (FOR TUNING VALUES) -----------------------------------------------
-            if (gamepad2.dpad_right) {
-                targetFlapPosition += 0.02;
-                servoFlap.setPosition(targetFlapPosition);
-            } else if (gamepad2.dpad_left) {
-                targetFlapPosition -= 0.02;
-                servoFlap.setPosition(targetFlapPosition);
-            }
-
-            // PLANE -------------------------------------------------------------------
-            switch (planeLauncherState) {
-                case IDLE:
-                    if (gamepad2.cross) {
-                        servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
-                        planeLauncherFSMTimer.reset();
-
-                        planeLauncherState = FSM_PlaneLauncher.ACTIVE;
-                    }
-                    break;
-                case ACTIVE:
-                    if (planeLauncherFSMTimer.seconds() >= 2) {
-                        servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-
-                        planeLauncherState = FSM_PlaneLauncher.IDLE;
-                    }
-                    break;
-            }
-
-            // ELBOW ------------------------------------------------------------------
-            if (gamepad1.dpad_up) {
-                targetElbowPosition += 0.02;
-                MoveElbow(targetElbowPosition);
-            } else if (gamepad1.dpad_down) {
-                targetElbowPosition -= 0.02;
-                MoveElbow(targetElbowPosition);
-            }
-        }
-
-        // NOTE: INTAKE
-        if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
-            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else if (gamepad1.square) {
-            intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else {
-            intake.setPower(0);
-        }
-
-        // NOTE: MANUAL OUTTAKE RESET
-        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT)) {
-            outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
-        }
-
-        // NOTE: FIELD CENTRIC IMU YAW RESET
-        if (gamepad1.start) { // re-calibrate field centric drive
-            imu.resetYaw();
+                break;
+            case ALIGNING_WITH_BACKDROP:
+                TurnToDirection(0.01, 90); // note: automatically switches drivetrainState back to manual when done
+                HandleDrivetrainOverride(); // note: also resets to manual if overriden
+            case ALIGNING_WITH_OUTER_WALL:
+                TurnToDirection(0.01, 180);
+                HandleDrivetrainOverride();
         }
     }
 
     public void OuttakeSubsystem() {
-        // statemachine for outtake sequences
+        // NOTE: statemachine for outtake sequences
         switch (outtakeState) {
             case IDLE:
                 if (gamepad1.left_bumper) {
@@ -493,6 +404,126 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         }
     }
 
+    public void PlaneLauncherSubsystem() {
+        switch (planeLauncherState) {
+            case IDLE:
+                if (gamepad2.cross) {
+                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
+                    planeLauncherFSMTimer.reset();
+
+                    planeLauncherState = FSM_PlaneLauncher.ACTIVE;
+                }
+                break;
+            case ACTIVE:
+                if (planeLauncherFSMTimer.seconds() >= 2) {
+                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+
+                    planeLauncherState = FSM_PlaneLauncher.IDLE;
+                }
+                break;
+        }
+    }
+
+    public void RuntimeConfig() {
+        // NOTE: manual control logic. slides / claw / hanging / flap / plane / elbow
+        if (adjustmentAllowed) {
+            // slow down driving with analog trigger
+            if (gamepad1.right_trigger >= 0.2) {
+                driveSpeedModifier = gamepad1.right_trigger + 1.3;
+            } else {
+                driveSpeedModifier = 1;
+            }
+
+            if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
+                    targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
+                    UpdateOuttake(false, 0);
+                }
+            } else if (gamepad2.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
+                    targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
+                    UpdateOuttake(false, 0);
+                }
+            } else if (gamepad2.dpad_down) {
+                targetOuttakePosition = 30;
+                UpdateOuttake(true, 0);
+            } else if (gamepad2.dpad_up) {
+                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
+                UpdateOuttake(false, 0);
+            }
+
+            // claw
+            if (gamepad2.square) {
+                targetClawPosition -= 0.02;
+                servoClaw.setPosition(targetClawPosition);
+                Delay(50);
+            } else if (gamepad2.circle) {
+                targetClawPosition += 0.02;
+                servoClaw.setPosition(targetClawPosition);
+                Delay(50);
+            }
+
+            // note: relinquish wrist control in favour of hanging
+            if (gamepad2.right_bumper) {
+                targetWristPosition += 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
+            } else if (gamepad2.left_bumper) {
+                targetWristPosition -= 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
+            }
+
+            /*if (gamepad2.right_bumper) {
+                servoHangR.setPower(1);
+                servoHangL.setPower(1);
+            } else if (gamepad2.left_bumper) {
+                servoHangR.setPower(-1);
+                servoHangL.setPower(-1);
+            } else {
+                servoHangR.setPower(0);
+                servoHangL.setPower(0);
+            }*/
+
+            // FLAP (FOR TUNING VALUES) -----------------------------------------------
+            if (gamepad2.dpad_right) {
+                targetFlapPosition += 0.02;
+                servoFlap.setPosition(targetFlapPosition);
+            } else if (gamepad2.dpad_left) {
+                targetFlapPosition -= 0.02;
+                servoFlap.setPosition(targetFlapPosition);
+            }
+
+            // ELBOW ------------------------------------------------------------------
+            if (gamepad1.dpad_up) {
+                targetElbowPosition += 0.02;
+                MoveElbow(targetElbowPosition);
+            } else if (gamepad1.dpad_down) {
+                targetElbowPosition -= 0.02;
+                MoveElbow(targetElbowPosition);
+            }
+        }
+
+        // NOTE: INTAKE
+        if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
+            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else if (gamepad1.square) {
+            intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else {
+            intake.setPower(0);
+        }
+
+        // NOTE: MANUAL OUTTAKE RESET
+        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT)) {
+            outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
+        }
+
+        // NOTE: FIELD CENTRIC IMU YAW RESET
+        if (gamepad1.start) { // re-calibrate field centric drive
+            imu.resetYaw();
+        }
+    }
+
     public void HandleDeposit() {
         if (gamepad1.cross) {
             RaiseAndPrime(RobotConstants.JUNCTION_LOW);
@@ -506,6 +537,19 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
             RaiseAndPrime(RobotConstants.JUNCTION_HIGH);
             outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
             Delay(100);
+        }
+    }
+
+    public void HandleDrivetrainOverride() {
+        // note: override in case things go die die
+        if (gamepad1.dpad_left || gamepad1.dpad_right) {
+            backLM.setPower(0);
+            backRM.setPower(0);
+            frontLM.setPower(0);
+            frontRM.setPower(0);
+
+            drivetrainTimer.reset();
+            drivetrainState = FSM_Drivetrain.MANUAL;
         }
     }
 
@@ -562,6 +606,45 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         }
     }
 
+    public void TurnToDirection(double speed, double desiredHeading) {
+        backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        backLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+        double error = desiredHeading - currentHeading;
+
+        // Ensure that the error is within the range -180 to 180 degrees
+        if (error > 180) {
+            error -= 360;
+        } else if (error < -180) {
+            error += 360;
+        }
+
+        double power = error > 0 ? speed : -speed; // which turning direction is closest?
+        if (drivetrainTimer.seconds() <= 4) {
+            backLM.setPower(-power);
+            backRM.setPower(power);
+            frontLM.setPower(-power);
+            frontRM.setPower(power);
+        }
+
+        if (Math.abs(error) < 1.0) {
+            backLM.setPower(0);
+            backRM.setPower(0);
+            frontLM.setPower(0);
+            frontRM.setPower(0);
+
+            drivetrainState = FSM_Drivetrain.MANUAL;
+        }
+    }
+
     public void PassiveArmResetCheck() {
         if (targetOuttakePosition <= 30) {
             if ((armL.getCurrentPosition() <= 10 && armR.getCurrentPosition() <= 10) && (armL.getCurrentPosition() >= 0 && armR.getCurrentPosition() <= 0)) {
@@ -594,6 +677,10 @@ public class Robotv8_FSM_FullstackTesting extends OpMode {
         double rot = (double)(Math.round(-currentHeading + 720) % 360);
         rot = rot == 0 ? 360 : rot;
         return rot;
+    }
+
+    public double GetHeadingRaw() {
+        return imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
     }
 
     public void MoveElbow(double targetPos) {
