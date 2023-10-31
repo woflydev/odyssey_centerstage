@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 
 @Autonomous(name="Autonomous Testing", group="Final")
-public class NewRobot_v8_AutoTesting_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
+public class NewRobot_v8_Auto_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
 
     private double TilesToTicks(double input) {
         return ENCODER_TICKS_PER_TILE * input;

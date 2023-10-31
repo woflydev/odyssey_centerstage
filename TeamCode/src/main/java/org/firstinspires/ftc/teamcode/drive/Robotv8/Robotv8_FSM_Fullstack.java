@@ -61,7 +61,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @TeleOp()
-public class Robotv8_FSM_FullstackTesting extends OpMode {
+public class Robotv8_FSM_Fullstack extends OpMode {
     public Robotv8_Abstract handler;
 
     public RobotState state = RobotState.IDLE;
