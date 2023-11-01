@@ -16,14 +16,10 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-import java.util.Locale;
-
-import kotlinx.coroutines.Delay;
-
 @TeleOp
 public class Webcam_Test extends LinearOpMode
 {
-    OpenCvWebcam webcam;
+    OpenCvWebcam webcamFront;
 
     @SuppressLint("DefaultLocale")
     @Override
@@ -40,15 +36,15 @@ public class Webcam_Test extends LinearOpMode
          * single-parameter constructor instead (commented out below)
          */
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        webcam.setPipeline(new SamplePipeline());
-        webcam.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        webcamFront = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        webcamFront.setPipeline(new SamplePipeline());
+        webcamFront.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
+        webcamFront.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened()
             {
-                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                webcamFront.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
@@ -76,12 +72,12 @@ public class Webcam_Test extends LinearOpMode
             /*
              * Send some stats to the telemetry
              */
-            telemetry.addData("Frame Count", webcam.getFrameCount());
-            telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
-            telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
-            telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs());
-            telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
-            telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
+            telemetry.addData("Frame Count", webcamFront.getFrameCount());
+            telemetry.addData("FPS", String.format("%.2f", webcamFront.getFps()));
+            telemetry.addData("Total frame time ms", webcamFront.getTotalFrameTimeMs());
+            telemetry.addData("Pipeline time ms", webcamFront.getPipelineTimeMs());
+            telemetry.addData("Overhead time ms", webcamFront.getOverheadTimeMs());
+            telemetry.addData("Theoretical max FPS", webcamFront.getCurrentPipelineMaxFps());
             telemetry.update();
 
             if(gamepad1.a)
@@ -105,7 +101,7 @@ public class Webcam_Test extends LinearOpMode
                  * time. Of course, this comment is irrelevant in light of the use case described in
                  * the above "important note".
                  */
-                webcam.stopStreaming();
+                webcamFront.stopStreaming();
                 //webcam.closeCameraDevice();
             }
             sleep(100);
@@ -138,11 +134,11 @@ public class Webcam_Test extends LinearOpMode
 
             if(viewportPaused)
             {
-                webcam.pauseViewport();
+                webcamFront.pauseViewport();
             }
             else
             {
-                webcam.resumeViewport();
+                webcamFront.resumeViewport();
             }
         }
     }
