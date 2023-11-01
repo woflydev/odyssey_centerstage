@@ -19,13 +19,13 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 @TeleOp
-public class Webcam_Test extends Robotv8_Fullstack
+public class Webcam_Test extends OpMode
 {
     OpenCvWebcam webcamFront;
 
     @SuppressLint("DefaultLocale")
     @Override
-    public void MainInit()
+    public void init()
     {
         /*
          * Instantiate an OpenCvCamera object for the camera we'll be using.
@@ -67,7 +67,7 @@ public class Webcam_Test extends Robotv8_Fullstack
 
     }
 
-    public void MainLoop() {
+    public void loop() {
         telemetry.addData("Frame Count", webcamFront.getFrameCount());
         telemetry.addData("FPS", String.format("%.2f", webcamFront.getFps()));
         telemetry.addData("Total frame time ms", webcamFront.getTotalFrameTimeMs());
@@ -97,7 +97,6 @@ public class Webcam_Test extends Robotv8_Fullstack
              * time. Of course, this comment is irrelevant in light of the use case described in
              * the above "important note".
              */
-            active = false;
             webcamFront.stopStreaming();
             //webcam.closeCameraDevice();
         }

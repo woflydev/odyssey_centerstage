@@ -122,7 +122,7 @@ public class Robotv8_Fullstack extends OpMode {
 
     public AutoMecanumDrive drive;
 
-    public int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+    public int cameraMonitorViewId;
 
     public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
@@ -149,6 +149,7 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void InitializeBlock() {
+        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
         backLM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_LEFT);
@@ -287,7 +288,7 @@ public class Robotv8_Fullstack extends OpMode {
                 @Override
                 public void onOpened()
                 {
-                    telemetry.addLine("Opened front camera!");
+                    telemetry.addLine("Opened back camera!");
                     telemetry.update();
                     backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                 }
