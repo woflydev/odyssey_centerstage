@@ -233,7 +233,7 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(500);
     }
 
-    public void InitCameras() {
+    /*public void InitCameras() {
 
         backPipeline = new FieldPipeline(0);
 
@@ -264,6 +264,40 @@ public class Robotv8_Fullstack extends OpMode {
             public void onError(int errorCode)
             {
                 telemetry.addData("pain", "pain");
+                telemetry.update();
+            }
+        });
+    }*/
+
+    public void InitCameras() {
+        backPipeline = new FieldPipeline(0);
+        if (RobotConstants.USE_VIEWPORT) {
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA),
+                    hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName())
+            );
+        } else {
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA)
+            );
+        }
+        backCamera.setPipeline(backPipeline);
+        backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
+
+        backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                telemetry.addLine("Opened!");
+                telemetry.update();
+                Delay(5000);
+                if (RobotConstants.USE_VIEWPORT) {
+                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                telemetry.addLine("Error opening camera.");
                 telemetry.update();
             }
         });
