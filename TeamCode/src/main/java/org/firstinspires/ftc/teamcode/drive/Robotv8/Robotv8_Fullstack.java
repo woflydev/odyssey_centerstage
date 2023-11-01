@@ -218,8 +218,6 @@ public class Robotv8_Fullstack extends OpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
-        InitCameras();
-
         handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
         drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
 
@@ -275,9 +273,11 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.addData("Status", "INITIALIZING ROBOT...");
         telemetry.update();
 
-        Delay(2000);
+        Delay(1000);
 
         InitializeBlock();
+
+        InitCameras();
 
         MainInit();
 
