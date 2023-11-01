@@ -247,7 +247,7 @@ public class Robotv8_Fullstack extends OpMode {
             backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA));
         }
 
-
+        backCamera.setPipeline(backPipeline);
         backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
 
         backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
@@ -257,7 +257,6 @@ public class Robotv8_Fullstack extends OpMode {
             {
                 telemetry.addLine("Opened back camera!");
                 telemetry.update();
-                backCamera.setPipeline(backPipeline);
                 if (RobotConstants.USE_VIEWPORT) {
                     backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                 }
