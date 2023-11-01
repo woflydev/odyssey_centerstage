@@ -69,7 +69,6 @@ public class Robotv8_Abstract {
     private boolean TELEMETRY_GIVEN;
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
-    public int viewerId;
 
     public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map)  {
         TELEMETRY_GIVEN = false;

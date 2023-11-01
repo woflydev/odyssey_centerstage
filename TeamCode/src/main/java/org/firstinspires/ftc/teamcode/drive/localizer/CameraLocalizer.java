@@ -157,34 +157,19 @@ public class CameraLocalizer implements Localizer {
         return poseVelocity;
     }
 
-    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Robotv8_Fullstack stack) {
-        this.hardwareMap = map;
-        this.poseEstimate = startingPose;
-        this.poseVelocity = new Pose2d(0, 0, 0);
-        this.TELEMETRY_GIVEN = false;
-
-        this.FRONT_CAMERA = front;
-        this.BACK_CAMERA = back;
-        this.stack = stack;
-
-        initAprilTag();
-    }
-
     public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t, Robotv8_Fullstack stack) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
         this.poseVelocity = new Pose2d(0, 0, 0);
         this.t = t;
         this.TELEMETRY_GIVEN = true;
-
         this.FRONT_CAMERA = front;
         this.BACK_CAMERA = back;
-
         this.stack = stack;
 
-        initAprilTag();
-
         elapsedTime.reset();
+
+        initAprilTag();
     }
     public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t) {
         this.hardwareMap = map;
@@ -192,13 +177,12 @@ public class CameraLocalizer implements Localizer {
         this.poseVelocity = new Pose2d(0, 0, 0);
         this.t = t;
         this.TELEMETRY_GIVEN = true;
-
         this.FRONT_CAMERA = front;
         this.BACK_CAMERA = back;
 
-        initAprilTag();
-
         elapsedTime.reset();
+
+        initAprilTag();
     }
 
     public void update() {
@@ -256,17 +240,19 @@ public class CameraLocalizer implements Localizer {
         // Choose a camera resolution. Not all cameras support all resolutions.
         builder.setCameraResolution(new Size(1280, 720));
 
-        // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-        //builder.enableCameraMonitoring(true); // TODO: deprecated API
-        builder.enableLiveView(true);
+        if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 0) {
+            // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
+            //builder.enableCameraMonitoring(true); // TODO: deprecated API
+            builder.enableLiveView(true);
 
-        // Set the stream format; MJPEG uses less bandwidth than default YUY2.
-        builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
+            // Set the stream format; MJPEG uses less bandwidth than default YUY2.
+            builder.setStreamFormat(VisionPortal.StreamFormat.MJPEG);
 
-        // Choose whether or not LiveView stops if no processors are enabled.
-        // If set "true", monitor shows solid orange screen if no processors enabled.
-        // If set "false", monitor shows camera view without annotations.
-        builder.setAutoStopLiveView(false);
+            // Choose whether or not LiveView stops if no processors are enabled.
+            // If set "true", monitor shows solid orange screen if no processors enabled.
+            // If set "false", monitor shows camera view without annotations.
+            builder.setAutoStopLiveView(false);
+        }
 
         // Set and enable the processor.
         builder.addProcessor(aprilTag);
