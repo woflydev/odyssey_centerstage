@@ -69,7 +69,7 @@ public class RobotConstants {
 
     public static final boolean USE_VIEWPORT = true;
     public static final boolean USE_DRIVE = true;
-    public static final boolean USE_BACK = false;
+    public static final boolean USE_BACK = true;
 
     public static final double FIELD_LENGTH = 3.58;
     public static final double CAMERA_HEIGHT = 0.313;
@@ -97,5 +97,5 @@ public class RobotConstants {
     public static final double TAG_WALL_ANGLE = Math.PI / 2;
 
     public static final boolean STREAMING = false;
-    public static final boolean OPEN_CAMERA = false;
+    public static final boolean OPEN_CAMERA = true;
 }

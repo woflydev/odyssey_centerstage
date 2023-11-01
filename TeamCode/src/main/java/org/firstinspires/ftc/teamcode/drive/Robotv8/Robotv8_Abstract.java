@@ -128,7 +128,7 @@ public class Robotv8_Abstract {
         backCamera.setPipeline(pipeline);
         backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
 
-        telemetry.addLine("Added  cambackera.");
+        telemetry.addLine("Added back camera.");
         telemetry.update();
 
         if (RobotConstants.OPEN_CAMERA) {
