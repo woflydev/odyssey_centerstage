@@ -149,7 +149,6 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void InitializeBlock() {
-        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
         backLM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_LEFT);
@@ -237,73 +236,40 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void InitCameras() {
-        frontPipeline = new FieldPipeline(0);
-        if (RobotConstants.USE_BACK) {
-            backPipeline = new FieldPipeline(1);
-        }
 
+        backPipeline = new FieldPipeline(0);
+
+        // note: viewport disabled for now
         if (RobotConstants.USE_VIEWPORT) {
-            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.FRONT_CAMERA), cameraMonitorViewId);
-            if (RobotConstants.USE_BACK) {
-                backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA), cameraMonitorViewId);
-            }
+            cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA), cameraMonitorViewId);
         } else {
-            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.FRONT_CAMERA));
-            if (RobotConstants.USE_BACK) {
-                backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA));
-            }
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA));
         }
 
-        frontCamera.setPipeline(frontPipeline);
-        frontCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
-        if (RobotConstants.USE_BACK) {
-            backCamera.setPipeline(backPipeline);
-            backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
-        }
 
-        frontCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
+
+        backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
             @Override
             public void onOpened()
             {
-                telemetry.addLine("Opened front camera!");
+                telemetry.addLine("Opened back camera!");
                 telemetry.update();
-                frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                backCamera.setPipeline(backPipeline);
+                if (RobotConstants.USE_VIEWPORT) {
+                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                }
             }
 
             @Override
             public void onError(int errorCode)
             {
-                /*
-                 * This will be called if the camera could not be opened
-                 */
                 telemetry.addData("pain", "pain");
                 telemetry.update();
             }
         });
-
-        if (RobotConstants.USE_BACK) {
-            backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-            {
-                @Override
-                public void onOpened()
-                {
-                    telemetry.addLine("Opened back camera!");
-                    telemetry.update();
-                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                }
-
-                @Override
-                public void onError(int errorCode)
-                {
-                    /*
-                     * This will be called if the camera could not be opened
-                     */
-                    telemetry.addData("pain", "pain");
-                    telemetry.update();
-                }
-            });
-        }
     }
 
     public void init() {
@@ -313,12 +279,16 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(2000);
 
         InitializeBlock();
-        Delay(2000);
+
         MainInit();
 
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
         telemetry.update();
     }
+    public void closeCameras() {
+        backCamera.closeCameraDevice();
+    }
+
     public void start() {
         MainStart();
     }
@@ -335,6 +305,7 @@ public class Robotv8_Fullstack extends OpMode {
     public void stop() {
         active = false;
         handler.stop();
+        closeCameras();
         MainStop();
     }
 

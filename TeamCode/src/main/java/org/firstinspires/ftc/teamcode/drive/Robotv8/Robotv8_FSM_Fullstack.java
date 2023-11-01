@@ -42,6 +42,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -51,10 +52,15 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_PlaneLauncher;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
+import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -113,6 +119,9 @@ public class Robotv8_FSM_Fullstack extends OpMode {
     public double driveSpeedModifier = 1;
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
+
+    public OpenCvWebcam backCamera;
+    public FieldPipeline backPipeline;
 
     public void InitializeBlock() {
         // NOTE: giant initialization block stored here instead of directly in init.
@@ -184,6 +193,8 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         telemetry.addData("Important Information", "PLACE ROBOT FACING AWAY FROM ALLIANCE BOX!");
         telemetry.update();
 
+        InitCameras();
+
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
                 RevHubOrientationOnRobot.UsbFacingDirection.UP
@@ -194,6 +205,43 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         imu.resetYaw();
 
         Delay(100);
+    }
+
+    public void InitCameras() {
+
+        backPipeline = new FieldPipeline(0);
+
+        // note: viewport disabled for now
+        if (RobotConstants.USE_VIEWPORT) {
+            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA), cameraMonitorViewId);
+        } else {
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA));
+        }
+
+
+        backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
+
+        backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                telemetry.addLine("Opened back camera!");
+                telemetry.update();
+                backCamera.setPipeline(backPipeline);
+                if (RobotConstants.USE_VIEWPORT) {
+                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                }
+            }
+
+            @Override
+            public void onError(int errorCode)
+            {
+                telemetry.addData("pain", "pain");
+                telemetry.update();
+            }
+        });
     }
 
     // NOTE: SYSTEM METHODS ------------------------------------------------------------------
@@ -250,6 +298,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
         telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
+        telemetry.addData("Spike mark: ", backPipeline.spikeMark);
         //telemetry.addData("IMU Yaw: ", GetHeading());
 
         telemetry.update();

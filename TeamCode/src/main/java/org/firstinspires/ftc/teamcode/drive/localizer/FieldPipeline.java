@@ -35,6 +35,7 @@ public class FieldPipeline extends OpenCvPipeline {
     };
 
     public static Scalar[] TEAM_PROP_BOUNDS = {new Scalar(0, 0, 0), new Scalar(0, 0, 0)};
+    public static long PROP_THRESHOLD = 1000;
     public static double ANGLE_THRESHOLD = Math.toRadians(15);
 
     public static int PIXEL_THRESHOLD = 1000;
@@ -96,16 +97,20 @@ public class FieldPipeline extends OpenCvPipeline {
 
         int maxIndex = maxOfArr(contourArr, sort);
 
-        Moments M = Imgproc.moments(contourArr[maxIndex]);
+        if (Imgproc.contourArea(contourArr[maxIndex]) > PROP_THRESHOLD) {
+            Moments M = Imgproc.moments(contourArr[maxIndex]);
 
-        long cX = Math.round(M.m10 / M.m00);
-        long cY = Math.round(M.m01 / M.m00);
+            long cX = Math.round(M.m10 / M.m00);
+            long cY = Math.round(M.m01 / M.m00);
 
-        double angle = Math.atan2(cY, cX - SCREEN_WIDTH / 2) - Math.PI / 2;
-        if (Math.abs(angle) > ANGLE_THRESHOLD) {
-            return angle > 0 ? 5 : 1;
+            double angle = Math.atan2(cY, cX - SCREEN_WIDTH / 2) - Math.PI / 2;
+            if (Math.abs(angle) > ANGLE_THRESHOLD) {
+                return angle > 0 ? 5 : 1;
+            }
+            return 3;
         }
-        return 3;
+        // Prop not found
+        return -1;
     }
 
     // Given a backdrop image, this function approximates the score that

@@ -91,7 +91,6 @@ public class Robotv8_Abstract {
         telemetry = t;
         hardwareMap = map;
         TELEMETRY_GIVEN = true;
-        telemetry.addLine("Initialising...");
 
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;

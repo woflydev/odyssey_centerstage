@@ -67,7 +67,7 @@ public class RobotConstants {
 
     // -------------------------------------------------------------- VISION
 
-    public static final boolean USE_VIEWPORT = true;
+    public static final boolean USE_VIEWPORT = false;
     public static final boolean USE_DRIVE = true;
     public static final boolean USE_BACK = true;
 
