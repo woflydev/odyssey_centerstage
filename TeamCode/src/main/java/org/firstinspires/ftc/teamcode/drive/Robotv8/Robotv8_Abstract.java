@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
+import static java.lang.Thread.sleep;
+
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
@@ -10,12 +12,18 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.sun.source.doctree.StartElementTree;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Webcam_Test;
 import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.opencv.SampleCameraFeed;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -55,9 +63,6 @@ public class Robotv8_Abstract {
     public Trajectory TILE_TO_BACKDROP;
     public Trajectory BACKDROP_TO_TILE;
 
-    private OpenCvWebcam backCamera;
-    private FieldPipeline backPipeline;
-
     private HardwareMap hardwareMap;
 
     private Telemetry telemetry;
@@ -75,21 +80,11 @@ public class Robotv8_Abstract {
             stack = parentStack;
         }
 
-        viewerId = hardwareMap.appContext
-                .getResources()
-                .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, STARTING_POSE, telemetry, stack);
 
-        //telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        //telemetry.addData(">", "Touch Play to start OpMode");
-
-        localizer.update();
-        if (RobotConstants.USE_BACK) {
-            backPipeline = new FieldPipeline(0);
-            initCameras(backPipeline);
-        }
-        //telemetry.clear();
+        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
+        telemetry.addData(">", "Touch Play to start OpMode");
+        telemetry.clear();
     }
 
     public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
@@ -98,66 +93,16 @@ public class Robotv8_Abstract {
         TELEMETRY_GIVEN = true;
         telemetry.addLine("Initialising...");
 
-        viewerId = hardwareMap.appContext
-                .getResources()
-                .getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;
         }
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry, stack);
-
-        localizer.update();
-
-        if (RobotConstants.USE_BACK) {
-            backPipeline = new FieldPipeline(1);
-            initCameras(backPipeline);
-        }
 
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch Play to start OpMode");
         telemetry.update();
     }
 
-    private void initCameras(OpenCvPipeline pipeline) {
-        if (RobotConstants.USE_VIEWPORT) {
-            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA), viewerId);
-        } else {
-            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA));
-        }
-        backCamera.setPipeline(pipeline);
-        backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
-
-        telemetry.addLine("Added back camera.");
-        telemetry.update();
-
-        if (RobotConstants.OPEN_CAMERA) {
-            backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                @Override
-                public void onOpened() {
-                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                    telemetry.addLine("Streaming back!");
-                    telemetry.update();
-                }
-
-                @Override
-                public void onError(int errorCode) {
-                    if (TELEMETRY_GIVEN) {
-                        telemetry.addLine("Error in opening camera.");
-                        telemetry.update();
-                    }
-                }
-            });
-        }
-    }
-
-
-
-    private void closeCameras() {
-        if (RobotConstants.USE_BACK) {
-            backCamera.closeCameraDevice();
-        }
-    }
 
     public void update() {
         localizer.update();
@@ -170,7 +115,6 @@ public class Robotv8_Abstract {
         localizer.update();
         telemetry.addLine("Updating!");
         telemetry.update();
-        //tagTelemetry(localizer.currentDetections);
         if (gamepad1.dpad_down) {
             localizer.visionPortal.stopStreaming();
         } else if (gamepad1.dpad_up) {
@@ -180,7 +124,6 @@ public class Robotv8_Abstract {
 
     public void stop() {
         localizer.stop();
-        closeCameras();
     }
 
     @SuppressLint("DefaultLocale")
@@ -238,7 +181,7 @@ public class Robotv8_Abstract {
     }
 
     public void initTask(int pixelColour) {
-        transferPixel(pixelColour, backPipeline.spikeMark, true);
+        transferPixel(pixelColour, stack.backPipeline.spikeMark, true);
     }
     public void transferPixel(int pixelColour, int pixelSlot, boolean fromTile) {
         stack.DropAndReset();
@@ -259,7 +202,7 @@ public class Robotv8_Abstract {
                         .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
                         .build()
         );
-        stack.DepositSequence((int) (backPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
+        stack.DepositSequence((int) (stack.backPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
 
     }
 }

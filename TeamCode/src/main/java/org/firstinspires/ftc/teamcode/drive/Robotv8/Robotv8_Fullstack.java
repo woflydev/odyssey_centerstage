@@ -41,6 +41,7 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -48,10 +49,16 @@ import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.OuttakeState;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Webcam_Test;
+import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -80,6 +87,13 @@ public class Robotv8_Fullstack extends OpMode {
     public IMU imu = null;
     public DcMotorEx intake = null;
 
+    public OpenCvWebcam frontCamera;
+    public OpenCvWebcam backCamera;
+
+    public FieldPipeline frontPipeline;
+    public FieldPipeline backPipeline;
+
+
     public final ElapsedTime encoderRuntime = new ElapsedTime();
     public final ElapsedTime armRuntime = new ElapsedTime();
     public final ElapsedTime resetTimer = new ElapsedTime();
@@ -107,6 +121,8 @@ public class Robotv8_Fullstack extends OpMode {
     public boolean fieldCentricRed = true;
 
     public AutoMecanumDrive drive;
+
+    public int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
     public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
@@ -202,6 +218,8 @@ public class Robotv8_Fullstack extends OpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
+        InitCameras();
+
         handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
         drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
 
@@ -217,6 +235,76 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(500);
     }
 
+    public void InitCameras() {
+        frontPipeline = new FieldPipeline(0);
+        if (RobotConstants.USE_BACK) {
+            backPipeline = new FieldPipeline(1);
+        }
+
+        if (RobotConstants.USE_VIEWPORT) {
+            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.FRONT_CAMERA), cameraMonitorViewId);
+            if (RobotConstants.USE_BACK) {
+                backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA), cameraMonitorViewId);
+            }
+        } else {
+            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.FRONT_CAMERA));
+            if (RobotConstants.USE_BACK) {
+                backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA));
+            }
+        }
+
+        frontCamera.setPipeline(frontPipeline);
+        frontCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
+        if (RobotConstants.USE_BACK) {
+            backCamera.setPipeline(backPipeline);
+            backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
+        }
+
+        frontCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+        {
+            @Override
+            public void onOpened()
+            {
+                telemetry.addLine("Opened front camera!");
+                telemetry.update();
+                frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode)
+            {
+                /*
+                 * This will be called if the camera could not be opened
+                 */
+                telemetry.addData("pain", "pain");
+                telemetry.update();
+            }
+        });
+
+        if (RobotConstants.USE_BACK) {
+            backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
+            {
+                @Override
+                public void onOpened()
+                {
+                    telemetry.addLine("Opened front camera!");
+                    telemetry.update();
+                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                }
+
+                @Override
+                public void onError(int errorCode)
+                {
+                    /*
+                     * This will be called if the camera could not be opened
+                     */
+                    telemetry.addData("pain", "pain");
+                    telemetry.update();
+                }
+            });
+        }
+    }
+
     public void init() {
         telemetry.addData("Status", "INITIALIZING ROBOT...");
         telemetry.update();
@@ -224,6 +312,7 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(2000);
 
         InitializeBlock();
+        Delay(2000);
         MainInit();
 
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
