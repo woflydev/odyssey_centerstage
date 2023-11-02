@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
@@ -18,28 +19,22 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
+import java.lang.reflect.Field;
+
 @TeleOp
 public class Webcam_Test extends OpMode
 {
     OpenCvWebcam webcamFront;
+    FieldPipeline pipe;
 
     @SuppressLint("DefaultLocale")
     @Override
     public void init()
     {
-        /*
-         * Instantiate an OpenCvCamera object for the camera we'll be using.
-         * In this sample, we're using a webcam. Note that you will need to
-         * make sure you have added the webcam to your configuration file and
-         * adjusted the name here to match what you named it in said config file.
-         *
-         * We pass it the view that we wish to use for camera monitor (on
-         * the RC phone). If no camera monitor is desired, use the alternate
-         * single-parameter constructor instead (commented out below)
-         */
+        pipe = new FieldPipeline(0);
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcamFront = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-        webcamFront.setPipeline(new SamplePipeline());
+        webcamFront.setPipeline(pipe);
         webcamFront.setMillisecondsPermissionTimeout(5000); // Timeout for obtaining permission is configurable. Set before opening.
         webcamFront.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
         {
@@ -74,6 +69,7 @@ public class Webcam_Test extends OpMode
         telemetry.addData("Pipeline time ms", webcamFront.getPipelineTimeMs());
         telemetry.addData("Overhead time ms", webcamFront.getOverheadTimeMs());
         telemetry.addData("Theoretical max FPS", webcamFront.getCurrentPipelineMaxFps());
+        telemetry.addData("Detected spikemark: ", pipe.spikeMark);
         telemetry.update();
 
         if(gamepad1.a)
@@ -99,41 +95,6 @@ public class Webcam_Test extends OpMode
              */
             webcamFront.stopStreaming();
             //webcam.closeCameraDevice();
-        }
-    }
-
-    class SamplePipeline extends OpenCvPipeline
-    {
-        boolean viewportPaused;
-
-        @Override
-        public Mat processFrame(Mat input)
-        {
-            Imgproc.rectangle(
-                    input,
-                    new Point(
-                            input.cols()/4,
-                            input.rows()/4),
-                    new Point(
-                            input.cols()*(3f/4f),
-                            input.rows()*(3f/4f)),
-                    new Scalar(0, 255, 0), 4);
-            return input;
-        }
-
-        @Override
-        public void onViewportTapped()
-        {
-            viewportPaused = !viewportPaused;
-
-            if(viewportPaused)
-            {
-                webcamFront.pauseViewport();
-            }
-            else
-            {
-                webcamFront.resumeViewport();
-            }
         }
     }
 }
