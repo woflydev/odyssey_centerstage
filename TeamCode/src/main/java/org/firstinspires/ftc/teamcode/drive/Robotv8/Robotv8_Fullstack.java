@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+//TODO: Integrate Enoch's FSM_Fullstack into this one
 @TeleOp()
 public class Robotv8_Fullstack extends OpMode {
     public Robotv8_Abstract handler;
@@ -129,6 +130,9 @@ public class Robotv8_Fullstack extends OpMode {
     public OpenCvCameraRotation streamRotation = OpenCvCameraRotation.UPRIGHT;
 
     public int cameraMonitorViewId;
+
+    public boolean frontOpened = false;
+    public boolean backOpened = false;
 
     public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
@@ -256,11 +260,10 @@ public class Robotv8_Fullstack extends OpMode {
 
             frontCamera.setPipeline(frontPipeline);
             frontCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
-
             frontCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                 @Override
                 public void onOpened() {
-                    UpdateCameraSwitch();
+                    frontOpened = true;
                 }
 
                 @Override
@@ -282,7 +285,7 @@ public class Robotv8_Fullstack extends OpMode {
             backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                 @Override
                 public void onOpened() {
-                    UpdateCameraSwitch();
+                    backOpened = true;
                 }
 
                 @Override
@@ -314,10 +317,10 @@ public class Robotv8_Fullstack extends OpMode {
                 case 0:
                     telemetry.addLine("Streaming front camera, April Tag!");
                     telemetry.update();
-                    if (RobotConstants.USE_FRONT) {
+                    if (RobotConstants.USE_FRONT && frontOpened) {
                         frontCamera.stopStreaming();
                     }
-                    if (RobotConstants.USE_BACK) {
+                    if (RobotConstants.USE_BACK && backOpened) {
                         backCamera.stopStreaming();
                     }
                     if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
@@ -328,33 +331,33 @@ public class Robotv8_Fullstack extends OpMode {
                 case 1:
                     telemetry.addLine("Streaming front camera, OpenCV pipeline!");
                     telemetry.update();
-                    if (RobotConstants.USE_BACK) {
+                    if (RobotConstants.USE_BACK && backOpened) {
                         backCamera.stopStreaming();
                     }
                     if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
                         handler.localizer.visionPortal.stopStreaming();
                     }
                     if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
-                        if (RobotConstants.USE_FRONT) {
+                        if (RobotConstants.USE_FRONT && frontOpened) {
                             frontCamera.startStreaming(streamWidth, streamHeight, streamRotation);
+                            return true;
                         }
-                        return true;
                     }
                     return false;
                 case 2:
                     telemetry.addLine("Streaming back camera, OpenCV pipeline!");
                     telemetry.update();
-                    if (RobotConstants.USE_FRONT) {
+                    if (RobotConstants.USE_FRONT && frontOpened) {
                         frontCamera.stopStreaming();
                     }
                     if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
                         handler.localizer.visionPortal.stopStreaming();
                     }
                     if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
-                        if (RobotConstants.USE_BACK) {
+                        if (RobotConstants.USE_BACK && backOpened) {
                             backCamera.startStreaming(streamWidth, streamHeight, streamRotation);
+                            return true;
                         }
-                        return true;
                     }
                     return false;
                 default:
