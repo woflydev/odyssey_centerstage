@@ -400,7 +400,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case WRIST_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 200) {
+                if (outtakeFSMTimer.milliseconds() >= 400) {
                     MoveElbow(RobotConstants.ELBOW_PICKUP);
                     outtakeFSMTimer.reset();
 
@@ -408,7 +408,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case ELBOW_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 200) {
+                if (outtakeFSMTimer.milliseconds() >= 300) {
                     servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                     outtakeFSMTimer.reset();
 
