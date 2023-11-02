@@ -13,13 +13,10 @@ public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
     }
 
     public void MainStart() {
-        //handler.initTask(2);
-        // Go back to starting position
-        drive.followTrajectory(handler.path(Robotv8_Abstract.STARTING_POSE, Robotv8_Abstract.TILE_LOCATION));
+        handler.initTask();
     }
 
     public void MainLoop() {
-        // Get Pixel
-        // Go to
+
     }
 }

@@ -58,6 +58,11 @@ public class Robotv8_Abstract {
     public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
     public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
 
+    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS;
+    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS;
+
+    public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0);
+
     public Trajectory[] PIXEL_TO_BACKDROP = new Trajectory[PIXEL_LOCATIONS.length];
 
     public Trajectory TILE_TO_BACKDROP;
@@ -178,10 +183,19 @@ public class Robotv8_Abstract {
         }
     }
 
-    public void initTask(int pixelColour) {
-        transferPixel(pixelColour, stack.backPipeline.spikeMark, true);
+    public void initTask() {
+        int spikeMark = localizer.propTfod(PLAYING_BLUE);
+        Pose2d spikePose = PLAYING_BLUE ?
+                BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
+        stack.drive.followTrajectory(path(STARTING_POSE, spikePose));
+        stack.MoveElbow(RobotConstants.ELBOW_DROPOFF);
+        stack.intake.setPower(RobotConstants.INTAKE_OUTPUT);
+        stack.Delay(RobotConstants.INTAKE_OUTPUT_TIME);
+        Pose2d pixelPose = (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).plus(PIXEL_OFFSET.times(spikeMark * 2 - 1));
+        stack.drive.followTrajectory(path(spikePose, pixelPose));
+        stack.DepositSequence(RobotConstants.INITIAL_HEIGHT);
     }
-    public void transferPixel(int pixelColour, int pixelSlot, boolean fromTile) {
+    public void transferPixel(int pixelColour, int pixelSlot, int height, boolean fromTile) {
         stack.DropAndReset();
 
         stack.intake.setPower(RobotConstants.INTAKE_POWER);
@@ -200,7 +214,7 @@ public class Robotv8_Abstract {
                         .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
                         .build()
         );
-        stack.DepositSequence((int) (stack.backPipeline.backdrop.rows * FieldPipeline.PIXEL_HEIGHT + FieldPipeline.BACKDROP_Z_OFFSET));
+        stack.DepositSequence(height);
 
     }
 }

@@ -103,4 +103,11 @@ public class RobotConstants {
     public static final double BACKDROP_ANGLE = - Math.PI / 2;
 
     public static final double TAG_WALL_ANGLE = Math.PI / 2;
+
+    public static final double ELBOW_DROPOFF = 0.8;
+
+    public static final double INTAKE_OUTPUT = 0.5;
+    public static final double INTAKE_OUTPUT_TIME = 1000;
+
+    public static final int INITIAL_HEIGHT = 15;
 }

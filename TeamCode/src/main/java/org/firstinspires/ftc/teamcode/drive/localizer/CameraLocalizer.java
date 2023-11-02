@@ -156,8 +156,8 @@ public class CameraLocalizer implements Localizer {
 
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
-            "Blue Prop",
-            "Red Prop"
+            "BLUE_PROP",
+            "RED_PROP"
     };
 
     /**
@@ -297,6 +297,9 @@ public class CameraLocalizer implements Localizer {
                 //.setModelAspectRatio(16.0 / 9.0)
 
                 .build();
+
+        // Default just in case
+        //tfod = TfodProcessor.easyCreateWithDefaults();
 
         // Set confidence threshold for TFOD recognitions, at any time.
         //tfod.setMinResultConfidence(0.75f);
@@ -446,7 +449,7 @@ public class CameraLocalizer implements Localizer {
         visionPortal.setProcessorEnabled(aprilTag, true);
     }   // end method telemetryTfod()
 
-    public int propTfod() {
+    public int propTfod(boolean playingBlue) {
         visionPortal.setProcessorEnabled(aprilTag, false);
         visionPortal.setProcessorEnabled(tfod, true);
 
@@ -459,7 +462,9 @@ public class CameraLocalizer implements Localizer {
             double angle = recognition.estimateAngleToObject(AngleUnit.RADIANS);
             visionPortal.setProcessorEnabled(tfod, false);
             visionPortal.setProcessorEnabled(aprilTag, true);
-            return (angle > ANGLE_THRESHOLD) ? 3 : ((angle > - ANGLE_THRESHOLD) ? 2 : 1);
+            if (recognition.getLabel() == LABELS[playingBlue ? 0 : 1]) {
+                return (angle > ANGLE_THRESHOLD) ? 2 : ((angle > -ANGLE_THRESHOLD) ? 1 : 0);
+            }
 
         }   // end for() loop
 
