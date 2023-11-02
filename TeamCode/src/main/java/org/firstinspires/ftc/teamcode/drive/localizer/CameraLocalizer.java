@@ -219,7 +219,7 @@ public class CameraLocalizer implements Localizer {
         aprilTag = new AprilTagProcessor.Builder()
                 //.setDrawAxes(false)
                 //.setDrawCubeProjection(false)
-                .setDrawTagOutline(true)
+                //.setDrawTagOutline(true)
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 .setTagLibrary(library)
                 .setOutputUnits(DistanceUnit.METER, AngleUnit.RADIANS)
@@ -252,6 +252,8 @@ public class CameraLocalizer implements Localizer {
             // If set "true", monitor shows solid orange screen if no processors enabled.
             // If set "false", monitor shows camera view without annotations.
             builder.setAutoStopLiveView(false);
+        } else {
+            builder.enableLiveView(false);
         }
 
         // Set and enable the processor.

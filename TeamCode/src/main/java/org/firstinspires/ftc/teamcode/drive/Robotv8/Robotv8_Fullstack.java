@@ -223,7 +223,7 @@ public class Robotv8_Fullstack extends OpMode {
         handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
         drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
 
-        if (RobotConstants.USE_DRIVE) {
+        if (RobotConstants.USE_DRIVE && RobotConstants.USE_LOCALISER) {
             handler.initialisePaths();
             if (!handler.localizer.isBlind) {
                 drive.setPoseEstimate(handler.localizer.poseEstimate);
@@ -257,7 +257,9 @@ public class Robotv8_Fullstack extends OpMode {
                     telemetry.addLine("Opened front camera!");
                     telemetry.update();
                     if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 1) {
-                        backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                        telemetry.addLine("Streaming front camera!");
+                        telemetry.update();
+                        frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                     }
                 }
 
@@ -287,9 +289,9 @@ public class Robotv8_Fullstack extends OpMode {
             backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                 @Override
                 public void onOpened() {
-                    telemetry.addLine("Opened back camera!");
-                    telemetry.update();
                     if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 2) {
+                        telemetry.addLine("Streaming back camera!");
+                        telemetry.update();
                         backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                     }
                 }
@@ -317,6 +319,7 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.update();
     }
     public void closeCameras() {
+        frontCamera.closeCameraDevice();
         backCamera.closeCameraDevice();
     }
 
@@ -723,8 +726,10 @@ public class Robotv8_Fullstack extends OpMode {
 
             List<Integer> lastTrackingEncPositions = new ArrayList<>();
             List<Integer> lastTrackingEncVels = new ArrayList<>();
+            if (RobotConstants.USE_LOCALISER) {
+                setLocalizer(handler.localizer);
+            }
 
-            setLocalizer(handler.localizer);
 
             trajectorySequenceRunner = new TrajectorySequenceRunner(
                     follower, HEADING_PID, batteryVoltageSensor,

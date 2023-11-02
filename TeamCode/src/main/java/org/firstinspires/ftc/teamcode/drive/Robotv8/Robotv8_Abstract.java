@@ -94,7 +94,10 @@ public class Robotv8_Abstract {
         if (RobotConstants.USE_DRIVE) {
             stack = parentStack;
         }
-        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry, stack);
+        if (RobotConstants.USE_LOCALISER) {
+            localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry, stack);
+        }
+
 
         telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         telemetry.addData(">", "Touch Play to start OpMode");
@@ -103,25 +106,31 @@ public class Robotv8_Abstract {
 
 
     public void update() {
-        localizer.update();
+        if (RobotConstants.USE_LOCALISER) {
+            localizer.update();
+        }
         telemetry.addLine("Updating!");
         telemetry.update();
         //tagTelemetry(localizer.currentDetections);
     }
 
     public void update(Gamepad gamepad1) {
-        localizer.update();
+        //localizer.update();
         telemetry.addLine("Updating!");
         telemetry.update();
-        if (gamepad1.dpad_down) {
-            localizer.visionPortal.stopStreaming();
-        } else if (gamepad1.dpad_up) {
-            localizer.visionPortal.resumeStreaming();
+        if (RobotConstants.USE_VIEWPORT) {
+            if (gamepad1.dpad_down) {
+                localizer.visionPortal.stopStreaming();
+            } else if (gamepad1.dpad_up) {
+                localizer.visionPortal.resumeStreaming();
+            }
         }
     }
 
     public void stop() {
-        localizer.stop();
+        if (RobotConstants.USE_LOCALISER) {
+            localizer.stop();
+        }
     }
 
     @SuppressLint("DefaultLocale")

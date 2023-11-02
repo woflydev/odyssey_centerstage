@@ -227,12 +227,14 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             @Override
             public void onOpened()
             {
-                telemetry.addLine("Opened back camera!");
+                telemetry.addLine("Back Camera Opened...");
                 telemetry.update();
                 backCamera.setPipeline(backPipeline);
                 if (RobotConstants.USE_VIEWPORT) {
                     backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                 }
+
+                telemetry.addLine("ALL SYSTEMS GO FOR LAUNCH");
             }
 
             @Override
@@ -252,7 +254,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         InitializeBlock();
         MainInit();
 
-        telemetry.addData("Status", "INITIALIZATION COMPLETE!");
+        telemetry.addData("Status", "INITIALIZATION COMPLETE!"); // note: may be overwritten by camera opening slower
         telemetry.update();
     }
     public void start() {
@@ -372,7 +374,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 TurnToDirection(0.01, 90); // note: automatically switches drivetrainState back to manual when done
                 HandleDrivetrainOverride(); // note: also resets to manual if overriden
             case ALIGNING_WITH_OUTER_WALL:
-                TurnToDirection(0.01, 180);
+                TurnToDirection(0.01, 35);
                 HandleDrivetrainOverride();
         }
     }
@@ -513,7 +515,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             }
 
             // note: relinquish wrist control in favour of hanging
-            if (gamepad2.right_bumper) {
+            /*if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
@@ -521,9 +523,9 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
-            }
+            }*/
 
-            /*if (gamepad2.right_bumper) {
+            if (gamepad2.right_bumper) {
                 servoHangR.setPower(1);
                 servoHangL.setPower(1);
             } else if (gamepad2.left_bumper) {
@@ -532,7 +534,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             } else {
                 servoHangR.setPower(0);
                 servoHangL.setPower(0);
-            }*/
+            }
 
             // FLAP (FOR TUNING VALUES) -----------------------------------------------
             if (gamepad2.dpad_right) {

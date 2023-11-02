@@ -70,11 +70,13 @@ public class RobotConstants {
     public static final boolean USE_VIEWPORT = false;
 
     // 0 is the April Tag feed, 1 is the Webcam 1 feed for OpenCV and 2 is the Webcam 2 feed for OpenCV
-    public static final int CAMERA_STREAM = 2;
+    public static final int CAMERA_STREAM = 0;
     public static final boolean USE_DRIVE = true;
 
-    public static final boolean USE_FRONT = true;
-    public static final boolean USE_BACK = true;
+    public static final boolean USE_FRONT = false;
+    public static final boolean USE_BACK = false;
+
+    public static final boolean USE_LOCALISER = true;
 
     public static final double FIELD_LENGTH = 3.58;
     public static final double CAMERA_HEIGHT = 0.313;
