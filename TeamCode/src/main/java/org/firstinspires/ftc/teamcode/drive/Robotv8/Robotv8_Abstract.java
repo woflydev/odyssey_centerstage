@@ -116,7 +116,6 @@ public class Robotv8_Abstract {
         telemetry.addLine("Updating!");
         telemetry.update();
         //tagTelemetry(localizer.currentDetections);
-        stack.UpdateCameraSwitch();
     }
 
     public void stop() {

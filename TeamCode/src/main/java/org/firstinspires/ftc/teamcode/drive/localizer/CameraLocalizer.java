@@ -16,11 +16,13 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -35,6 +37,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 public class CameraLocalizer implements Localizer {
     public Pose2d poseEstimate;
@@ -46,7 +49,7 @@ public class CameraLocalizer implements Localizer {
     public HardwareMap hardwareMap;
     private static double CAMERA_HEIGHT = 0.313;
 
-    private static int SLEEP_TIME = 20;
+    private static int SLEEP_TIME = 100;
 
     private static int STARTUP_TIME = 1000;
 
@@ -73,6 +76,8 @@ public class CameraLocalizer implements Localizer {
     public VisionPortal visionPortal;
 
     private static int ACQUISITION_TIME = 10;
+
+    private static double ANGLE_THRESHOLD = Math.toRadians(15);
 
     // This assumes the april tag starts facing along the y-axis, may change later
     public static AprilTagMetadata[] tagArray = {
@@ -145,6 +150,21 @@ public class CameraLocalizer implements Localizer {
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
 
+    // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
+    // this is only used for Android Studio when using models in Assets.
+    private static final String TFOD_MODEL_ASSET = "PropsRecognition.tflite";
+
+    // Define the labels recognized in the model for TFOD (must be in training order!)
+    private static final String[] LABELS = {
+            "Blue Prop",
+            "Red Prop"
+    };
+
+    /**
+     * The variable to store our instance of the TensorFlow Object Detection processor.
+     */
+    private TfodProcessor tfod;
+
     @NonNull
     public Pose2d getPoseEstimate() {
         return this.poseEstimate;
@@ -170,7 +190,7 @@ public class CameraLocalizer implements Localizer {
 
         elapsedTime.reset();
 
-        initAprilTag();
+        initPortal();
     }
     public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t) {
         this.hardwareMap = map;
@@ -183,7 +203,7 @@ public class CameraLocalizer implements Localizer {
 
         elapsedTime.reset();
 
-        initAprilTag();
+        initPortal();
     }
 
     public void update() {
@@ -207,7 +227,7 @@ public class CameraLocalizer implements Localizer {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
     }
 
-    private void initAprilTag() {
+    private void initPortal() {
 
         AprilTagLibrary.Builder b = new AprilTagLibrary.Builder();
         for (AprilTagMetadata tag : tagArray) {
@@ -256,9 +276,36 @@ public class CameraLocalizer implements Localizer {
         } else {
             builder.enableLiveView(false);
         }
+        // Create the TensorFlow processor by using a builder.
+        tfod = new TfodProcessor.Builder()
+                .setModelAssetName(TFOD_MODEL_ASSET)
+
+                // With the following lines commented out, the default TfodProcessor Builder
+                // will load the default model for the season. To define a custom model to load,
+                // choose one of the following:
+                //   Use setModelAssetName() if the custom TF Model is built in as an asset (AS only).
+                //   Use setModelFileName() if you have downloaded a custom team model to the Robot Controller.
+                //.setModelAssetName(TFOD_MODEL_ASSET)
+                //.setModelFileName(TFOD_MODEL_FILE)
+
+                // The following default settings are available to un-comment and edit as needed to
+                // set parameters for custom models.
+                //.setModelLabels(LABELS)
+                //.setIsModelTensorFlow2(true)
+                //.setIsModelQuantized(true)
+                //.setModelInputSize(300)
+                //.setModelAspectRatio(16.0 / 9.0)
+
+                .build();
+
+        // Set confidence threshold for TFOD recognitions, at any time.
+        //tfod.setMinResultConfidence(0.75f);
+
+        // Disable or re-enable the TFOD processor at any time.
+        //visionPortal.setProcessorEnabled(tfod, true);
 
         // Set and enable the processor.
-        builder.addProcessor(aprilTag);
+        builder.addProcessors(aprilTag, tfod);
 
         // Build the Vision Portal, using the above settings.
         visionPortal = builder.build();
@@ -325,7 +372,9 @@ public class CameraLocalizer implements Localizer {
                     blindTime = elapsedTime.time(timeUnit);
                     isBlind = true;
                 }
-                MecanumLocalization();
+                if (RobotConstants.USE_DRIVE) {
+                    MecanumLocalization();
+                }
             }
         }
     }
@@ -369,6 +418,54 @@ public class CameraLocalizer implements Localizer {
 
         lastWheelPositions = (ArrayList<Double>) wheelPositions;
         lastExtHeading = extHeading;
+    }
+
+    /**
+     * Add telemetry about TensorFlow Object Detection (TFOD) recognitions.
+     */
+    public void telemetryTfod() {
+        visionPortal.setProcessorEnabled(aprilTag, false);
+        visionPortal.setProcessorEnabled(tfod, true);
+
+        List<Recognition> currentRecognitions = tfod.getRecognitions();
+        t.addData("# Props Detected", currentRecognitions.size());
+
+        // Step through the list of recognitions and display info for each one.
+        for (Recognition recognition : currentRecognitions) {
+
+            t.addData(""," ");
+            t.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
+            t.addData("Angle", "%.3f degrees", recognition.estimateAngleToObject(AngleUnit.DEGREES));
+            double angle = recognition.estimateAngleToObject(AngleUnit.RADIANS);
+
+
+        }   // end for() loop
+
+
+        visionPortal.setProcessorEnabled(tfod, false);
+        visionPortal.setProcessorEnabled(aprilTag, true);
+    }   // end method telemetryTfod()
+
+    public int propTfod() {
+        visionPortal.setProcessorEnabled(aprilTag, false);
+        visionPortal.setProcessorEnabled(tfod, true);
+
+        List<Recognition> currentRecognitions = tfod.getRecognitions();
+        t.addData("# Props Detected", currentRecognitions.size());
+
+        // Step through the list of recognitions and display info for each one.
+        for (Recognition recognition : currentRecognitions) {
+
+            double angle = recognition.estimateAngleToObject(AngleUnit.RADIANS);
+            visionPortal.setProcessorEnabled(tfod, false);
+            visionPortal.setProcessorEnabled(aprilTag, true);
+            return (angle > ANGLE_THRESHOLD) ? 3 : ((angle > - ANGLE_THRESHOLD) ? 2 : 1);
+
+        }   // end for() loop
+
+        visionPortal.setProcessorEnabled(tfod, false);
+        visionPortal.setProcessorEnabled(aprilTag, true);
+        return -1;
     }
 
     public ArrayList<Double> differences(ArrayList<Double> first, ArrayList<Double> second) {

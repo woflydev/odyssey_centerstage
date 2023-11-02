@@ -34,7 +34,8 @@ public class FieldPipeline extends OpenCvPipeline {
             "yellow"
     };
 
-    public static Scalar[] TEAM_PROP_BOUNDS = {new Scalar(0, 0, 0), new Scalar(0, 0, 0)};
+    // Blue prop
+    public static Scalar[] TEAM_PROP_BOUNDS = {new Scalar(97, 85, 107), new Scalar(110, 190, 206)};
     public static long PROP_THRESHOLD = 1000;
     public static double ANGLE_THRESHOLD = Math.toRadians(15);
 

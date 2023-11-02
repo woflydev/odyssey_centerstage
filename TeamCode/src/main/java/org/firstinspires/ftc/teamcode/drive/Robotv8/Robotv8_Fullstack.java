@@ -30,6 +30,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -46,6 +47,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Drivetrain;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_PlaneLauncher;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.OuttakeState;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
@@ -71,8 +75,9 @@ public class Robotv8_Fullstack extends OpMode {
     public Robotv8_Abstract handler;
 
     public RobotState state = RobotState.IDLE;
-    public boolean active = true;
     public OuttakeState outtakeState = OuttakeState.IDLE;
+    public FSM_PlaneLauncher planeLauncherState = FSM_PlaneLauncher.IDLE;
+    public FSM_Drivetrain drivetrainState = FSM_Drivetrain.MANUAL;
 
     public DcMotorEx backLM = null;
     public DcMotorEx backRM = null;
@@ -84,21 +89,19 @@ public class Robotv8_Fullstack extends OpMode {
     public Servo servoElbowR = null;
     public Servo servoElbowL = null;
     public Servo servoPlane = null;
+    public CRServo servoHangR = null;
+    public CRServo servoHangL = null;
     public DcMotorEx armR = null;
     public DcMotorEx armL = null;
     public IMU imu = null;
     public DcMotorEx intake = null;
 
-    public OpenCvWebcam frontCamera;
-    public OpenCvWebcam backCamera;
-
-    public FieldPipeline frontPipeline;
-    public FieldPipeline backPipeline;
-
-
     public final ElapsedTime encoderRuntime = new ElapsedTime();
     public final ElapsedTime armRuntime = new ElapsedTime();
     public final ElapsedTime resetTimer = new ElapsedTime();
+    public final ElapsedTime drivetrainTimer = new ElapsedTime();
+    public final ElapsedTime outtakeFSMTimer = new ElapsedTime();
+    public final ElapsedTime planeLauncherFSMTimer = new ElapsedTime();
 
     public double targetClawPosition = RobotConstants.CLAW_OPEN;
     public double targetWristPosition = RobotConstants.WRIST_PICKUP;
@@ -107,7 +110,6 @@ public class Robotv8_Fullstack extends OpMode {
     public double targetFlapPosition = RobotConstants.FLAP_CLOSE;
     public int targetOuttakePosition = 0;
 
-    public boolean planeTriggered = false;
     public boolean clawOpen = false;
     public boolean wristActive = false;
     public boolean elbowActive = false;
@@ -122,17 +124,14 @@ public class Robotv8_Fullstack extends OpMode {
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
 
+
+
+    public boolean planeTriggered = false;
+
+
     public AutoMecanumDrive drive;
 
-    public int streamWidth = 320;
-    public int streamHeight = 240;
-
-    public OpenCvCameraRotation streamRotation = OpenCvCameraRotation.UPRIGHT;
-
     public int cameraMonitorViewId;
-
-    public boolean frontOpened = false;
-    public boolean backOpened = false;
 
     public void Delay(double time) {
         try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
@@ -160,6 +159,7 @@ public class Robotv8_Fullstack extends OpMode {
 
     public void InitializeBlock() {
         cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
         if (RobotConstants.USE_DRIVE) {
@@ -233,6 +233,8 @@ public class Robotv8_Fullstack extends OpMode {
 
         }
 
+
+
         handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
 
         if (RobotConstants.USE_DRIVE && RobotConstants.USE_LOCALISER) {
@@ -244,57 +246,7 @@ public class Robotv8_Fullstack extends OpMode {
                 drive.setPoseEstimate(Robotv8_Abstract.STARTING_POSE);
             }
         }
-
-        InitCameras();
-        while (!UpdateCameraSwitch());
-
-        Delay(500);
-    }
-
-    public void InitCameras() {
-        if (RobotConstants.USE_FRONT) {
-            frontPipeline = new FieldPipeline(0);
-            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
-                    cameraMonitorViewId);
-
-            frontCamera.setPipeline(frontPipeline);
-            frontCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
-            frontCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                @Override
-                public void onOpened() {
-                    frontOpened = true;
-                }
-
-                @Override
-                public void onError(int errorCode) {
-                    telemetry.addLine("Error opening camera.");
-                    telemetry.update();
-                }
-            });
-        }
-
-        if (RobotConstants.USE_BACK) {
-            backPipeline = new FieldPipeline(1);
-            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA),
-                    cameraMonitorViewId);
-            backCamera.setPipeline(backPipeline);
-            backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
-
-            backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-                @Override
-                public void onOpened() {
-                    backOpened = true;
-                }
-
-                @Override
-                public void onError(int errorCode) {
-                    telemetry.addLine("Error opening camera.");
-                    telemetry.update();
-                }
-            });
-        }
+        Delay(2000);
     }
 
     public void init() {
@@ -311,91 +263,21 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.update();
     }
 
-    public boolean UpdateCameraSwitch() {
-        if (RobotConstants.USE_CAMERA_STREAM) {
-            switch (RobotConstants.CAMERA_STREAM) {
-                case 0:
-                    telemetry.addLine("Streaming front camera, April Tag!");
-                    telemetry.update();
-                    if (RobotConstants.USE_FRONT && frontOpened) {
-                        frontCamera.stopStreaming();
-                    }
-                    if (RobotConstants.USE_BACK && backOpened) {
-                        backCamera.stopStreaming();
-                    }
-                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
-                        handler.localizer.visionPortal.resumeStreaming();
-                        return true;
-                    }
-                    return false;
-                case 1:
-                    telemetry.addLine("Streaming front camera, OpenCV pipeline!");
-                    telemetry.update();
-                    if (RobotConstants.USE_BACK && backOpened) {
-                        backCamera.stopStreaming();
-                    }
-                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
-                        handler.localizer.visionPortal.stopStreaming();
-                    }
-                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
-                        if (RobotConstants.USE_FRONT && frontOpened) {
-                            frontCamera.startStreaming(streamWidth, streamHeight, streamRotation);
-                            return true;
-                        }
-                    }
-                    return false;
-                case 2:
-                    telemetry.addLine("Streaming back camera, OpenCV pipeline!");
-                    telemetry.update();
-                    if (RobotConstants.USE_FRONT && frontOpened) {
-                        frontCamera.stopStreaming();
-                    }
-                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
-                        handler.localizer.visionPortal.stopStreaming();
-                    }
-                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
-                        if (RobotConstants.USE_BACK && backOpened) {
-                            backCamera.startStreaming(streamWidth, streamHeight, streamRotation);
-                            return true;
-                        }
-                    }
-                    return false;
-                default:
-                    telemetry.addLine("Unknown camera id. Nothing changed.");
-                    telemetry.update();
-                    return false;
-            }
 
-        }
-        return false;
-    }
-
-    public void closeCameras() {
-        if (RobotConstants.USE_FRONT) {
-            frontCamera.closeCameraDevice();
-        }
-        if (RobotConstants.USE_BACK) {
-            backCamera.closeCameraDevice();
-        }
-    }
 
     public void start() {
         MainStart();
     }
 
     public void loop() {
-        if (active) {
-            StatusTelemetry();
+        StatusTelemetry();
 
-            // Optional, to see position output
-            handler.update();
-            MainLoop();
-        }
+        // Optional, to see position output
+        handler.update();
+        MainLoop();
     }
     public void stop() {
-        active = false;
         handler.stop();
-        closeCameras();
         MainStop();
     }
 
@@ -417,28 +299,158 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void StatusTelemetry() {
-        // TELEMETRY
-        telemetry.addData("Arm Left: ", armL.getCurrentPosition());
-        telemetry.addData("Arm Right: ", armR.getCurrentPosition());
+        if (RobotConstants.USE_DRIVE) {
+            // TELEMETRY
+            telemetry.addData("Arm Left: ", armL.getCurrentPosition());
+            telemetry.addData("Arm Right: ", armR.getCurrentPosition());
         /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
-        telemetry.addData("Target Wrist Position: ", targetWristPosition);
-        telemetry.addData("Target Elbow Position: ", targetElbowPosition);
-        telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
-        telemetry.addData("Target Claw Position: ", targetClawPosition);
-        telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
-        telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
-        telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
-        //telemetry.addData("IMU Yaw: ", GetHeading());
+            telemetry.addData("Target Wrist Position: ", targetWristPosition);
+            telemetry.addData("Target Elbow Position: ", targetElbowPosition);
+            telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
+            telemetry.addData("Target Claw Position: ", targetClawPosition);
+            telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
+            telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
+            telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
+            //telemetry.addData("IMU Yaw: ", GetHeading());
 
-        telemetry.update();
+            telemetry.update();
+        }
+    }
+    public void DrivetrainSubsystem() {
+        switch (drivetrainState) {
+            case MANUAL:
+                Mecanum();
+                if (gamepad1.dpad_right) {
+                    Delay(100);
+
+                    drivetrainTimer.reset();
+                    drivetrainState = FSM_Drivetrain.ALIGNING_WITH_BACKDROP;
+
+                } else if (gamepad1.dpad_left) {
+                    Delay(100);
+
+                    drivetrainTimer.reset();
+                    drivetrainState = FSM_Drivetrain.ALIGNING_WITH_OUTER_WALL;
+                }
+                break;
+            case ALIGNING_WITH_BACKDROP:
+                TurnToDirection(0.01, 90); // note: automatically switches drivetrainState back to manual when done
+                HandleDrivetrainOverride(); // note: also resets to manual if overriden
+            case ALIGNING_WITH_OUTER_WALL:
+                TurnToDirection(0.01, 35);
+                HandleDrivetrainOverride();
+        }
+    }
+
+    public void OuttakeSubsystem() {
+        // NOTE: statemachine for outtake sequences
+        switch (outtakeState) {
+            case IDLE:
+                if (gamepad1.left_bumper) {
+                    servoFlap.setPosition(RobotConstants.FLAP_OPEN);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = OuttakeState.FLAP_OPENING;
+                }
+                break;
+            case FLAP_OPENING:
+                // amount of time the servo takes to activate from the previous state
+                if (outtakeFSMTimer.milliseconds() >= 700) {
+                    servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = OuttakeState.WRIST_PICKING;
+                }
+                break;
+            case WRIST_PICKING:
+                if (outtakeFSMTimer.milliseconds() >= 200) {
+                    MoveElbow(RobotConstants.ELBOW_PICKUP);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = OuttakeState.ELBOW_PICKING;
+                }
+                break;
+            case ELBOW_PICKING:
+                if (outtakeFSMTimer.milliseconds() >= 200) {
+                    servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+                    outtakeFSMTimer.reset();
+
+                    outtakeState = OuttakeState.CLAW_CLOSING;
+                }
+                break;
+            case CLAW_CLOSING:
+                if (outtakeFSMTimer.milliseconds() >= 250) {
+                    outtakeFSMTimer.reset();
+                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    Delay(100);
+                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+
+                    outtakeState = OuttakeState.GRABBED_AND_READY;
+                }
+                break;
+            case GRABBED_AND_READY:
+                HandleDeposit(); // different deposit heights, the outtake progression is set within this function
+                break;
+            case PRIMED_FOR_DEPOSIT:
+                // acts as a stopper to suspend the statemachine until a button is pressed
+                if (gamepad1.cross || gamepad1.circle || gamepad1.triangle) {
+                    outtakeState = OuttakeState.CLAW_OPENING;
+                    Delay(100); // debounce input
+                }
+                break;
+            case CLAW_OPENING:
+                servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                outtakeFSMTimer.reset();
+                outtakeState = OuttakeState.OUTTAKE_RESET;
+                break;
+            case OUTTAKE_RESET:
+                if (outtakeFSMTimer.milliseconds() >= 300 && outtakeFSMTimer.milliseconds() <= 2000) {
+                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+                    targetOuttakePosition = 10;
+                    UpdateOuttake(true, 0);
+
+                    outtakeState = OuttakeState.IDLE;
+                }
+                break;
+        }
+    }
+
+    public void PlaneLauncherSubsystem() {
+        switch (planeLauncherState) {
+            case IDLE:
+                if (gamepad2.cross) {
+                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
+                    planeLauncherFSMTimer.reset();
+
+                    planeLauncherState = FSM_PlaneLauncher.ACTIVE;
+                }
+                break;
+            case ACTIVE:
+                if (planeLauncherFSMTimer.seconds() >= 2) {
+                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+
+                    planeLauncherState = FSM_PlaneLauncher.IDLE;
+                }
+                break;
+        }
     }
 
     public void RuntimeConfig() {
-        // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
-        if (adjustmentAllowed) { // lining up arm for topmost cone
+        // NOTE: manual control logic. slides / claw / hanging / flap / plane / elbow
+        if (adjustmentAllowed) {
+            // slow down driving with analog trigger
+            if (gamepad1.right_trigger >= 0.2) {
+                driveSpeedModifier = gamepad1.right_trigger + 1.3;
+            } else {
+                driveSpeedModifier = 1;
+            }
+
             if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
                 if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
                     targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
@@ -457,6 +469,7 @@ public class Robotv8_Fullstack extends OpMode {
                 UpdateOuttake(false, 0);
             }
 
+            // claw
             if (gamepad2.square) {
                 targetClawPosition -= 0.02;
                 servoClaw.setPosition(targetClawPosition);
@@ -467,7 +480,8 @@ public class Robotv8_Fullstack extends OpMode {
                 Delay(50);
             }
 
-            if (gamepad2.right_bumper) {
+            // note: relinquish wrist control in favour of hanging
+            /*if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
@@ -475,6 +489,17 @@ public class Robotv8_Fullstack extends OpMode {
                 targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
+            }*/
+
+            if (gamepad2.right_bumper) {
+                servoHangR.setPower(1);
+                servoHangL.setPower(1);
+            } else if (gamepad2.left_bumper) {
+                servoHangR.setPower(-1);
+                servoHangL.setPower(-1);
+            } else {
+                servoHangR.setPower(0);
+                servoHangL.setPower(0);
             }
 
             // FLAP (FOR TUNING VALUES) -----------------------------------------------
@@ -486,114 +511,257 @@ public class Robotv8_Fullstack extends OpMode {
                 servoFlap.setPosition(targetFlapPosition);
             }
 
-            // PLANE -------------------------------------------------------------------
-            if (gamepad2.cross) {
-                if (!planeTriggered) {
-                    planeTriggered = true;
-                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
-                } else {
-                    planeTriggered = false;
-                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-                }
-                Delay(250);
-            }
-
             // ELBOW ------------------------------------------------------------------
-            if (gamepad1.triangle) {
+            if (gamepad1.dpad_up) {
                 targetElbowPosition += 0.02;
                 MoveElbow(targetElbowPosition);
-            } else if (gamepad1.cross) {
+            } else if (gamepad1.dpad_down) {
                 targetElbowPosition -= 0.02;
                 MoveElbow(targetElbowPosition);
             }
         }
 
-        // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
+        // NOTE: INTAKE
+        if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
+            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else if (gamepad1.square) {
+            intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else {
+            intake.setPower(0);
+        }
+
+        // NOTE: MANUAL OUTTAKE RESET
+        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
+            outtakeState = OuttakeState.CLAW_OPENING; // state to open claw and completely reset the outtake
+        }
+
+        // NOTE: FIELD CENTRIC IMU YAW RESET
         if (gamepad1.start) { // re-calibrate field centric drive
             imu.resetYaw();
         }
     }
 
+    public void HandleDeposit() {
+        if (gamepad1.cross) {
+            RaiseAndPrime(RobotConstants.JUNCTION_LOW);
+            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+            Delay(100);
+        } else if (gamepad1.circle) {
+            RaiseAndPrime(RobotConstants.JUNCTION_MID);
+            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+            Delay(100);
+        } else if (gamepad1.triangle) {
+            RaiseAndPrime(RobotConstants.JUNCTION_HIGH);
+            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+            Delay(100);
+        }
+    }
+
+    public void HandleDrivetrainOverride() {
+        // note: override in case things go die die
+        if (gamepad1.dpad_left || gamepad1.dpad_right) {
+            backLM.setPower(0);
+            backRM.setPower(0);
+            frontLM.setPower(0);
+            frontRM.setPower(0);
+
+            drivetrainTimer.reset();
+            drivetrainState = FSM_Drivetrain.MANUAL;
+        }
+    }
+
+    public void RaiseAndPrime(int height) {
+        intake.setPower(0); // make sure intake is not running
+
+        targetOuttakePosition = height;
+        UpdateOuttake(false, 0);
+
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+
+        MoveElbow(RobotConstants.ELBOW_ACTIVE);
+
+        outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+        Delay(50); // debounce
+    }
+
+
+    // NOTE: HELPER METHODS ------------------------------------------------------------------
+    public void UpdateOuttake(boolean reset, double delay) { // test new function
+        if (reset) {
+            Delay(delay);
+            armR.setTargetPosition(10);
+            armL.setTargetPosition(10);
+            targetOuttakePosition = 10;
+            armRuntime.reset();
+            armR.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
+            armL.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
+            /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
+                armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
+
+                if (armM.getCurrentPosition() <= 50 || armRuntime.seconds() >= ARM_RESET_TIMEOUT) {
+                    break;
+                }
+            }*/
+
+            if ((armL.getCurrentPosition() <= 20 || armR.getCurrentPosition() <= 20) || armRuntime.seconds() >= RobotConstants.ARM_RESET_TIMEOUT) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            }
+
+            telemetry.update();
+        }
+
+        else {
+            Delay(delay);
+            armR.setTargetPosition(targetOuttakePosition);
+            armL.setTargetPosition(targetOuttakePosition);
+            armRuntime.reset();
+            armR.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
+            armL.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED); // velocity used to be 1800, could be faster
+        }
+    }
+
+    public void TurnToDirection(double speed, double desiredHeading) {
+        backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        backLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+        double error = desiredHeading - currentHeading;
+
+        // Ensure that the error is within the range -180 to 180 degrees
+        if (error > 180) {
+            error -= 360;
+        } else if (error < -180) {
+            error += 360;
+        }
+
+        double power = error > 0 ? speed : -speed; // which turning direction is closest?
+        if (drivetrainTimer.seconds() <= 4) {
+            backLM.setPower(-power);
+            backRM.setPower(power);
+            frontLM.setPower(-power);
+            frontRM.setPower(power);
+        }
+
+        if (Math.abs(error) < 1.0) {
+            backLM.setPower(0);
+            backRM.setPower(0);
+            frontLM.setPower(0);
+            frontRM.setPower(0);
+
+            drivetrainState = FSM_Drivetrain.MANUAL;
+        }
+    }
+
+    public void PassiveArmResetCheck() {
+        if (targetOuttakePosition <= 30) {
+            if ((armL.getCurrentPosition() <= 10 && armR.getCurrentPosition() <= 10) && (armL.getCurrentPosition() >= 0 && armR.getCurrentPosition() <= 0)) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            } else if ((armL.getCurrentPosition() <= 210 && armR.getCurrentPosition() <= 210) && (armL.getCurrentPosition() >= -100 && armR.getCurrentPosition() >= -100)) {
+                armR.setTargetPosition(10);
+                armL.setTargetPosition(10);
+                targetOuttakePosition = 10;
+
+                armR.setVelocity(800);
+                armL.setVelocity(800);
+            }
+        }
+    }
+
     public void Mecanum() {
-        double frontLeftPower;
-        double backLeftPower;
-        double frontRightPower;
-        double backRightPower;
+        if (RobotConstants.USE_DRIVE) {
+            double frontLeftPower;
+            double backLeftPower;
+            double frontRightPower;
+            double backRightPower;
 
-        double yAxis;
-        double xAxis;
-        double rotateAxis;
+            double yAxis;
+            double xAxis;
+            double rotateAxis;
 
-        int dir = fieldCentricRed ? 1 : -1;
+            int dir = fieldCentricRed ? 1 : -1;
 
-        // all negative when field centric red
-        yAxis = gamepad1.left_stick_y * dir;
-        xAxis = -gamepad1.left_stick_x * 1.1 * dir;
-        rotateAxis = -gamepad1.right_stick_x * dir;
+            // all negative when field centric red
+            yAxis = gamepad1.left_stick_y * dir;
+            xAxis = -gamepad1.left_stick_x * 1.1 * dir;
+            rotateAxis = -gamepad1.right_stick_x * dir;
 
-        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+            double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
 
-        // Rotate the movement direction counter to the bot's rotation
-        double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
-        double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
+            // Rotate the movement direction counter to the bot's rotation
+            double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
+            double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
 
-        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
-        frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
-        backLeftPower = (rotY - rotX + rotateAxis) / denominator;
-        frontRightPower = (rotY - rotX - rotateAxis) / denominator;
-        backRightPower = (rotY + rotX - rotateAxis) / denominator;
+            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
+            frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
+            backLeftPower = (rotY - rotX + rotateAxis) / denominator;
+            frontRightPower = (rotY - rotX - rotateAxis) / denominator;
+            backRightPower = (rotY + rotX - rotateAxis) / denominator;
 
-        double stable_v1 = Stabilize(backLeftPower, current_v1);
-        double stable_v2 = Stabilize(frontRightPower, current_v2);
-        double stable_v3 = Stabilize(frontLeftPower, current_v3);
-        double stable_v4 = Stabilize(backRightPower, current_v4);
+            double stable_v1 = Stabilize(backLeftPower, current_v1);
+            double stable_v2 = Stabilize(frontRightPower, current_v2);
+            double stable_v3 = Stabilize(frontLeftPower, current_v3);
+            double stable_v4 = Stabilize(backRightPower, current_v4);
 
-        current_v1 = stable_v1;
-        current_v2 = stable_v2;
-        current_v3 = stable_v3;
-        current_v4 = stable_v4;
+            current_v1 = stable_v1;
+            current_v2 = stable_v2;
+            current_v3 = stable_v3;
+            current_v4 = stable_v4;
 
-        frontLM.setPower(stable_v3 / driveSpeedModifier);
-        frontRM.setPower(stable_v2 / driveSpeedModifier);
-        backLM.setPower(stable_v1 / driveSpeedModifier);
-        backRM.setPower(stable_v4 / driveSpeedModifier);
+            frontLM.setPower(stable_v3 / driveSpeedModifier);
+            frontRM.setPower(stable_v2 / driveSpeedModifier);
+            backLM.setPower(stable_v1 / driveSpeedModifier);
+            backRM.setPower(stable_v4 / driveSpeedModifier);
+        }
     }
 
     public void Macros() {
-        // INTAKE
-        if (gamepad1.left_trigger > 0.2) {
-            intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
-        } else {
-            intake.setPower(0);
-        }
-
-        // GRAB
-        if (gamepad1.left_bumper && outtakeState == OuttakeState.IDLE) {
-            intake.setPower(0);
-            GrabAndReady();
-            outtakeState = OuttakeState.GRABBED_AND_READY;
-        }
-
-        // DEPLOY & RESET DEPENDING ON STATE
-        if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
-            if (gamepad1.dpad_right) {
-                DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT);
-            } else if (gamepad1.dpad_down) {
-                DepositSequence(RobotConstants.JUNCTION_LOW);
-            } else if (gamepad1.dpad_left) {
-                DepositSequence(RobotConstants.JUNCTION_MID);
-            } else if (gamepad1.dpad_up) {
-                DepositSequence(RobotConstants.JUNCTION_HIGH);
+        if (RobotConstants.USE_DRIVE) {
+            // INTAKE
+            if (gamepad1.left_trigger > 0.2) {
+                intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
+            } else {
+                intake.setPower(0);
             }
-        }
 
-        // RESET
-        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
-            DropAndReset();
-            outtakeState = OuttakeState.IDLE;
-        }
+            // GRAB
+            if (gamepad1.left_bumper && outtakeState == OuttakeState.IDLE) {
+                intake.setPower(0);
+                GrabAndReady();
+                outtakeState = OuttakeState.GRABBED_AND_READY;
+            }
 
-        Delay(5); // debounce
+            // DEPLOY & RESET DEPENDING ON STATE
+            if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
+                if (gamepad1.dpad_right) {
+                    DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT);
+                } else if (gamepad1.dpad_down) {
+                    DepositSequence(RobotConstants.JUNCTION_LOW);
+                } else if (gamepad1.dpad_left) {
+                    DepositSequence(RobotConstants.JUNCTION_MID);
+                } else if (gamepad1.dpad_up) {
+                    DepositSequence(RobotConstants.JUNCTION_HIGH);
+                }
+            }
+
+            // RESET
+            if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
+                DropAndReset();
+                outtakeState = OuttakeState.IDLE;
+            }
+
+            Delay(5); // debounce
+        }
     }
 
     public void MacroDrive(Robotv8_Abstract handler) {
@@ -635,18 +803,6 @@ public class Robotv8_Fullstack extends OpMode {
         MoveElbow(RobotConstants.ELBOW_STANDBY);
     }
 
-    public void RaiseAndPrime(int height) {
-        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
-
-        MoveElbow(RobotConstants.ELBOW_ACTIVE);
-
-        Delay(100);
-
-        targetOuttakePosition = height;
-        UpdateOuttake(false, 0);
-    }
-
     public void DropAndReset() {
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
@@ -659,57 +815,6 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
 
-    // HELPER FUNCTIONS ------------------------------------------------------------------
-    public void UpdateOuttake(boolean reset, double delay) { // test new function
-        if (reset) {
-            Delay(delay);
-            armR.setTargetPosition(10);
-            armL.setTargetPosition(10);
-            targetOuttakePosition = 10;
-            armRuntime.reset();
-            armR.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
-            armL.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
-            /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
-                armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
-
-                if (armM.getCurrentPosition() <= 50 || armRuntime.seconds() >= ARM_RESET_TIMEOUT) {
-                    break;
-                }
-            }*/
-
-            if ((armL.getCurrentPosition() <= 20 || armR.getCurrentPosition() <= 20) || armRuntime.seconds() >= RobotConstants.ARM_RESET_TIMEOUT) {
-                armR.setVelocity(0);
-                armL.setVelocity(0);
-            }
-
-            telemetry.update();
-        }
-
-        else {
-            Delay(delay);
-            armR.setTargetPosition(targetOuttakePosition);
-            armL.setTargetPosition(targetOuttakePosition);
-            armRuntime.reset();
-            armR.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED);
-            armL.setVelocity(RobotConstants.MAX_OUTTAKE_SPEED); // velocity used to be 1800, could be faster
-        }
-    }
-
-    public void PassiveArmResetCheck() {
-        if (targetOuttakePosition <= 30) {
-            if ((armL.getCurrentPosition() <= 10 && armR.getCurrentPosition() <= 10) && (armL.getCurrentPosition() >= 0 && armR.getCurrentPosition() <= 0)) {
-                armR.setVelocity(0);
-                armL.setVelocity(0);
-            } else if ((armL.getCurrentPosition() <= 210 && armR.getCurrentPosition() <= 210) && (armL.getCurrentPosition() >= -100 && armR.getCurrentPosition() >= -100)) {
-                armR.setTargetPosition(10);
-                armL.setTargetPosition(10);
-                targetOuttakePosition = 10;
-
-                armR.setVelocity(800);
-                armL.setVelocity(800);
-            }
-        }
-    }
 
     public static class AutoMecanumDrive extends MecanumDrive {
         public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);

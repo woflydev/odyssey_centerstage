@@ -300,7 +300,6 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
         telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
-        telemetry.addData("Spike mark: ", backPipeline.spikeMark);
         //telemetry.addData("IMU Yaw: ", GetHeading());
 
         telemetry.update();

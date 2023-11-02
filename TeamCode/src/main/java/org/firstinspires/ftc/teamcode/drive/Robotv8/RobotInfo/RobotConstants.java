@@ -69,11 +69,10 @@ public class RobotConstants {
 
     public static final boolean USE_CAMERA_STREAM = true;
 
-    // 0 is the April Tag feed, 1 is the Webcam 1 feed for OpenCV and 2 is the Webcam 2 feed for OpenCV
-    public static final int CAMERA_STREAM = 1;
-
     public static final boolean USE_LIVE_VIEW = true;
     public static final boolean USE_DRIVE = false;
+
+    // Never make USE_FRONT true
 
     public static final boolean USE_FRONT = true;
     public static final boolean USE_BACK = true;
