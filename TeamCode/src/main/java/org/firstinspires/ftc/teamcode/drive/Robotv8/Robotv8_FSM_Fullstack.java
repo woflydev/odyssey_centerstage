@@ -212,7 +212,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         backPipeline = new FieldPipeline(0);
 
         // note: viewport disabled for now
-        if (RobotConstants.USE_VIEWPORT) {
+        if (RobotConstants.USE_CAMERA_STREAM) {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
             backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA), cameraMonitorViewId);
         } else {
@@ -230,7 +230,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 telemetry.addLine("Back Camera Opened...");
                 telemetry.update();
                 backCamera.setPipeline(backPipeline);
-                if (RobotConstants.USE_VIEWPORT) {
+                if (RobotConstants.USE_CAMERA_STREAM) {
                     backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
                 }
 

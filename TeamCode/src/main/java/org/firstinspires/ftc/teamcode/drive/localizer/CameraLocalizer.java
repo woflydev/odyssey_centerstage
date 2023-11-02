@@ -13,6 +13,7 @@ import com.acmerobotics.roadrunner.kinematics.Kinematics;
 import com.acmerobotics.roadrunner.kinematics.MecanumKinematics;
 import com.acmerobotics.roadrunner.localization.Localizer;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -217,9 +218,9 @@ public class CameraLocalizer implements Localizer {
 
         // Create the AprilTag processor.
         aprilTag = new AprilTagProcessor.Builder()
-                //.setDrawAxes(false)
-                //.setDrawCubeProjection(false)
-                //.setDrawTagOutline(true)
+                .setDrawAxes(true)
+                .setDrawCubeProjection(false)
+                .setDrawTagOutline(true)
                 .setTagFamily(AprilTagProcessor.TagFamily.TAG_36h11)
                 .setTagLibrary(library)
                 .setOutputUnits(DistanceUnit.METER, AngleUnit.RADIANS)
@@ -231,6 +232,7 @@ public class CameraLocalizer implements Localizer {
 
                 .build();
 
+
         // Create the vision portal by using a builder.
         VisionPortal.Builder builder = new VisionPortal.Builder();
 
@@ -240,9 +242,8 @@ public class CameraLocalizer implements Localizer {
         // Choose a camera resolution. Not all cameras support all resolutions.
         builder.setCameraResolution(new Size(1280, 720));
 
-        if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 0) {
+        if (RobotConstants.USE_LIVE_VIEW) {
             // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
-            //builder.enableCameraMonitoring(true); // TODO: deprecated API
             builder.enableLiveView(true);
 
             // Set the stream format; MJPEG uses less bandwidth than default YUY2.
@@ -261,8 +262,10 @@ public class CameraLocalizer implements Localizer {
 
         // Build the Vision Portal, using the above settings.
         visionPortal = builder.build();
+
+        // Tries until the stream has been set
         // Disable or re-enable the aprilTag processor at any time.
-        //visionPortal.setProcessorEnabled(aprilTag, true);
+        // visionPortal.setProcessorEnabled(aprilTag, true);
 
     }
     @SuppressLint("DefaultLocale")

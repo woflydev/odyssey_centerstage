@@ -75,9 +75,7 @@ public class Robotv8_Abstract {
         //telemetry.addLine("Initialising...");
         hardwareMap = map;
 
-        if (RobotConstants.USE_DRIVE) {
-            stack = parentStack;
-        }
+        stack = parentStack;
 
         localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, STARTING_POSE, telemetry, stack);
 
@@ -90,10 +88,8 @@ public class Robotv8_Abstract {
         telemetry = t;
         hardwareMap = map;
         TELEMETRY_GIVEN = true;
+        stack = parentStack;
 
-        if (RobotConstants.USE_DRIVE) {
-            stack = parentStack;
-        }
         if (RobotConstants.USE_LOCALISER) {
             localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry, stack);
         }
@@ -106,25 +102,21 @@ public class Robotv8_Abstract {
 
 
     public void update() {
+        Update();
+    }
+
+    public void update(Gamepad gamepad1) {
+        Update();
+    }
+
+    public void Update() {
         if (RobotConstants.USE_LOCALISER) {
             localizer.update();
         }
         telemetry.addLine("Updating!");
         telemetry.update();
         //tagTelemetry(localizer.currentDetections);
-    }
-
-    public void update(Gamepad gamepad1) {
-        //localizer.update();
-        telemetry.addLine("Updating!");
-        telemetry.update();
-        if (RobotConstants.USE_VIEWPORT) {
-            if (gamepad1.dpad_down) {
-                localizer.visionPortal.stopStreaming();
-            } else if (gamepad1.dpad_up) {
-                localizer.visionPortal.resumeStreaming();
-            }
-        }
+        stack.UpdateCameraSwitch();
     }
 
     public void stop() {

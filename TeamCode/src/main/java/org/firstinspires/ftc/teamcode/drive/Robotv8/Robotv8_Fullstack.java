@@ -55,6 +55,7 @@ import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
+import org.firstinspires.ftc.vision.VisionPortal;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
@@ -122,6 +123,11 @@ public class Robotv8_Fullstack extends OpMode {
 
     public AutoMecanumDrive drive;
 
+    public int streamWidth = 320;
+    public int streamHeight = 240;
+
+    public OpenCvCameraRotation streamRotation = OpenCvCameraRotation.UPRIGHT;
+
     public int cameraMonitorViewId;
 
     public void Delay(double time) {
@@ -149,81 +155,84 @@ public class Robotv8_Fullstack extends OpMode {
     }
 
     public void InitializeBlock() {
+        cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         driveSpeedModifier = RobotConstants.BASE_DRIVE_SPEED_MODIFIER;
 
-        backLM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_LEFT);
-        backRM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_RIGHT);
+        if (RobotConstants.USE_DRIVE) {
 
-        frontLM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_LEFT);
-        frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT); //frontRM.setDirection(DcMotorSimple.Direction.REVERSE); // weird workaround Stanley put in
-        intake = hardwareMap.get(DcMotorEx.class, RobotConstants.INTAKE_MOTOR);
+            backLM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_LEFT);
+            backRM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_RIGHT);
 
-        backLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontLM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_LEFT);
+            frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT); //frontRM.setDirection(DcMotorSimple.Direction.REVERSE); // weird workaround Stanley put in
+            intake = hardwareMap.get(DcMotorEx.class, RobotConstants.INTAKE_MOTOR);
 
-        backLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        backRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        frontRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            backLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            backRM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            frontRM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            backRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRM.setDirection(DcMotorSimple.Direction.REVERSE);
+            backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        armR = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_R);
-        armL = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_L);
+            frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
+            backRM.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        armR.setDirection(DcMotorSimple.Direction.REVERSE);
-        armL.setDirection(DcMotorSimple.Direction.FORWARD);
-        armR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        armR.setTargetPosition(0);
-        armL.setTargetPosition(0);
-        armR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armR = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_R);
+            armL = hardwareMap.get(DcMotorEx.class, RobotConstants.ARM_L);
 
-        servoFlap = hardwareMap.get(Servo.class, RobotConstants.SERVO_FLAP);
-        servoElbowR = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_R);
-        servoElbowL = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_L);
-        servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
-        servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
-        servoPlane = hardwareMap.get(Servo.class, RobotConstants.SERVO_PLANE);
+            armR.setDirection(DcMotorSimple.Direction.REVERSE);
+            armL.setDirection(DcMotorSimple.Direction.FORWARD);
+            armR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            armR.setTargetPosition(0);
+            armL.setTargetPosition(0);
+            armR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        clawOpen = true;
-        transferStageDeployed = false;
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos*/
+            servoFlap = hardwareMap.get(Servo.class, RobotConstants.SERVO_FLAP);
+            servoElbowR = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_R);
+            servoElbowL = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_L);
+            servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
+            servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
+            servoPlane = hardwareMap.get(Servo.class, RobotConstants.SERVO_PLANE);
 
-        // -------------------------------------------------------------- IMU INIT
+            clawOpen = true;
+            transferStageDeployed = false;
+            servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+            servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+            servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+            servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+            MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos*/
 
-        telemetry.addData("Status", "CALIBRATING IMU...");
-        telemetry.addData("Important Information", "PLACE ROBOT FACING AWAY FROM ALLIANCE BOX!");
-        telemetry.update();
+            // -------------------------------------------------------------- IMU INIT
+            telemetry.addData("Status", "CALIBRATING IMU...");
+            telemetry.addData("Important Information", "PLACE ROBOT FACING AWAY FROM ALLIANCE BOX!");
+            telemetry.update();
 
-        IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
-                RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
-                RevHubOrientationOnRobot.UsbFacingDirection.UP
-        ));
+            IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
+                    RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                    RevHubOrientationOnRobot.UsbFacingDirection.UP
+            ));
 
-        imu = hardwareMap.get(IMU.class, RobotConstants.HUB_IMU);
-        imu.initialize(parameters);
-        imu.resetYaw();
+            imu = hardwareMap.get(IMU.class, RobotConstants.HUB_IMU);
+            imu.initialize(parameters);
+            imu.resetYaw();
 
-        InitCameras();
+
+        }
 
         handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
-        drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
 
         if (RobotConstants.USE_DRIVE && RobotConstants.USE_LOCALISER) {
+            drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
             handler.initialisePaths();
             if (!handler.localizer.isBlind) {
                 drive.setPoseEstimate(handler.localizer.poseEstimate);
@@ -232,35 +241,26 @@ public class Robotv8_Fullstack extends OpMode {
             }
         }
 
+        InitCameras();
+        while (!UpdateCameraSwitch());
+
         Delay(500);
     }
 
     public void InitCameras() {
         if (RobotConstants.USE_FRONT) {
             frontPipeline = new FieldPipeline(0);
-            if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 1) {
-                frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                        hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
-                        hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName())
-                );
-            } else {
-                frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                        hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA)
-                );
-            }
+            frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
+                    cameraMonitorViewId);
+
             frontCamera.setPipeline(frontPipeline);
             frontCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
 
             frontCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                 @Override
                 public void onOpened() {
-                    telemetry.addLine("Opened front camera!");
-                    telemetry.update();
-                    if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 1) {
-                        telemetry.addLine("Streaming front camera!");
-                        telemetry.update();
-                        frontCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                    }
+                    UpdateCameraSwitch();
                 }
 
                 @Override
@@ -273,27 +273,16 @@ public class Robotv8_Fullstack extends OpMode {
 
         if (RobotConstants.USE_BACK) {
             backPipeline = new FieldPipeline(1);
-            if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 2) {
-                backCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                        hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA),
-                        hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName())
-                );
-            } else {
-                backCamera = OpenCvCameraFactory.getInstance().createWebcam(
-                        hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA)
-                );
-            }
+            backCamera = OpenCvCameraFactory.getInstance().createWebcam(
+                    hardwareMap.get(WebcamName.class, RobotConstants.BACK_CAMERA),
+                    cameraMonitorViewId);
             backCamera.setPipeline(backPipeline);
             backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
 
             backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
                 @Override
                 public void onOpened() {
-                    if (RobotConstants.USE_VIEWPORT && RobotConstants.CAMERA_STREAM == 2) {
-                        telemetry.addLine("Streaming back camera!");
-                        telemetry.update();
-                        backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                    }
+                    UpdateCameraSwitch();
                 }
 
                 @Override
@@ -318,9 +307,73 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
         telemetry.update();
     }
+
+    public boolean UpdateCameraSwitch() {
+        if (RobotConstants.USE_CAMERA_STREAM) {
+            switch (RobotConstants.CAMERA_STREAM) {
+                case 0:
+                    telemetry.addLine("Streaming front camera, April Tag!");
+                    telemetry.update();
+                    if (RobotConstants.USE_FRONT) {
+                        frontCamera.stopStreaming();
+                    }
+                    if (RobotConstants.USE_BACK) {
+                        backCamera.stopStreaming();
+                    }
+                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
+                        handler.localizer.visionPortal.resumeStreaming();
+                        return true;
+                    }
+                    return false;
+                case 1:
+                    telemetry.addLine("Streaming front camera, OpenCV pipeline!");
+                    telemetry.update();
+                    if (RobotConstants.USE_BACK) {
+                        backCamera.stopStreaming();
+                    }
+                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
+                        handler.localizer.visionPortal.stopStreaming();
+                    }
+                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
+                        if (RobotConstants.USE_FRONT) {
+                            frontCamera.startStreaming(streamWidth, streamHeight, streamRotation);
+                        }
+                        return true;
+                    }
+                    return false;
+                case 2:
+                    telemetry.addLine("Streaming back camera, OpenCV pipeline!");
+                    telemetry.update();
+                    if (RobotConstants.USE_FRONT) {
+                        frontCamera.stopStreaming();
+                    }
+                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.STREAMING) {
+                        handler.localizer.visionPortal.stopStreaming();
+                    }
+                    if (handler.localizer.visionPortal.getCameraState() == VisionPortal.CameraState.CAMERA_DEVICE_READY) {
+                        if (RobotConstants.USE_BACK) {
+                            backCamera.startStreaming(streamWidth, streamHeight, streamRotation);
+                        }
+                        return true;
+                    }
+                    return false;
+                default:
+                    telemetry.addLine("Unknown camera id. Nothing changed.");
+                    telemetry.update();
+                    return false;
+            }
+
+        }
+        return false;
+    }
+
     public void closeCameras() {
-        frontCamera.closeCameraDevice();
-        backCamera.closeCameraDevice();
+        if (RobotConstants.USE_FRONT) {
+            frontCamera.closeCameraDevice();
+        }
+        if (RobotConstants.USE_BACK) {
+            backCamera.closeCameraDevice();
+        }
     }
 
     public void start() {

@@ -160,7 +160,7 @@ public class NewRobot_v8_AbstractTesting {
     }
 
     private void initCameras(OpenCvPipeline frontPipeline) {
-        if (RobotConstants.USE_VIEWPORT) {
+        if (RobotConstants.USE_CAMERA_STREAM) {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
             frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
                     hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
@@ -195,7 +195,7 @@ public class NewRobot_v8_AbstractTesting {
     }
 
     private void initCameras(OpenCvPipeline frontPipeline, OpenCvPipeline backPipeline) {
-        if (RobotConstants.USE_VIEWPORT) {
+        if (RobotConstants.USE_CAMERA_STREAM) {
             int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
             frontCamera = OpenCvCameraFactory.getInstance().createWebcam(
                     hardwareMap.get(WebcamName.class, RobotConstants.FRONT_CAMERA),
