@@ -180,15 +180,19 @@ public class Robotv8_Abstract {
         stack.Delay(RobotConstants.INTAKE_OUTPUT_TIME);
         Pose2d pixelPose = (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).plus(PIXEL_OFFSET.times(spikeMark * 2 - 1));
         stack.drive.followTrajectory(path(spikePose, pixelPose));
-        stack.DepositSequence(RobotConstants.INITIAL_HEIGHT);
+
+        // FIXME: BREAKING API CHANGES IN FULLSTACK
+        //stack.DepositSequence(RobotConstants.INITIAL_HEIGHT);
     }
     public void transferPixel(int pixelColour, int pixelSlot, int height, boolean fromTile) {
-        stack.DropAndReset();
+        // FIXME: BREAKING API CHANGES
+        //stack.DropAndReset();
 
         stack.intake.setPower(RobotConstants.INTAKE_POWER);
         stack.Delay(RobotConstants.INTAKE_TIME);
 
-        stack.GrabAndReady();
+        // FIXME: BREAKING API CHANGES
+        //stack.GrabAndReady();
 
         if (fromTile) {
             stack.drive.followTrajectory(TILE_TO_BACKDROP);
@@ -201,7 +205,8 @@ public class Robotv8_Abstract {
                         .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
                         .build()
         );
-        stack.DepositSequence(height);
+        // FIXME: BREAKING API CHANGES
+        //stack.DepositSequence(height);
 
     }
 }
