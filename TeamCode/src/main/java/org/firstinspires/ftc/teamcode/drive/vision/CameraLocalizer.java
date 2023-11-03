@@ -433,7 +433,7 @@ public class CameraLocalizer implements Localizer {
     /**
      * Add telemetry about TensorFlow Object Detection (TFOD) recognitions.
      */
-    public void telemetryTfod() {
+    public int telemetryTfod() {
         visionPortal.setProcessorEnabled(aprilTag, false);
         visionPortal.setProcessorEnabled(tfod, true);
 
@@ -446,14 +446,21 @@ public class CameraLocalizer implements Localizer {
             t.addData(""," ");
             t.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
             t.addData("Angle", "%.3f degrees", recognition.estimateAngleToObject(AngleUnit.DEGREES));
+            t.update();
             double angle = recognition.estimateAngleToObject(AngleUnit.RADIANS);
 
+            if (Math.abs(angle) > ANGLE_THRESHOLD) {
+                return angle > 0 ? 5 : 1;
+            }
+            return 3;
 
         }   // end for() loop
 
 
         visionPortal.setProcessorEnabled(tfod, false);
         visionPortal.setProcessorEnabled(aprilTag, true);
+
+        return 0;
     }   // end method telemetryTfod()
 
     public int propTfod(boolean playingBlue) {

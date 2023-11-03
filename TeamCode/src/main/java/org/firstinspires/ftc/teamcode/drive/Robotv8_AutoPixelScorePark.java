@@ -1,111 +1,22 @@
 package org.firstinspires.ftc.teamcode.drive;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.ENCODER_TICKS_PER_TILE;
-import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.JUNCTION_LOW;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.apache.commons.math3.analysis.function.Exp;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Abstract;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
 
-@Autonomous(name="Final RoadRunner Autonomous", group="Final")
-public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
-    public AutonomousRobotState robotState = AutonomousRobotState.IDLE;
+@Autonomous(name="AutoRed1", group="Final")
+public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
     public ElapsedTime autoTimer = new ElapsedTime();
 
     public boolean detected = false;
-    public boolean searchLeft = true;
-
-    public enum AutonomousRobotState {
-        IDLE,
-        SEARCHING,
-        YELLOW_OUT,
-        PARKING,
-    }
-
-    public void AutonomousSubsystem() {
-        switch (robotState) {
-            case IDLE:
-                EncoderMove(0.5, 0.7, 0.7, false, false, 3);
-                Delay(200);
-                robotState = AutonomousRobotState.SEARCHING;
-                break;
-            case SEARCHING: // covers getting purple out
-                if (!detected) {
-                    if (handler.localizer.spikeMark == 1) {
-                        EncoderMove(0.5, -0.3, 0.3, false, false, 3);
-                        Delay(200);
-
-                        ExpelPixel();
-
-                        EncoderMove(0.5, -0.7, 0.7, false, false, 3);
-                        Delay(200);
-                        EncoderMove(0.5, -1, -1, false, false, 3);
-                        Delay(200);
-
-                        detected = true;
-                        robotState = AutonomousRobotState.YELLOW_OUT;
-                    }
-                    else if (handler.localizer.spikeMark == 3) {
-                        EncoderMove(0.5, 0.3, 0.3, false, false, 3);
-                        Delay(200);
-
-                        ExpelPixel();
-
-                        EncoderMove(0.5, 0.3, 0.3, false, false, 3);
-                        EncoderMove(0.5, -1, 1, false, false, 3);
-                        Delay(200);
-                        EncoderMove(0.5, -1, -1, false, false, 3);
-                        Delay(200);
-
-                        detected = true;
-                        robotState = AutonomousRobotState.YELLOW_OUT;
-                    }
-                    else if (handler.localizer.spikeMark == 5) {
-                        EncoderMove(0.5, 0.3, -0.3, false, false, 3);
-                        Delay(200);
-
-                        ExpelPixel();
-
-                        EncoderMove(0.5, -1.3, 1.3, false, false, 3);
-                        Delay(200);
-                        EncoderMove(0.5, -1, -1, false, false, 3);
-                        Delay(200);
-
-                        detected = true;
-                        robotState = AutonomousRobotState.YELLOW_OUT;
-                    }
-                }
-                else if (searchLeft) {
-                    EncoderMove(0.5, -0.3, 0.3, false, false, 3);
-                    Delay(2000);
-                    if (handler.localizer.spikeMark == 1 || handler.localizer.spikeMark == 3 || handler.localizer.spikeMark == 5) {
-                        EncoderMove(0.5, 0.3, -0.3, false, false, 3);
-                    }
-                } else if (!searchLeft) {
-                    EncoderMove(0.5, 0.3, -0.3, false, false, 3);
-                    Delay(2000);
-                    if (handler.localizer.spikeMark == 1 || handler.localizer.spikeMark == 3 || handler.localizer.spikeMark == 5) {
-                        EncoderMove(0.5, -0.3, 0.3, false, false, 3);
-                    }
-                }
-                break;
-            case YELLOW_OUT:
-                GrabAndReady();
-                RaiseAndPrime(500);
-                Delay(800);
-                DropAndReset();
-                break;
-            case PARKING:
-                // TODO: park
-                break;
-        }
-    }
+    public boolean allianceRed = true; // -1 for blue
 
     private void ExpelPixel() {
         intake.setPower(-0.7);
@@ -119,13 +30,14 @@ public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
 
         // transfer stage sequence
         servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+        Delay(200);
         MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
         Delay(200);
         MoveElbow(RobotConstants.ELBOW_PICKUP);
 
         Delay(200);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(250);
+        Delay(300);
 
         // primes the elbow
         MoveElbow(RobotConstants.ELBOW_STANDBY);
@@ -133,7 +45,6 @@ public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
-    @Override
     public void RaiseAndPrime(int height) {
         intake.setPower(0); // make sure intake is not running
 
@@ -184,6 +95,7 @@ public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
 
         else {
             int dir = strafeRight ? 1 : -1;
+            dir *= allianceRed ? 1 : -1;
             backLMTarget = backLM.getCurrentPosition() + (int)(TilesToTicks(left) * dir);
             frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left) * dir);
             backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right) * dir);
@@ -233,12 +145,33 @@ public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
         frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    public void MainStart() {
-        //handler.initTask();
+    private void AutoWait() {
+        Delay(200);
     }
 
-    public void MainLoop() {
-        handler.localizer.telemetryTfod();
-        AutonomousSubsystem();
+    public void MainInit() {
+
+    }
+
+    public void MainStart() {
+        int dir = allianceRed ? 1 : -1;
+        //int detectedSpikeResult = handler.localizer.telemetryTfod();
+
+        GrabAndReady();
+
+        //handler.initTask();
+        EncoderMove(1, 1, 1, false, false, 3);
+        AutoWait();
+        EncoderMove(1, -1 * dir, 1 * dir, false, false, 3);
+        AutoWait();
+        EncoderMove(0.8, -1.75, -1.75, false, false, 3);
+
+        RaiseAndPrime(400);
+        Delay(500);
+        DropAndReset();
+
+        EncoderMove(1, 1.5, 1.5, true, false, 5);
+        AutoWait();
+        EncoderMove(1, 1 * dir, -1 * dir, false, false, 3);
     }
 }

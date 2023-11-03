@@ -408,7 +408,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case ELBOW_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 200) {
+                if (outtakeFSMTimer.milliseconds() >= 100) {
                     servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                     outtakeFSMTimer.reset();
 
@@ -416,12 +416,10 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeFSMTimer.milliseconds() >= 100) {
+                if (outtakeFSMTimer.milliseconds() >= 150) {
                     outtakeFSMTimer.reset();
-                    MoveElbow(RobotConstants.ELBOW_ACTIVE);
-                    Delay(100);
-                    servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
-
+                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                    MoveElbow(RobotConstants.ELBOW_STANDBY);
                     outtakeState = FSM_Outtake.GRABBED_AND_READY;
                 }
                 break;
@@ -514,7 +512,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             }
 
             // note: relinquish wrist control in favour of hanging
-            if (gamepad2.right_bumper) {
+            /*if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
@@ -522,9 +520,9 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
-            }
+            }*/
 
-            /*if (gamepad2.right_bumper) {
+            if (gamepad2.right_bumper) {
                 servoHangR.setPower(1);
                 servoHangL.setPower(1);
             } else if (gamepad2.left_bumper) {
@@ -533,7 +531,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             } else {
                 servoHangR.setPower(0);
                 servoHangL.setPower(0);
-            }*/
+            }
 
             // FLAP (FOR TUNING VALUES) -----------------------------------------------
             if (gamepad2.dpad_right) {
@@ -593,14 +591,14 @@ public class Robotv8_FSM_Fullstack extends OpMode {
     public void RaiseAndPrime(int height) {
         intake.setPower(0); // make sure intake is not running
 
+        MoveElbow(RobotConstants.ELBOW_ACTIVE);
+
         targetOuttakePosition = height;
         UpdateOuttake(false, 0);
 
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
-
-        MoveElbow(RobotConstants.ELBOW_ACTIVE);
 
         outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         Delay(50); // debounce
