@@ -29,7 +29,6 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityCons
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -42,7 +41,6 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -50,32 +48,24 @@ import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Drivetrain;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_PlaneLauncher;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.OuttakeState;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Webcam_Test;
-import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
 import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
-import org.firstinspires.ftc.vision.VisionPortal;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-//TODO: Integrate Enoch's FSM_Fullstack into this one
-@TeleOp()
+// FIXME: test to ensure new FullStack works
 public class Robotv8_Fullstack extends OpMode {
+    public AutoMecanumDrive drive;
     public Robotv8_Abstract handler;
 
     public RobotState state = RobotState.IDLE;
-    public OuttakeState outtakeState = OuttakeState.IDLE;
+    public FSM_Outtake outtakeState = FSM_Outtake.IDLE;
     public FSM_PlaneLauncher planeLauncherState = FSM_PlaneLauncher.IDLE;
     public FSM_Drivetrain drivetrainState = FSM_Drivetrain.MANUAL;
 
@@ -123,39 +113,7 @@ public class Robotv8_Fullstack extends OpMode {
     public double driveSpeedModifier = 1;
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
-
-
-
-    public boolean planeTriggered = false;
-
-
-    public AutoMecanumDrive drive;
-
     public int cameraMonitorViewId;
-
-    public void Delay(double time) {
-        try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
-    }
-
-    public static boolean IsPositive(double d) { return !(Double.compare(d, 0.0) < 0); }
-
-    public double Stabilize(double new_accel, double current_accel) {
-        double dev = new_accel - current_accel;
-        return Math.abs(dev) > RobotConstants.MAX_ACCELERATION_DEVIATION ? current_accel + RobotConstants.MAX_ACCELERATION_DEVIATION * dev / Math.abs(dev) : new_accel;
-    }
-
-    public double GetHeading() {
-        double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
-        double rot = (double)(Math.round(-currentHeading + 720) % 360);
-        rot = rot == 0 ? 360 : rot;
-        return rot;
-    }
-
-    public void MoveElbow(double targetPos) {
-        servoElbowR.setPosition(targetPos);
-        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
-        Delay(50);
-    }
 
     public void InitializeBlock() {
         cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -233,8 +191,6 @@ public class Robotv8_Fullstack extends OpMode {
 
         }
 
-
-
         handler = new Robotv8_Abstract(this, hardwareMap, telemetry);
 
         if (RobotConstants.USE_DRIVE && RobotConstants.USE_LOCALISER) {
@@ -249,11 +205,10 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(2000);
     }
 
+    // NOTE: SYSTEM METHODS ------------------------------------------------------------------
     public void init() {
         telemetry.addData("Status", "INITIALIZING ROBOT...");
         telemetry.update();
-
-        Delay(1000);
 
         InitializeBlock();
 
@@ -262,63 +217,101 @@ public class Robotv8_Fullstack extends OpMode {
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
         telemetry.update();
     }
-
-
-
     public void start() {
         MainStart();
     }
-
     public void loop() {
         StatusTelemetry();
 
         // Optional, to see position output
-        handler.update();
+        //handler.update();
         MainLoop();
     }
     public void stop() {
-        handler.stop();
         MainStop();
+        handler.stop();
     }
-
     public void MainInit() {
 
     }
-
     public void MainStart() {
 
     }
-
     public void MainLoop() {
 
     }
-
     public void MainStop() {
-        //telemetry.addLine("Main stop reached!");
-        //telemetry.update();
-    }
 
+    }
     public void StatusTelemetry() {
-        if (RobotConstants.USE_DRIVE) {
-            // TELEMETRY
-            telemetry.addData("Arm Left: ", armL.getCurrentPosition());
-            telemetry.addData("Arm Right: ", armR.getCurrentPosition());
-        /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
+        // NOTE: Basic robot telemetry is handled here, instead of child classes.
+        telemetry.addData("Arm Left: ", armL.getCurrentPosition());
+        telemetry.addData("Arm Right: ", armR.getCurrentPosition());
+        telemetry.addData("IMU Raw: ", GetHeadingRaw());
+        telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
-        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
-            telemetry.addData("Target Wrist Position: ", targetWristPosition);
-            telemetry.addData("Target Elbow Position: ", targetElbowPosition);
-            telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
-            telemetry.addData("Target Claw Position: ", targetClawPosition);
-            telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
-            telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
-            telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
-            //telemetry.addData("IMU Yaw: ", GetHeading());
+        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());
+        telemetry.addData("Target Flap Position: ", targetFlapPosition);
+        telemetry.addData("Target Wrist Position: ", targetWristPosition);
+        telemetry.addData("Target Elbow Position: ", targetElbowPosition);
+        telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
+        telemetry.addData("Target Claw Position: ", targetClawPosition);
+        telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
+        telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
+        telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
+        //telemetry.addData("IMU Yaw: ", GetHeading());
 
-            telemetry.update();
-        }
+        telemetry.update();
     }
+
+    // NOTE: CUSTOM BEHAVIOUR ----------------------------------------------------------------
+    public void Mecanum() {
+        // NOTE: field centric Mecanum drive, tuned for acceleration curves and manual control.
+        double frontLeftPower;
+        double backLeftPower;
+        double frontRightPower;
+        double backRightPower;
+
+        double yAxis;
+        double xAxis;
+        double rotateAxis;
+
+        int dir = fieldCentricRed ? 1 : -1;
+
+        // all negative when field centric red
+        yAxis = gamepad1.left_stick_y * dir;
+        xAxis = -gamepad1.left_stick_x * 1.1 * dir;
+        rotateAxis = -gamepad1.right_stick_x * dir;
+
+        double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+
+        // Rotate the movement direction counter to the bot's rotation
+        double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
+        double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
+
+        double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
+        frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
+        backLeftPower = (rotY - rotX + rotateAxis) / denominator;
+        frontRightPower = (rotY - rotX - rotateAxis) / denominator;
+        backRightPower = (rotY + rotX - rotateAxis) / denominator;
+
+        double stable_v1 = Stabilize(backLeftPower, current_v1);
+        double stable_v2 = Stabilize(frontRightPower, current_v2);
+        double stable_v3 = Stabilize(frontLeftPower, current_v3);
+        double stable_v4 = Stabilize(backRightPower, current_v4);
+
+        current_v1 = stable_v1;
+        current_v2 = stable_v2;
+        current_v3 = stable_v3;
+        current_v4 = stable_v4;
+
+        frontLM.setPower(stable_v3 / driveSpeedModifier);
+        frontRM.setPower(stable_v2 / driveSpeedModifier);
+        backLM.setPower(stable_v1 / driveSpeedModifier);
+        backRM.setPower(stable_v4 / driveSpeedModifier);
+    }
+
     public void DrivetrainSubsystem() {
         switch (drivetrainState) {
             case MANUAL:
@@ -353,7 +346,7 @@ public class Robotv8_Fullstack extends OpMode {
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);
                     outtakeFSMTimer.reset();
 
-                    outtakeState = OuttakeState.FLAP_OPENING;
+                    outtakeState = FSM_Outtake.FLAP_OPENING;
                 }
                 break;
             case FLAP_OPENING:
@@ -363,33 +356,33 @@ public class Robotv8_Fullstack extends OpMode {
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
                     outtakeFSMTimer.reset();
 
-                    outtakeState = OuttakeState.WRIST_PICKING;
+                    outtakeState = FSM_Outtake.WRIST_PICKING;
                 }
                 break;
             case WRIST_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 200) {
+                if (outtakeFSMTimer.milliseconds() >= 400) {
                     MoveElbow(RobotConstants.ELBOW_PICKUP);
                     outtakeFSMTimer.reset();
 
-                    outtakeState = OuttakeState.ELBOW_PICKING;
+                    outtakeState = FSM_Outtake.ELBOW_PICKING;
                 }
                 break;
             case ELBOW_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 200) {
+                if (outtakeFSMTimer.milliseconds() >= 300) {
                     servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                     outtakeFSMTimer.reset();
 
-                    outtakeState = OuttakeState.CLAW_CLOSING;
+                    outtakeState = FSM_Outtake.CLAW_CLOSING;
                 }
                 break;
             case CLAW_CLOSING:
                 if (outtakeFSMTimer.milliseconds() >= 250) {
                     outtakeFSMTimer.reset();
-                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    MoveElbow(RobotConstants.ELBOW_ACTIVE);
                     Delay(100);
-                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                    servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
-                    outtakeState = OuttakeState.GRABBED_AND_READY;
+                    outtakeState = FSM_Outtake.GRABBED_AND_READY;
                 }
                 break;
             case GRABBED_AND_READY:
@@ -398,14 +391,14 @@ public class Robotv8_Fullstack extends OpMode {
             case PRIMED_FOR_DEPOSIT:
                 // acts as a stopper to suspend the statemachine until a button is pressed
                 if (gamepad1.cross || gamepad1.circle || gamepad1.triangle) {
-                    outtakeState = OuttakeState.CLAW_OPENING;
+                    outtakeState = FSM_Outtake.CLAW_OPENING;
                     Delay(100); // debounce input
                 }
                 break;
             case CLAW_OPENING:
                 servoClaw.setPosition(RobotConstants.CLAW_OPEN);
                 outtakeFSMTimer.reset();
-                outtakeState = OuttakeState.OUTTAKE_RESET;
+                outtakeState = FSM_Outtake.OUTTAKE_RESET;
                 break;
             case OUTTAKE_RESET:
                 if (outtakeFSMTimer.milliseconds() >= 300 && outtakeFSMTimer.milliseconds() <= 2000) {
@@ -415,7 +408,7 @@ public class Robotv8_Fullstack extends OpMode {
                     targetOuttakePosition = 10;
                     UpdateOuttake(true, 0);
 
-                    outtakeState = OuttakeState.IDLE;
+                    outtakeState = FSM_Outtake.IDLE;
                 }
                 break;
         }
@@ -531,8 +524,8 @@ public class Robotv8_Fullstack extends OpMode {
         }
 
         // NOTE: MANUAL OUTTAKE RESET
-        if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
-            outtakeState = OuttakeState.CLAW_OPENING; // state to open claw and completely reset the outtake
+        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT)) {
+            outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
         }
 
         // NOTE: FIELD CENTRIC IMU YAW RESET
@@ -544,29 +537,16 @@ public class Robotv8_Fullstack extends OpMode {
     public void HandleDeposit() {
         if (gamepad1.cross) {
             RaiseAndPrime(RobotConstants.JUNCTION_LOW);
-            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+            outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
             Delay(100);
         } else if (gamepad1.circle) {
             RaiseAndPrime(RobotConstants.JUNCTION_MID);
-            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+            outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
             Delay(100);
         } else if (gamepad1.triangle) {
             RaiseAndPrime(RobotConstants.JUNCTION_HIGH);
-            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+            outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
             Delay(100);
-        }
-    }
-
-    public void HandleDrivetrainOverride() {
-        // note: override in case things go die die
-        if (gamepad1.dpad_left || gamepad1.dpad_right) {
-            backLM.setPower(0);
-            backRM.setPower(0);
-            frontLM.setPower(0);
-            frontRM.setPower(0);
-
-            drivetrainTimer.reset();
-            drivetrainState = FSM_Drivetrain.MANUAL;
         }
     }
 
@@ -582,8 +562,21 @@ public class Robotv8_Fullstack extends OpMode {
 
         MoveElbow(RobotConstants.ELBOW_ACTIVE);
 
-        outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+        outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         Delay(50); // debounce
+    }
+
+    public void HandleDrivetrainOverride() {
+        // note: override in case things go die die
+        if (gamepad1.dpad_left || gamepad1.dpad_right) {
+            backLM.setPower(0);
+            backRM.setPower(0);
+            frontLM.setPower(0);
+            frontRM.setPower(0);
+
+            drivetrainTimer.reset();
+            drivetrainState = FSM_Drivetrain.MANUAL;
+        }
     }
 
 
@@ -678,140 +671,32 @@ public class Robotv8_Fullstack extends OpMode {
         }
     }
 
-    public void Mecanum() {
-        if (RobotConstants.USE_DRIVE) {
-            double frontLeftPower;
-            double backLeftPower;
-            double frontRightPower;
-            double backRightPower;
-
-            double yAxis;
-            double xAxis;
-            double rotateAxis;
-
-            int dir = fieldCentricRed ? 1 : -1;
-
-            // all negative when field centric red
-            yAxis = gamepad1.left_stick_y * dir;
-            xAxis = -gamepad1.left_stick_x * 1.1 * dir;
-            rotateAxis = -gamepad1.right_stick_x * dir;
-
-            double heading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-
-            // Rotate the movement direction counter to the bot's rotation
-            double rotX = xAxis * Math.cos(-heading) - yAxis * Math.sin(-heading);
-            double rotY = xAxis * Math.sin(-heading) + yAxis * Math.cos(-heading);
-
-            double denominator = Math.max(Math.abs(rotY) + Math.abs(rotX) + Math.abs(rotateAxis), 1);
-            frontLeftPower = (rotY + rotX + rotateAxis) / denominator;
-            backLeftPower = (rotY - rotX + rotateAxis) / denominator;
-            frontRightPower = (rotY - rotX - rotateAxis) / denominator;
-            backRightPower = (rotY + rotX - rotateAxis) / denominator;
-
-            double stable_v1 = Stabilize(backLeftPower, current_v1);
-            double stable_v2 = Stabilize(frontRightPower, current_v2);
-            double stable_v3 = Stabilize(frontLeftPower, current_v3);
-            double stable_v4 = Stabilize(backRightPower, current_v4);
-
-            current_v1 = stable_v1;
-            current_v2 = stable_v2;
-            current_v3 = stable_v3;
-            current_v4 = stable_v4;
-
-            frontLM.setPower(stable_v3 / driveSpeedModifier);
-            frontRM.setPower(stable_v2 / driveSpeedModifier);
-            backLM.setPower(stable_v1 / driveSpeedModifier);
-            backRM.setPower(stable_v4 / driveSpeedModifier);
-        }
+    public void Delay(double time) {
+        try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
     }
 
-    public void Macros() {
-        if (RobotConstants.USE_DRIVE) {
-            // INTAKE
-            if (gamepad1.left_trigger > 0.2) {
-                intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
-            } else {
-                intake.setPower(0);
-            }
+    public static boolean IsPositive(double d) { return !(Double.compare(d, 0.0) < 0); }
 
-            // GRAB
-            if (gamepad1.left_bumper && outtakeState == OuttakeState.IDLE) {
-                intake.setPower(0);
-                GrabAndReady();
-                outtakeState = OuttakeState.GRABBED_AND_READY;
-            }
-
-            // DEPLOY & RESET DEPENDING ON STATE
-            if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
-                if (gamepad1.dpad_right) {
-                    DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT);
-                } else if (gamepad1.dpad_down) {
-                    DepositSequence(RobotConstants.JUNCTION_LOW);
-                } else if (gamepad1.dpad_left) {
-                    DepositSequence(RobotConstants.JUNCTION_MID);
-                } else if (gamepad1.dpad_up) {
-                    DepositSequence(RobotConstants.JUNCTION_HIGH);
-                }
-            }
-
-            // RESET
-            if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
-                DropAndReset();
-                outtakeState = OuttakeState.IDLE;
-            }
-
-            Delay(5); // debounce
-        }
+    public double Stabilize(double new_accel, double current_accel) {
+        double dev = new_accel - current_accel;
+        return Math.abs(dev) > RobotConstants.MAX_ACCELERATION_DEVIATION ? current_accel + RobotConstants.MAX_ACCELERATION_DEVIATION * dev / Math.abs(dev) : new_accel;
     }
 
-    public void MacroDrive(Robotv8_Abstract handler) {
-        if (gamepad1.right_stick_button) {
-            drive.followTrajectory(handler.TILE_TO_BACKDROP);
-        }
-        if (gamepad1.left_stick_button) {
-            drive.followTrajectory(handler.BACKDROP_TO_TILE);
-        }
+    public double GetHeading() {
+        double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+        double rot = (double)(Math.round(-currentHeading + 720) % 360);
+        rot = rot == 0 ? 360 : rot;
+        return rot;
     }
 
-    // INTAKE/OUTTAKE SEQUENCE FUNCTIONS --------------------------------------------------
-    public void DepositSequence(int height) {
-        if (outtakeState == OuttakeState.GRABBED_AND_READY) {
-            intake.setPower(0); // make sure intake is not running
-            RaiseAndPrime(height);
-            outtakeState = OuttakeState.PRIMED_FOR_DEPOSIT;
+    public double GetHeadingRaw() {
+        return imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
+    }
 
-        } else {
-            DropAndReset();
-            outtakeState = OuttakeState.IDLE;
-        }
+    public void MoveElbow(double targetPos) {
+        servoElbowR.setPosition(targetPos);
+        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
         Delay(50);
-    }
-
-    public void GrabAndReady() {
-        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
-        Delay(200);
-        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
-        Delay(400);
-        MoveElbow(RobotConstants.ELBOW_PICKUP);
-
-        Delay(50);
-        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(100);
-
-        // primes the elbow
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-    }
-
-    public void DropAndReset() {
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(350); // elbow should come down after the slide is near done
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-
-        targetOuttakePosition = 10;
-        UpdateOuttake(true, 0);
     }
 
 

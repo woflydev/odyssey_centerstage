@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.draft;
+package org.firstinspires.ftc.teamcode.drive.Deprecated;
 
 import android.annotation.SuppressLint;
 
@@ -7,18 +7,14 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-import org.firstinspires.ftc.teamcode.drive.localizer.CameraLocalizer;
-import org.firstinspires.ftc.teamcode.drive.localizer.FieldPipeline;
+import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.vision.FieldPipeline;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
-import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -29,7 +25,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 
 
-@Autonomous(name = "Concept: AprilTagWithRoadRunner", group = "Concept")
+@Deprecated()
 public class AprilTagRoadRunner extends LinearOpMode {
 
     private static final boolean USE_VIEWPORT = true;

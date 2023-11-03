@@ -14,8 +14,6 @@ public class NewRobot_v9_TeleOp extends Robotv8_Fullstack {
     public void MainLoop() {
         PassiveArmResetCheck();
         RuntimeConfig();
-        Macros();
         Mecanum();
-        MacroDrive(handler);
     }
 }

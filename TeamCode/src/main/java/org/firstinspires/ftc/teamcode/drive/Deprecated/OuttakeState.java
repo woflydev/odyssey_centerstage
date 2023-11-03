@@ -1,5 +1,6 @@
-package org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo;
+package org.firstinspires.ftc.teamcode.drive.Deprecated;
 
+@Deprecated()
 public enum OuttakeState {
     IDLE,
     IDLE_BACK,
