@@ -418,9 +418,9 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             case CLAW_CLOSING:
                 if (outtakeFSMTimer.milliseconds() >= 250) {
                     outtakeFSMTimer.reset();
-                    MoveElbow(RobotConstants.ELBOW_STANDBY);
+                    MoveElbow(RobotConstants.ELBOW_ACTIVE);
                     Delay(100);
-                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                    servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
                     outtakeState = FSM_Outtake.GRABBED_AND_READY;
                 }
@@ -590,19 +590,6 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         }
     }
 
-    public void HandleDrivetrainOverride() {
-        // note: override in case things go die die
-        if (gamepad1.dpad_left || gamepad1.dpad_right) {
-            backLM.setPower(0);
-            backRM.setPower(0);
-            frontLM.setPower(0);
-            frontRM.setPower(0);
-
-            drivetrainTimer.reset();
-            drivetrainState = FSM_Drivetrain.MANUAL;
-        }
-    }
-
     public void RaiseAndPrime(int height) {
         intake.setPower(0); // make sure intake is not running
 
@@ -619,6 +606,18 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         Delay(50); // debounce
     }
 
+    public void HandleDrivetrainOverride() {
+        // note: override in case things go die die
+        if (gamepad1.dpad_left || gamepad1.dpad_right) {
+            backLM.setPower(0);
+            backRM.setPower(0);
+            frontLM.setPower(0);
+            frontRM.setPower(0);
+
+            drivetrainTimer.reset();
+            drivetrainState = FSM_Drivetrain.MANUAL;
+        }
+    }
 
     // NOTE: HELPER METHODS ------------------------------------------------------------------
     public void UpdateOuttake(boolean reset, double delay) { // test new function
