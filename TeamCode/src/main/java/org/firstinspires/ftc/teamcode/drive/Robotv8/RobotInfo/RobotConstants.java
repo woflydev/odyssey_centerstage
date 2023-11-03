@@ -88,7 +88,7 @@ public class RobotConstants {
 
     public static final double PIXEL_SPACE = 0.05;
 
-    public static final double ROAD_RUNNER_SCALE = (FIELD_LENGTH / 2) / 72;
+    public static final double ROAD_RUNNER_SCALE = 72 / (FIELD_LENGTH / 2);
 
     public static final double INTAKE_POWER = 0.5;
     public static final double INTAKE_TIME = 1;

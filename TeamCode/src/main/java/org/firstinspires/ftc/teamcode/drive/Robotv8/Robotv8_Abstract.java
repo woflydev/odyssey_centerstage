@@ -30,9 +30,9 @@ public class Robotv8_Abstract {
 
     public static Pose2d STARTING_POSE = new Pose2d(0, 0, 0);
 
-    public static Pose2d TILE_LOCATION = new Pose2d(-0.89,  -1.62 * (PLAYING_BLUE ? 1 : -1), 0).div(RobotConstants.ROAD_RUNNER_SCALE);
+    public static Pose2d TILE_LOCATION = new Pose2d(-0.89,  -1.62 * (PLAYING_BLUE ? 1 : -1), 0).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
     public static Pose2d[] PIXEL_LOCATIONS = {
-            new Pose2d(- RobotConstants.FIELD_LENGTH / 2 + RobotConstants.PIXEL_SPACE, -0.2, - Math.PI / 2).div(RobotConstants.ROAD_RUNNER_SCALE),
+            new Pose2d(- RobotConstants.FIELD_LENGTH / 2 + RobotConstants.PIXEL_SPACE, -0.2, - Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE),
             new Pose2d(),
             new Pose2d(),
             new Pose2d()
@@ -42,11 +42,11 @@ public class Robotv8_Abstract {
 
 
     // Location of the robot when it is about to drop a pixel on the leftmost slot
-    public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).div(RobotConstants.ROAD_RUNNER_SCALE);
-    public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).div(RobotConstants.ROAD_RUNNER_SCALE);
+    public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
+    public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
 
-    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
-    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
+    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS;
+    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS;
 
     public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0);
 
@@ -171,7 +171,6 @@ public class Robotv8_Abstract {
     }
 
     public void initTask() {
-        stack.EncoderMove(0.5, 1, 1, true, true, 5000);
         int spikeMark = localizer.propTfod(PLAYING_BLUE);
         Pose2d spikePose = PLAYING_BLUE ?
                 BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
