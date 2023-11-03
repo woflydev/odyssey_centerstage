@@ -159,7 +159,7 @@ public class Robotv8_Abstract {
 
             Function<Double, Double> cmpFn = (Double x) -> x;
 
-            double pathValue = RobotConstants.PATH_Y[FieldPipeline.maxOfArr(diffY, cmpFn, false)];
+            double pathValue = RobotConstants.PATH_Y[CameraLocalizer.maxOfArr(diffY, cmpFn, false)];
             return stack.drive.trajectoryBuilder(start)
                     .splineTo(new Vector2d(((start.getX() >= 0) ? 1 : -1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
                             ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
@@ -178,7 +178,8 @@ public class Robotv8_Abstract {
         stack.MoveElbow(RobotConstants.ELBOW_DROPOFF);
         stack.intake.setPower(RobotConstants.INTAKE_OUTPUT);
         stack.Delay(RobotConstants.INTAKE_OUTPUT_TIME);
-        Pose2d pixelPose = (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION).plus(PIXEL_OFFSET.times(spikeMark * 2 - 1));
+        Pose2d pixelPose = (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION)
+                .plus(PIXEL_OFFSET.times(spikeMark * 2 + 1));
         stack.drive.followTrajectory(path(spikePose, pixelPose));
 
         // FIXME: BREAKING API CHANGES IN FULLSTACK
@@ -201,9 +202,7 @@ public class Robotv8_Abstract {
         }
 
         stack.drive.followTrajectory(
-                stack.drive.trajectoryBuilder(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION)
-                        .strafeTo((PLAYING_BLUE ? BLUE_BACKDROP_LOCATION.vec() : RED_BACKDROP_LOCATION.vec()).plus(new Vector2d(pixelSlot * FieldPipeline.PIXEL_EDGE_TO_EDGE, 0)))
-                        .build()
+                path(PIXEL_TO_BACKDROP[pixelColour].end(), PIXEL_TO_BACKDROP[pixelColour].end().plus(PIXEL_OFFSET.times(pixelSlot)))
         );
         // FIXME: BREAKING API CHANGES
         //stack.DepositSequence(height);
