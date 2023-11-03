@@ -8,6 +8,7 @@ import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.ENCODER_TICKS_PER_TILE;
 import static java.lang.Thread.sleep;
 
 import androidx.annotation.NonNull;
@@ -669,6 +670,74 @@ public class Robotv8_Fullstack extends OpMode {
                 armL.setVelocity(800);
             }
         }
+    }
+
+    public void EncoderMove(double power, double left, double right, boolean strafe, boolean strafeRight, double safetyTimeout) {
+
+        int backLMTarget;
+        int frontLMTarget;
+        int backRMTarget;
+        int frontRMTarget;
+
+        if (!strafe) {
+            backLMTarget = backLM.getCurrentPosition() - (int)(TilesToTicks(left));
+            frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left));
+            backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right));
+            frontRMTarget = frontRM.getCurrentPosition() - (int)(TilesToTicks(right));
+        }
+
+        else {
+            int dir = strafeRight ? 1 : -1;
+            backLMTarget = backLM.getCurrentPosition() + (int)(TilesToTicks(left) * dir);
+            frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left) * dir);
+            backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right) * dir);
+            frontRMTarget = frontRM.getCurrentPosition() + (int)(TilesToTicks(right) * dir);
+        }
+
+        backLM.setTargetPosition(backLMTarget);
+        frontLM.setTargetPosition(frontLMTarget);
+        backRM.setTargetPosition(backRMTarget);
+        frontRM.setTargetPosition(frontRMTarget);
+
+        backLM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontLM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        backRM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        frontRM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        encoderRuntime.reset();
+        backLM.setPower(Math.abs(power));
+        frontLM.setPower(Math.abs(power));
+        backRM.setPower(Math.abs(power));
+        frontRM.setPower(Math.abs(power));
+
+        while ((encoderRuntime.seconds() <= safetyTimeout) && (backRM.isBusy() && backLM.isBusy())) {
+            telemetry.clear();
+            telemetry.addData("CURRENT COORDINATE: ",  "%7d :%7d", backLM.getCurrentPosition(), backRM.getCurrentPosition());
+            telemetry.update();
+        }
+
+        backLM.setPower(0);
+        frontLM.setPower(0);
+        backRM.setPower(0);
+        frontRM.setPower(0);
+
+        backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        backLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+    private double TilesToTicks(double input) {
+        return ENCODER_TICKS_PER_TILE * input;
     }
 
     public void Delay(double time) {
