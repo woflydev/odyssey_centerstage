@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
@@ -66,7 +66,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-@Deprecated
 public class Robotv8_FSM_Fullstack extends OpMode {
     public Robotv8_Abstract handler;
 
@@ -514,7 +513,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             }
 
             // note: relinquish wrist control in favour of hanging
-            /*if (gamepad2.right_bumper) {
+            if (gamepad2.right_bumper) {
                 targetWristPosition += 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
@@ -522,9 +521,9 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 targetWristPosition -= 0.02;
                 servoWrist.setPosition(targetWristPosition);
                 Delay(50);
-            }*/
+            }
 
-            if (gamepad2.right_bumper) {
+            /*if (gamepad2.right_bumper) {
                 servoHangR.setPower(1);
                 servoHangL.setPower(1);
             } else if (gamepad2.left_bumper) {
@@ -533,7 +532,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             } else {
                 servoHangR.setPower(0);
                 servoHangL.setPower(0);
-            }
+            }*/
 
             // FLAP (FOR TUNING VALUES) -----------------------------------------------
             if (gamepad2.dpad_right) {

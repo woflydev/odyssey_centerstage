@@ -13,10 +13,10 @@ public class NewRobot_v9_Autonomous extends Robotv8_Fullstack {
     }
 
     public void MainStart() {
-        handler.initTask();
+        //handler.initTask();
     }
 
     public void MainLoop() {
-
+        handler.localizer.telemetryTfod();
     }
 }
