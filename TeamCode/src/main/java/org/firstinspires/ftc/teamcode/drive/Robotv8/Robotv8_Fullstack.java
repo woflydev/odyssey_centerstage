@@ -699,8 +699,7 @@ public class Robotv8_Fullstack extends OpMode {
         Delay(50);
     }
 
-
-
+    // NOTE: ROADRUNNER SUBCLASS ------------------------------------------------------------------
     public static class AutoMecanumDrive extends MecanumDrive {
         public static PIDCoefficients TRANSLATIONAL_PID = new PIDCoefficients(0, 0, 0);
         public static PIDCoefficients HEADING_PID = new PIDCoefficients(0, 0, 0);
