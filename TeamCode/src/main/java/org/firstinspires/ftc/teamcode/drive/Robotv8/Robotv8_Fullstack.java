@@ -246,6 +246,7 @@ public class Robotv8_Fullstack extends OpMode {
     }
     public void StatusTelemetry() {
         // NOTE: Basic robot telemetry is handled here, instead of child classes.
+        telemetry.addData("SPIKEMARK: ", handler.localizer.spikeMark);
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
         telemetry.addData("IMU Raw: ", GetHeadingRaw());
@@ -361,7 +362,7 @@ public class Robotv8_Fullstack extends OpMode {
                 }
                 break;
             case WRIST_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 400) {
+                if (outtakeFSMTimer.milliseconds() >= 300) {
                     MoveElbow(RobotConstants.ELBOW_PICKUP);
                     outtakeFSMTimer.reset();
 
@@ -369,7 +370,7 @@ public class Robotv8_Fullstack extends OpMode {
                 }
                 break;
             case ELBOW_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 300) {
+                if (outtakeFSMTimer.milliseconds() >= 200) {
                     servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                     outtakeFSMTimer.reset();
 
@@ -377,7 +378,7 @@ public class Robotv8_Fullstack extends OpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeFSMTimer.milliseconds() >= 250) {
+                if (outtakeFSMTimer.milliseconds() >= 100) {
                     outtakeFSMTimer.reset();
                     MoveElbow(RobotConstants.ELBOW_ACTIVE);
                     Delay(100);

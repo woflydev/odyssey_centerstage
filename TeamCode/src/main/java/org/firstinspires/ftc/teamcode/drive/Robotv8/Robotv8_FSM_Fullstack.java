@@ -67,6 +67,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Robotv8_FSM_Fullstack extends OpMode {
+    public AutoMecanumDrive drive;
     public Robotv8_Abstract handler;
 
     public RobotState state = RobotState.IDLE;
@@ -399,7 +400,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case WRIST_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 400) {
+                if (outtakeFSMTimer.milliseconds() >= 300) {
                     MoveElbow(RobotConstants.ELBOW_PICKUP);
                     outtakeFSMTimer.reset();
 
@@ -407,7 +408,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case ELBOW_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 300) {
+                if (outtakeFSMTimer.milliseconds() >= 200) {
                     servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                     outtakeFSMTimer.reset();
 
@@ -415,7 +416,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeFSMTimer.milliseconds() >= 250) {
+                if (outtakeFSMTimer.milliseconds() >= 100) {
                     outtakeFSMTimer.reset();
                     MoveElbow(RobotConstants.ELBOW_ACTIVE);
                     Delay(100);
