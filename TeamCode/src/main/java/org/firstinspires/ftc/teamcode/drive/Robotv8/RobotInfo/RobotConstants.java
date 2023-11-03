@@ -38,9 +38,9 @@ public class RobotConstants {
     public static final double FLAP_OPEN = 0.44;
     public static final double CLAW_CLOSE = 0.775;
     public static final double CLAW_OPEN = 0.585;
-    public static final double WRIST_PICKUP = 0.1;
+    public static final double WRIST_PICKUP = 0.01;
     public static final double WRIST_PICKUP_BACK = 0.2;
-    public static final double WRIST_STANDBY = 0.17; // 0.48
+    public static final double WRIST_STANDBY = 0.3; // 0.48
     public static final double WRIST_ACTIVE = 0.7;
     public static final double ELBOW_PICKUP = 0.06;
     public static final double ELBOW_PICKUP_BACK = 0.77;
@@ -70,11 +70,10 @@ public class RobotConstants {
     public static final boolean USE_CAMERA_STREAM = true;
 
     public static final boolean USE_LIVE_VIEW = true;
-    public static final boolean USE_DRIVE = false;
+    public static final boolean USE_DRIVE = true;
 
     // Never make USE_FRONT true
 
-    public static final boolean USE_FRONT = true;
     public static final boolean USE_BACK = true;
 
     public static final boolean USE_LOCALISER = true;

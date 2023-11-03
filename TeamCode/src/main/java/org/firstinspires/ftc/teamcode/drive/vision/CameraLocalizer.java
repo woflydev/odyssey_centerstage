@@ -285,7 +285,7 @@ public class CameraLocalizer implements Localizer {
         }
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
-                .setModelAssetName(TFOD_MODEL_ASSET)
+                //.setModelAssetName(TFOD_MODEL_ASSET)
 
                 // With the following lines commented out, the default TfodProcessor Builder
                 // will load the default model for the season. To define a custom model to load,
@@ -309,7 +309,7 @@ public class CameraLocalizer implements Localizer {
         //tfod = TfodProcessor.easyCreateWithDefaults();
 
         // Set confidence threshold for TFOD recognitions, at any time.
-        //tfod.setMinResultConfidence(0.75f);
+        tfod.setMinResultConfidence(0.7f);
 
         // Disable or re-enable the TFOD processor at any time.
         //visionPortal.setProcessorEnabled(tfod, true);
