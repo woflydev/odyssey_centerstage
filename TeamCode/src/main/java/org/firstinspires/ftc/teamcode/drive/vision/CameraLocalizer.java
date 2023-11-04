@@ -33,6 +33,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
@@ -56,7 +57,7 @@ public class CameraLocalizer implements Localizer {
     public HardwareMap hardwareMap;
     private static double CAMERA_HEIGHT = 0.313;
 
-    private static int SLEEP_TIME = 100;
+    private static int SLEEP_TIME = 20;
 
     private static int STARTUP_TIME = 1000;
 
@@ -216,9 +217,9 @@ public class CameraLocalizer implements Localizer {
     public void update() {
         if (elapsedTime.time(TIME_UNIT) > STARTUP_TIME && !stopTrigger) {
             analyseDetections();
-            if (TELEMETRY_GIVEN) {
+            /*if (TELEMETRY_GIVEN) {
                 t.addData("Pose", poseEstimate);
-            }
+            }*/
             Delay(SLEEP_TIME);
         }
     }
@@ -468,7 +469,6 @@ public class CameraLocalizer implements Localizer {
         visionPortal.setProcessorEnabled(tfod, true);
 
         List<Recognition> currentRecognitions = tfod.getRecognitions();
-        t.addData("# Props Detected", currentRecognitions.size());
 
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
@@ -485,6 +485,18 @@ public class CameraLocalizer implements Localizer {
         visionPortal.setProcessorEnabled(tfod, false);
         visionPortal.setProcessorEnabled(aprilTag, true);
         return -1;
+    }
+
+    public boolean detectedTfod(boolean playingBlue) {
+        visionPortal.setProcessorEnabled(aprilTag, false);
+        visionPortal.setProcessorEnabled(tfod, true);
+
+        List<Recognition> currentRecognitions = tfod.getRecognitions();
+
+        visionPortal.setProcessorEnabled(tfod, false);
+        visionPortal.setProcessorEnabled(aprilTag, true);
+
+        return currentRecognitions.size() > 0 && (Objects.equals(currentRecognitions.get(0).getLabel(), LABELS[playingBlue ? 0 : 1]));
     }
 
     public ArrayList<Double> differences(ArrayList<Double> first, ArrayList<Double> second) {

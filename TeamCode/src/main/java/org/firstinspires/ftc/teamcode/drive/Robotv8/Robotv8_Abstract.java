@@ -171,10 +171,25 @@ public class Robotv8_Abstract {
     }
 
     public void initTask() {
-        int spikeMark = localizer.propTfod(PLAYING_BLUE);
+        Trajectory forward = stack.drive.trajectoryBuilder(STARTING_POSE).forward(1).build();
+        stack.drive.followTrajectory(forward);
+
+        int spikeMark = 1;
+        // Turning left
+        stack.drive.turn(Math.PI / 2);
+        for (int i = 0; i < 2; i++) {
+            if (localizer.detectedTfod(PLAYING_BLUE)) {
+                spikeMark = i;
+                break;
+            }
+            stack.drive.turn(- Math.PI / 2);
+        }
+        // Back to straight
+        stack.drive.turn(spikeMark * Math.PI / 2);
         Pose2d spikePose = PLAYING_BLUE ?
                 BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
-        stack.drive.followTrajectory(path(STARTING_POSE, spikePose));
+
+        stack.drive.followTrajectory(path(forward.end(), spikePose));
         stack.MoveElbow(RobotConstants.ELBOW_DROPOFF);
         stack.intake.setPower(RobotConstants.INTAKE_OUTPUT);
         stack.Delay(RobotConstants.INTAKE_OUTPUT_TIME);
