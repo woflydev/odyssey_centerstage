@@ -47,14 +47,14 @@ public class RobotConstants {
     public static final double ELBOW_STANDBY = 0.25;
     public static final double ELBOW_STANDBY_BACK = 0.75;
     public static final double ELBOW_ACTIVE = 0.9;
-    public static final double PLANE_STANDBY = 0.37;
+    public static final double PLANE_STANDBY = 0.38;
     public static final double PLANE_ACTIVE = 0.19;
 
     public static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
     public static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed
     public static final double PRECISION_DRIVE_SPEED_MODIFIER = 3.35;
 
-    public static final double MAX_MANUAL_INTAKE_POWER = 0.65;
+    public static final double MAX_MANUAL_INTAKE_POWER = 0.55;
 
     public static final double PPR = 375; // gobuilda motor 85203 Series
     public static final double ENCODER_TICKS_PER_TILE = 640; // in encoder ticks

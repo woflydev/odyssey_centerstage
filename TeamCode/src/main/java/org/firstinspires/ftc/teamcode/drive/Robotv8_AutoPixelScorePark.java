@@ -62,15 +62,15 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
     }
 
     public void DropAndReset() {
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(300); // wait for claw to open
+        Delay(800); // wait for claw to open
 
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         MoveElbow(RobotConstants.ELBOW_STANDBY);
 
         Delay(350); // elbow should come down after the slide is near done
 
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         targetOuttakePosition = 10;
         UpdateOuttake(true, 0);
     }
@@ -160,20 +160,21 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
         GrabAndReady();
 
         //handler.initTask();
-        EncoderMove(1, 1, 1, false, false, 3);
+        EncoderMove(0.8, 1, 1, false, false, 3);
         AutoWait();
-        EncoderMove(1, -1 * dir, 1 * dir, false, false, 3);
+        EncoderMove(0.6, -1 * dir, 1 * dir, false, false, 3);
         AutoWait();
-        EncoderMove(0.8, -1.5, -1.5, false, false, 3);
+        EncoderMove(0.6, -1.54, -1.54, false, false, 3);
 
         RaiseAndPrime(400);
-        Delay(500);
+        Delay(1500);
         DropAndReset();
 
-        EncoderMove(1, 0.3, 0.3, false, false, 3);
+        EncoderMove(0.7, 0.3, 0.3, false, false, 3);
         // note: strafe
-        EncoderMove(1, 1.5, 1.5, true, false, 5);
+        EncoderMove(0.7, 1.5, 1.5, true, false, 5);
         AutoWait();
-        EncoderMove(1, 1 * dir, -1 * dir, false, false, 3);
+        EncoderMove(0.5, -0.2, -0.2, true, true, 3);
+        EncoderMove(0.5, 1 * dir, -1 * dir, false, false, 3);
     }
 }
