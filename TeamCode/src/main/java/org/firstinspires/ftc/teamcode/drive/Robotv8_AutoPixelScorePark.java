@@ -164,12 +164,14 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
         AutoWait();
         EncoderMove(1, -1 * dir, 1 * dir, false, false, 3);
         AutoWait();
-        EncoderMove(0.8, -1.75, -1.75, false, false, 3);
+        EncoderMove(0.8, -1.5, -1.5, false, false, 3);
 
         RaiseAndPrime(400);
         Delay(500);
         DropAndReset();
 
+        EncoderMove(1, 0.3, 0.3, false, false, 3);
+        // note: strafe
         EncoderMove(1, 1.5, 1.5, true, false, 5);
         AutoWait();
         EncoderMove(1, 1 * dir, -1 * dir, false, false, 3);

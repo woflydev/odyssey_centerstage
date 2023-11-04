@@ -36,18 +36,18 @@ public class RobotConstants {
 
     public static final double FLAP_CLOSE = 0.8;
     public static final double FLAP_OPEN = 0.44;
-    public static final double CLAW_CLOSE = 0.77;
+    public static final double CLAW_CLOSE = 0.78;
     public static final double CLAW_OPEN = 0.585;
-    public static final double WRIST_PICKUP = 0.01;
+    public static final double WRIST_PICKUP = 0;
     public static final double WRIST_PICKUP_BACK = 0.2;
     public static final double WRIST_STANDBY = 0.3; // 0.48
-    public static final double WRIST_ACTIVE = 0.79;
-    public static final double ELBOW_PICKUP = 0.06;
+    public static final double WRIST_ACTIVE = 0.8;
+    public static final double ELBOW_PICKUP = 0.05;
     public static final double ELBOW_PICKUP_BACK = 0.77;
     public static final double ELBOW_STANDBY = 0.25;
     public static final double ELBOW_STANDBY_BACK = 0.75;
-    public static final double ELBOW_ACTIVE = 0.84;
-    public static final double PLANE_STANDBY = 0.35;
+    public static final double ELBOW_ACTIVE = 0.9;
+    public static final double PLANE_STANDBY = 0.37;
     public static final double PLANE_ACTIVE = 0.19;
 
     public static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing

@@ -181,11 +181,11 @@ public class Robotv8_FSM_Fullstack extends OpMode {
 
         clawOpen = true;
         transferStageDeployed = false;
+/*        MoveElbow(RobotConstants.ELBOW_STANDBY);
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos*/
+        servoPlane.setPosition(RobotConstants.PLANE_STANDBY);*/
 
         // -------------------------------------------------------------- IMU INIT
 
@@ -193,7 +193,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         telemetry.addData("Important Information", "PLACE ROBOT FACING AWAY FROM ALLIANCE BOX!");
         telemetry.update();
 
-        InitCameras();
+        //InitCameras();
 
         IMU.Parameters parameters = new IMU.Parameters(new RevHubOrientationOnRobot(
                 RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
@@ -258,6 +258,13 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         telemetry.update();
     }
     public void start() {
+
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+
         MainStart();
     }
     public void loop() {
@@ -400,7 +407,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case WRIST_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 300) {
+                if (outtakeFSMTimer.milliseconds() >= 400) {
                     MoveElbow(RobotConstants.ELBOW_PICKUP);
                     outtakeFSMTimer.reset();
 
@@ -416,9 +423,10 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeFSMTimer.milliseconds() >= 150) {
+                if (outtakeFSMTimer.milliseconds() >= 250) {
                     outtakeFSMTimer.reset();
-                    servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                    //servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+                    servoFlap.setPosition(RobotConstants.FLAP_OPEN);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
                     outtakeState = FSM_Outtake.GRABBED_AND_READY;
                 }
@@ -442,6 +450,8 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 if (outtakeFSMTimer.milliseconds() >= 300 && outtakeFSMTimer.milliseconds() <= 2000) {
                     servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
+
+                    Delay(100);
                     servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
                     targetOuttakePosition = 10;
                     UpdateOuttake(true, 0);
@@ -596,9 +606,9 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         targetOuttakePosition = height;
         UpdateOuttake(false, 0);
 
+        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
         outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         Delay(50); // debounce
@@ -733,7 +743,6 @@ public class Robotv8_FSM_Fullstack extends OpMode {
     public void MoveElbow(double targetPos) {
         servoElbowR.setPosition(targetPos);
         servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
-        Delay(50);
     }
 
     // NOTE: ROADRUNNER DRIVE SUBCLASS ------------------------------------------------------------------
