@@ -25,6 +25,10 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
     }
 
     public void GrabAndReady() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        Delay(500);
+
         servoFlap.setPosition(RobotConstants.FLAP_OPEN);
         Delay(700);
 
@@ -37,7 +41,7 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
 
         Delay(200);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(300);
+        Delay(500);
 
         // primes the elbow
         MoveElbow(RobotConstants.ELBOW_STANDBY);
@@ -172,9 +176,9 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
 
         EncoderMove(0.7, 0.3, 0.3, false, false, 3);
         // note: strafe
-        EncoderMove(0.7, 1.5, 1.5, true, false, 5);
-        AutoWait();
-        EncoderMove(0.5, -0.2, -0.2, true, true, 3);
+        EncoderMove(0.7, 1, 1, true, false, 5);
         EncoderMove(0.5, 1 * dir, -1 * dir, false, false, 3);
+        AutoWait();
+        EncoderMove(0.5, 0.2, 0.2, true, true, 3);
     }
 }

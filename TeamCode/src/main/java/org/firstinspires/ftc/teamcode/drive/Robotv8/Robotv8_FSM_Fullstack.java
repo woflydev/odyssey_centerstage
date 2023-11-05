@@ -423,7 +423,7 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeFSMTimer.milliseconds() >= 250) {
+                if (outtakeFSMTimer.milliseconds() >= 350) {
                     outtakeFSMTimer.reset();
                     //servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);

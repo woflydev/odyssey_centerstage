@@ -36,12 +36,12 @@ public class RobotConstants {
 
     public static final double FLAP_CLOSE = 0.8;
     public static final double FLAP_OPEN = 0.44;
-    public static final double CLAW_CLOSE = 0.78;
+    public static final double CLAW_CLOSE = 0.79;
     public static final double CLAW_OPEN = 0.585;
     public static final double WRIST_PICKUP = 0;
     public static final double WRIST_PICKUP_BACK = 0.2;
     public static final double WRIST_STANDBY = 0.3; // 0.48
-    public static final double WRIST_ACTIVE = 0.8;
+    public static final double WRIST_ACTIVE = 0.83;
     public static final double ELBOW_PICKUP = 0.05;
     public static final double ELBOW_PICKUP_BACK = 0.77;
     public static final double ELBOW_STANDBY = 0.25;
