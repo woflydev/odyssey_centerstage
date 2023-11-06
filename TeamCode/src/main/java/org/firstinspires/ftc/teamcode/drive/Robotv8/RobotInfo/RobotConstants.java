@@ -109,4 +109,5 @@ public class RobotConstants {
     public static final double INTAKE_OUTPUT_TIME = 1000;
 
     public static final int INITIAL_HEIGHT = 15;
+    public static final double INITIAL_FORWARD = 0.3;
 }

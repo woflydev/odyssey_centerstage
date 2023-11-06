@@ -50,6 +50,8 @@ public class Robotv8_Abstract {
 
     public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0);
 
+    public static double TURN_AUTO_ANGLE = Math.toRadians(45);
+
     public Trajectory[] PIXEL_TO_BACKDROP = new Trajectory[PIXEL_LOCATIONS.length];
 
     public Trajectory TILE_TO_BACKDROP;
@@ -171,21 +173,21 @@ public class Robotv8_Abstract {
     }
 
     public void initTask() {
-        Trajectory forward = stack.drive.trajectoryBuilder(STARTING_POSE).forward(1).build();
+        Trajectory forward = stack.drive.trajectoryBuilder(STARTING_POSE).forward(RobotConstants.INITIAL_FORWARD).build();
         stack.drive.followTrajectory(forward);
 
         int spikeMark = 1;
         // Turning left
-        stack.drive.turn(Math.PI / 2);
+        stack.drive.turn(TURN_AUTO_ANGLE);
         for (int i = 0; i < 2; i++) {
             if (localizer.detectedTfod(PLAYING_BLUE)) {
                 spikeMark = i;
                 break;
             }
-            stack.drive.turn(- Math.PI / 2);
+            stack.drive.turn(- TURN_AUTO_ANGLE);
         }
         // Back to straight
-        stack.drive.turn(spikeMark * Math.PI / 2);
+        stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);
         Pose2d spikePose = PLAYING_BLUE ?
                 BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
 
