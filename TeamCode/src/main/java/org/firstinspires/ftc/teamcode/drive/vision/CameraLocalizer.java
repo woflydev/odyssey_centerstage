@@ -298,7 +298,7 @@ public class CameraLocalizer implements Localizer {
 
                 // The following default settings are available to un-comment and edit as needed to
                 // set parameters for custom models.
-                //.setModelLabels(LABELS)
+                .setModelLabels(LABELS)
                 //.setIsModelTensorFlow2(true)
                 //.setIsModelQuantized(true)
                 //.setModelInputSize(300)
@@ -321,9 +321,9 @@ public class CameraLocalizer implements Localizer {
         // Build the Vision Portal, using the above settings.
         visionPortal = builder.build();
 
-        // Tries until the stream has been set
         // Disable or re-enable the aprilTag processor at any time.
-        // visionPortal.setProcessorEnabled(aprilTag, true);
+        visionPortal.setProcessorEnabled(aprilTag, false);
+        visionPortal.setProcessorEnabled(tfod, true);
 
     }
     @SuppressLint("DefaultLocale")

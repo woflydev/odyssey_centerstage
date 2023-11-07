@@ -64,20 +64,6 @@ public class Robotv8_Abstract {
     public Robotv8_Fullstack stack;
     public CameraLocalizer localizer;
 
-    public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map)  {
-        TELEMETRY_GIVEN = false;
-        //telemetry.addLine("Initialising...");
-        hardwareMap = map;
-
-        stack = parentStack;
-
-        localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, STARTING_POSE, telemetry, stack);
-
-        telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
-        telemetry.addData(">", "Touch Play to start OpMode");
-        telemetry.clear();
-    }
-
     public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
         telemetry = t;
         hardwareMap = map;
