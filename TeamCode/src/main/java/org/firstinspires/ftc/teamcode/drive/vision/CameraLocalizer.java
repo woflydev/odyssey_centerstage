@@ -628,12 +628,6 @@ public class CameraLocalizer implements Localizer {
 
     public int mode;
 
-    public Mat processFrame (Mat input) {
-        spikeMark = propLocation(input);
-        backdrop = new FieldPipeline.Pixel.Backdrop(recognisePixels(input));
-        return input;
-    }
-
     public static int propLocation(Mat input) {
         Mat masked = new Mat();
         Core.inRange(input, TEAM_PROP_BOUNDS[0], TEAM_PROP_BOUNDS[1], masked);
