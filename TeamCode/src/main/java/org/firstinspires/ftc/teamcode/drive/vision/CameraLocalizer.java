@@ -164,8 +164,8 @@ public class CameraLocalizer implements Localizer {
 
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
-            "BLUE_PROP",
-            "RED_PROP"
+            "BlueProp",
+            "RedProp"
     };
 
     /**
