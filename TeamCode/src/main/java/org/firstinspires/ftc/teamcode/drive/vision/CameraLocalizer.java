@@ -286,7 +286,7 @@ public class CameraLocalizer implements Localizer {
         }
         // Create the TensorFlow processor by using a builder.
         tfod = new TfodProcessor.Builder()
-                //.setModelAssetName(TFOD_MODEL_ASSET)
+                .setModelAssetName(TFOD_MODEL_ASSET)
 
                 // With the following lines commented out, the default TfodProcessor Builder
                 // will load the default model for the season. To define a custom model to load,
