@@ -377,10 +377,13 @@ public class Robotv8_FSM_Fullstack extends OpMode {
                 }
                 break;
             case ALIGNING_WITH_BACKDROP:
-                TurnToDirection(0.01, 90); // note: automatically switches drivetrainState back to manual when done
-                HandleDrivetrainOverride(); // note: also resets to manual if overriden
+                // TODO: this might break, test later
+                Mecanum();
+                TurnToDirection(0.5, 90); // note: automatically switches drivetrainState back to manual when done
+                HandleDrivetrainOverride(); // note: also resets to manual if overridden
             case ALIGNING_WITH_OUTER_WALL:
-                TurnToDirection(0.01, 35);
+                Mecanum();
+                TurnToDirection(0.5, 35);
                 HandleDrivetrainOverride();
         }
     }
@@ -685,12 +688,6 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         }
 
         double power = error > 0 ? speed : -speed; // which turning direction is closest?
-        if (drivetrainTimer.seconds() <= 4) {
-            backLM.setPower(-power);
-            backRM.setPower(power);
-            frontLM.setPower(-power);
-            frontRM.setPower(power);
-        }
 
         if (Math.abs(error) < 1.0) {
             backLM.setPower(0);
@@ -698,6 +695,16 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             frontLM.setPower(0);
             frontRM.setPower(0);
 
+            drivetrainState = FSM_Drivetrain.MANUAL;
+            return;
+        }
+
+        if (drivetrainTimer.seconds() <= 6) {
+            backLM.setPower(-power);
+            backRM.setPower(power);
+            frontLM.setPower(-power);
+            frontRM.setPower(power);
+        } else {
             drivetrainState = FSM_Drivetrain.MANUAL;
         }
     }
