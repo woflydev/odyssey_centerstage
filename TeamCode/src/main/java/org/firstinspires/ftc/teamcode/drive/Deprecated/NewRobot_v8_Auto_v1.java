@@ -1,14 +1,15 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.Deprecated;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.*;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.teamcode.drive.NewRobot_v8_FSM_FullRobot_v3;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 
-@Autonomous(name="Autonomous Testing", group="Final")
+@Deprecated()
 public class NewRobot_v8_Auto_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
 
     private double TilesToTicks(double input) {

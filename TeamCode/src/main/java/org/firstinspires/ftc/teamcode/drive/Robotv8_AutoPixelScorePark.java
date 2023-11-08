@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
@@ -16,10 +17,10 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
     public ElapsedTime autoTimer = new ElapsedTime();
 
     public boolean detected = false;
-    public boolean allianceRed = true; // -1 for blue
+    public RobotAlliance alliance = RobotAlliance.RED;
 
     private void ExpelPixel() {
-        intake.setPower(-0.7);
+        intake.setPower(-0.3);
         Delay(2000);
         intake.setPower(0);
     }
@@ -99,7 +100,7 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
 
         else {
             int dir = strafeRight ? 1 : -1;
-            dir *= allianceRed ? 1 : -1;
+            dir *= alliance == RobotAlliance.RED ? 1 : -1;
             backLMTarget = backLM.getCurrentPosition() + (int)(TilesToTicks(left) * dir);
             frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left) * dir);
             backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right) * dir);
@@ -158,7 +159,7 @@ public class Robotv8_AutoPixelScorePark extends Robotv8_FSM_Fullstack {
     }
 
     public void MainStart() {
-        int dir = allianceRed ? 1 : -1;
+        int dir = alliance == RobotAlliance.RED ? 1 : -1;
         //int detectedSpikeResult = handler.localizer.telemetryTfod();
 
         GrabAndReady();
