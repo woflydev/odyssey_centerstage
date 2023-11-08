@@ -206,23 +206,12 @@ public class AC2302A_Auto extends FSM_Fullstack {
 
         switch(randomization) {
             case LOCATION_1:
-                driveDist = driveDistanceClose;
-                rotateDirection = 1;
-                driveDirPark1 = -1;
                 break;
             case LOCATION_2:
-                driveDist = driveDistanceFar;
-                rotateDirection = 0;
-                driveDirPark2 = 1;
                 break;
             case LOCATION_3:
-                driveDist = driveDistanceClose;
-                rotateDirection = -1;
-                driveDirPark1 = 1;
                 break;
             default:
-                driveDist = driveDistanceClose;
-                rotateDirection = 0;
                 break;
         }
 
