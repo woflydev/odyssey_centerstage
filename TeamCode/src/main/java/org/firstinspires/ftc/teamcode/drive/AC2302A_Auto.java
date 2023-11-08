@@ -2,21 +2,35 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.ENCODER_TICKS_PER_TILE;
 
+import android.annotation.SuppressLint;
+
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.vision2.PropPipeline;
+import org.opencv.core.Point;
+import org.openftc.easyopencv.OpenCvCamera;
+import org.openftc.easyopencv.OpenCvCameraFactory;
+import org.openftc.easyopencv.OpenCvCameraRotation;
+import org.openftc.easyopencv.OpenCvWebcam;
 
 @Autonomous(name="AutoRed1", group="Final")
-public class AutoPixelScorePark extends FSM_Fullstack {
-    public ElapsedTime autoTimer = new ElapsedTime();
-
-    public boolean detected = false;
+public class AC2302A_Auto extends FSM_Fullstack {
+    private PropPipeline.Randomization randomization;
+    private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance = RobotAlliance.RED;
+    private Point r1;
+    private Point r2;
+    private Point r3;
+
+    private final PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
 
     private void ExpelPixel() {
         intake.setPower(-0.3);
@@ -154,16 +168,65 @@ public class AutoPixelScorePark extends FSM_Fullstack {
     }
 
     public void MainInit() {
+        OpenCvWebcam webcam;
 
+        @SuppressLint("DiscouragedApi") int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "cameraMonitorViewId",
+                "id",
+                hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
+        webcam.setPipeline(pipeline);
+
+        webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                FtcDashboard.getInstance().startCameraStream(webcam, 20);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+                // intentional noop
+            }
+        });
+
+        autoTimer.reset();
+        while (autoTimer.seconds() < 5) {
+            randomization = pipeline.getRandomization();
+            telemetry.addData("Randomization", randomization);
+            telemetry.update();
+        }
+        webcam.closeCameraDevice();
     }
 
     public void MainStart() {
         int dir = alliance == RobotAlliance.RED ? 1 : -1;
-        //int detectedSpikeResult = handler.localizer.telemetryTfod();
+        randomization = pipeline.getRandomization();
+
+        switch(randomization) {
+            case LOCATION_1:
+                driveDist = driveDistanceClose;
+                rotateDirection = 1;
+                driveDirPark1 = -1;
+                break;
+            case LOCATION_2:
+                driveDist = driveDistanceFar;
+                rotateDirection = 0;
+                driveDirPark2 = 1;
+                break;
+            case LOCATION_3:
+                driveDist = driveDistanceClose;
+                rotateDirection = -1;
+                driveDirPark1 = 1;
+                break;
+            default:
+                driveDist = driveDistanceClose;
+                rotateDirection = 0;
+                break;
+        }
 
         GrabAndReady();
-
-        //handler.initTask();
         EncoderMove(0.8, 1, 1, false, false, 3);
         AutoWait();
         EncoderMove(0.6, -1 * dir, 1 * dir, false, false, 3);

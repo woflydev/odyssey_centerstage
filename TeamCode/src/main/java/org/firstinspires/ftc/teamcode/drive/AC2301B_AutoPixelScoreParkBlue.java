@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 
 @Autonomous(name="AutoBlue1", group="Final")
-public class AutoPixelScoreParkBlue extends AutoPixelScorePark {
+public class AC2301B_AutoPixelScoreParkBlue extends AC2301A_AutoPixelScorePark {
     public ElapsedTime autoTimer = new ElapsedTime();
 
     public void MainInit() {

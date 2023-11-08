@@ -1,16 +1,83 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.drive;
 
-import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.*;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.ENCODER_TICKS_PER_TILE;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.drive.NewRobot_v8_FSM_FullRobot_v3;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 
-@Deprecated()
-public class NewRobot_v8_Auto_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
+@Autonomous(name="AutoRed1", group="Final")
+public class AC2301A_AutoPixelScorePark extends FSM_Fullstack {
+    public ElapsedTime autoTimer = new ElapsedTime();
+
+    public boolean detected = false;
+    public RobotAlliance alliance = RobotAlliance.RED;
+
+    private void ExpelPixel() {
+        intake.setPower(-0.3);
+        Delay(2000);
+        intake.setPower(0);
+    }
+
+    public void GrabAndReady() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        Delay(500);
+
+        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
+        Delay(700);
+
+        // transfer stage sequence
+        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
+        Delay(200);
+        MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
+        Delay(200);
+        MoveElbow(RobotConstants.ELBOW_PICKUP);
+
+        Delay(200);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+        Delay(500);
+
+        // primes the elbow
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(100);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+    }
+
+    public void RaiseAndPrime(int height) {
+        intake.setPower(0); // make sure intake is not running
+
+        targetOuttakePosition = height;
+        UpdateOuttake(false, 0);
+
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
+
+        MoveElbow(RobotConstants.ELBOW_ACTIVE);
+
+        outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
+        Delay(50); // debounce
+    }
+
+    public void DropAndReset() {
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        Delay(800); // wait for claw to open
+
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+
+        Delay(350); // elbow should come down after the slide is near done
+
+        targetOuttakePosition = 10;
+        UpdateOuttake(true, 0);
+    }
 
     private double TilesToTicks(double input) {
         return ENCODER_TICKS_PER_TILE * input;
@@ -32,6 +99,7 @@ public class NewRobot_v8_Auto_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
 
         else {
             int dir = strafeRight ? 1 : -1;
+            dir *= alliance == RobotAlliance.RED ? 1 : -1;
             backLMTarget = backLM.getCurrentPosition() + (int)(TilesToTicks(left) * dir);
             frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left) * dir);
             backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right) * dir);
@@ -81,87 +149,36 @@ public class NewRobot_v8_Auto_v1 extends NewRobot_v8_FSM_FullRobot_v3 {
         frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    // this function is removed from the FSM
-    public void GrabAndReady() {
-        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
-        Delay(700);
-
-        // transfer stage sequence
-        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
+    private void AutoWait() {
         Delay(200);
-        MoveElbow(RobotConstants.ELBOW_PICKUP);
-
-        Delay(200);
-        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(250);
-
-        // primes the elbow
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        Delay(100);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
-    public void DropAndReset() {
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(300); // wait for claw to open
+    public void MainInit() {
 
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-
-        Delay(350); // elbow should come down after the slide is near done
-
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
-        targetOuttakePosition = 10;
-        UpdateOuttake(true, 0);
     }
 
-    // runs on start press, only once
     public void MainStart() {
-        //handler.initTask(2);
+        int dir = alliance == RobotAlliance.RED ? 1 : -1;
+        //int detectedSpikeResult = handler.localizer.telemetryTfod();
 
-        EncoderMove(0.6, 2.3, 2.3, false, false, 4);
-        Delay(100);
-        EncoderMove(0.8, -1, 1, false, false, 2);
-        Delay(100);
-        EncoderMove(0.8, 3, 3, false, false, 5);
-        Delay(100);
+        GrabAndReady();
 
-        intake.setPower(0.6);
-        Delay(2000);
-        intake.setPower(0);
+        //handler.initTask();
+        EncoderMove(0.8, 1, 1, false, false, 3);
+        AutoWait();
+        EncoderMove(0.6, -1 * dir, 1 * dir, false, false, 3);
+        AutoWait();
+        EncoderMove(0.6, -1.54, -1.54, false, false, 3);
 
-        EncoderMove(0.8, -4.8, -4.8, false, false, 5);
-
-        /*GrabAndReady();
-        EncoderMove(0.8, 1, 1, false, false, 5);
-        Delay(50);
-        EncoderMove(0.8, -1, 1, false, false, 4);
-        Delay(100);
-        EncoderMove(1, -1.65, -1.65, false, false, 4);
-        Delay(100);
-
-        RaiseAndPrime(100);
-
-        //RaiseAndPrime(JUNCTION_LOW);
-        Delay(500);
+        RaiseAndPrime(400);
+        Delay(1500);
         DropAndReset();
-        Delay(500);
 
-        //EncoderMove(1, 1, 1, true, false, 5);
-        EncoderMove(0.7, -0.3, -0.3, false, false, 2);
-        //EncoderMove(1, 1.7, 1.7, false, false, 5); //NOTE: added onto next one
-        EncoderMove(0.75, 4.4, 4.4, false, false, 5);
-
-        intake.setPower(0.5);
-        Delay(2000);
-        intake.setPower(0);*/
-
-
-    }
-
-    public void MainLoop() {
-        // Get Pixel
-        // Go to
+        EncoderMove(0.7, 0.3, 0.3, false, false, 3);
+        // note: strafe
+        EncoderMove(0.7, 1, 1, true, false, 5);
+        EncoderMove(0.5, 1 * dir, -1 * dir, false, false, 3);
+        AutoWait();
+        EncoderMove(0.5, 0.2, 0.2, true, true, 3);
     }
 }
