@@ -158,7 +158,8 @@ public class Abstract {
     }
 
     public void initTask() {
-        Trajectory forward = stack.drive.trajectoryBuilder(STARTING_POSE).forward(RobotConstants.INITIAL_FORWARD).build();
+        // Below code assumes bad FOV
+        /*Trajectory forward = stack.drive.trajectoryBuilder(STARTING_POSE).forward(RobotConstants.INITIAL_FORWARD).build();
         stack.drive.followTrajectory(forward);
 
         int spikeMark = 1;
@@ -172,11 +173,14 @@ public class Abstract {
             stack.drive.turn(- TURN_AUTO_ANGLE);
         }
         // Back to straight
-        stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);
+        stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);*/
+
+        int spikeMark = localizer.propTfod(PLAYING_BLUE);
+
         Pose2d spikePose = PLAYING_BLUE ?
                 BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
 
-        stack.drive.followTrajectory(path(forward.end(), spikePose));
+        stack.drive.followTrajectory(path(STARTING_POSE, spikePose));
         stack.MoveElbow(RobotConstants.ELBOW_DROPOFF);
         stack.intake.setPower(RobotConstants.INTAKE_OUTPUT);
         stack.Delay(RobotConstants.INTAKE_OUTPUT_TIME);

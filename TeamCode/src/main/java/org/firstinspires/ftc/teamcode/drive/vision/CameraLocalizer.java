@@ -173,6 +173,10 @@ public class CameraLocalizer implements Localizer {
      */
     private TfodProcessor tfod;
 
+    //fx, fy, cx, cy
+    public static double[] OLD_CALIBRATION = {1389.80870649, 1389.80870649, 663.268596171, 399.045042197};
+    public static double[] NEW_CALIBRATION = {1805.11209646, 1805.11209646, 1020.05252149, 743.423990613};
+
     @NonNull
     public Pose2d getPoseEstimate() {
         return this.poseEstimate;
@@ -255,7 +259,9 @@ public class CameraLocalizer implements Localizer {
                 // == CAMERA CALIBRATION ==
                 // If you do not manually specify calibration parameters, the SDK will attempt
                 // to load a predefined calibration for your camera.
-                .setLensIntrinsics(1389.80870649, 1389.80870649, 663.268596171, 399.045042197)
+                .setLensIntrinsics(OLD_CALIBRATION[0], OLD_CALIBRATION[1], OLD_CALIBRATION[2], OLD_CALIBRATION[3])
+                // New camera
+                //.setLensIntrinsics(NEW_CALIBRATION[0], NEW_CALIBRATION[1], NEW_CALIBRATION[2], NEW_CALIBRATION[3])
                 // ... these parameters are fx, fy, cx, cy.
 
                 .build();
@@ -285,6 +291,7 @@ public class CameraLocalizer implements Localizer {
             builder.enableLiveView(false);
         }
         // Create the TensorFlow processor by using a builder.
+
         tfod = new TfodProcessor.Builder()
                 .setModelAssetName(TFOD_MODEL_ASSET)
 
@@ -312,18 +319,11 @@ public class CameraLocalizer implements Localizer {
         // Set confidence threshold for TFOD recognitions, at any time.
         tfod.setMinResultConfidence(0.75f);
 
-        // Disable or re-enable the TFOD processor at any time.
-        //visionPortal.setProcessorEnabled(tfod, true);
-
         // Set and enable the processor.
         builder.addProcessors(aprilTag, tfod);
 
         // Build the Vision Portal, using the above settings.
         visionPortal = builder.build();
-
-        // Disable or re-enable the aprilTag processor at any time.
-        visionPortal.setProcessorEnabled(aprilTag, false);
-        visionPortal.setProcessorEnabled(tfod, true);
 
     }
     @SuppressLint("DefaultLocale")
