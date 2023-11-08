@@ -215,7 +215,7 @@ public class AC2302A_Auto extends FSM_Fullstack {
                 break;
         }
 
-        GrabAndReady();
+        /*GrabAndReady();
         EncoderMove(0.8, 1, 1, false, false, 3);
         AutoWait();
         EncoderMove(0.6, -1 * dir, 1 * dir, false, false, 3);
@@ -231,6 +231,6 @@ public class AC2302A_Auto extends FSM_Fullstack {
         EncoderMove(0.7, 1, 1, true, false, 5);
         EncoderMove(0.5, 1 * dir, -1 * dir, false, false, 3);
         AutoWait();
-        EncoderMove(0.5, 0.2, 0.2, true, true, 3);
+        EncoderMove(0.5, 0.2, 0.2, true, true, 3);*/
     }
 }
