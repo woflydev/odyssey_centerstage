@@ -1,14 +1,13 @@
 package org.firstinspires.ftc.teamcode.drive.Deprecated;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Fullstack;
 
 //@TeleOp(name="Finalised RoadRunner TeleOp", group="Final")
 @Disabled()
 @Deprecated()
-public class NewRobot_v9_TeleOp extends Robotv8_Fullstack {
+public class NewRobot_v9_TeleOp extends Fullstack {
     public void MainStart() {
         telemetry.addLine("Started!!!");
         telemetry.update();

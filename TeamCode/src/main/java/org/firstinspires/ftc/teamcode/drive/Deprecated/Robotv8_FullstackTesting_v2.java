@@ -47,7 +47,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Abstract;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Abstract;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -59,7 +59,7 @@ import java.util.List;
 
 @Deprecated()
 public class Robotv8_FullstackTesting_v2 extends OpMode {
-    public Robotv8_Abstract handler;
+    public Abstract handler;
 
     public RobotState state = RobotState.IDLE;
     public OuttakeState outtakeState = OuttakeState.IDLE;
@@ -669,7 +669,7 @@ public class Robotv8_FullstackTesting_v2 extends OpMode {
         private List<Integer> lastEncPositions = new ArrayList<>();
         private List<Integer> lastEncVels = new ArrayList<>();
 
-        public AutoMecanumDrive(Robotv8_Abstract handler, HardwareMap hardwareMap, DcMotorEx frontLM, DcMotorEx frontRM, DcMotorEx backLM, DcMotorEx backRM, IMU i) {
+        public AutoMecanumDrive(Abstract handler, HardwareMap hardwareMap, DcMotorEx frontLM, DcMotorEx frontRM, DcMotorEx backLM, DcMotorEx backRM, IMU i) {
             super(DriveConstants.kV, DriveConstants.kA, DriveConstants.kStatic,
                     TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
             follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,

@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
-import org.firstinspires.ftc.teamcode.drive.vision.FieldPipeline;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -20,7 +19,7 @@ import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import java.util.List;
 import java.util.function.Function;
 
-public class Robotv8_Abstract {
+public class Abstract {
     // Z-angle
     private static double YAW_ANGLE = 0;
     private static int ACQUISITION_TIME = 10;
@@ -61,10 +60,10 @@ public class Robotv8_Abstract {
 
     private Telemetry telemetry;
     private boolean TELEMETRY_GIVEN;
-    public Robotv8_Fullstack stack;
+    public Fullstack stack;
     public CameraLocalizer localizer;
 
-    public Robotv8_Abstract(Robotv8_Fullstack parentStack, HardwareMap map, Telemetry t) {
+    public Abstract(Fullstack parentStack, HardwareMap map, Telemetry t) {
         telemetry = t;
         hardwareMap = map;
         TELEMETRY_GIVEN = true;

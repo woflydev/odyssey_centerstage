@@ -22,7 +22,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Fullstack;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
@@ -153,7 +153,7 @@ public class CameraLocalizer implements Localizer {
     public boolean isBlind = false;
     public boolean stopTrigger = false;
 
-    public Robotv8_Fullstack stack;
+    public Fullstack stack;
 
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
@@ -186,7 +186,7 @@ public class CameraLocalizer implements Localizer {
         return poseVelocity;
     }
 
-    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t, Robotv8_Fullstack stack) {
+    public CameraLocalizer(HardwareMap map, String front, String back, Pose2d startingPose, Telemetry t, Fullstack stack) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
         this.poseVelocity = new Pose2d(0, 0, 0);
@@ -399,7 +399,7 @@ public class CameraLocalizer implements Localizer {
                     wheelDeltas,
                     DriveConstants.TRACK_WIDTH,
                     DriveConstants.wheelBase,
-                    Robotv8_Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
+                    Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
             );
             Double finalHeadingDelta = useExternalHeading ?
                     Angle.normDelta(extHeading - lastExtHeading) :
@@ -417,7 +417,7 @@ public class CameraLocalizer implements Localizer {
                     wheelVelocities,
                     DriveConstants.TRACK_WIDTH,
                     DriveConstants.wheelBase,
-                    Robotv8_Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
+                    Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
             );
             if (useExternalHeading && extHeadingVel != null) {
                 if (poseVelocity == null) {

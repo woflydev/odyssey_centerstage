@@ -2,13 +2,11 @@ package org.firstinspires.ftc.teamcode.drive.Deprecated;
 
 import static java.lang.Thread.sleep;
 
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Fullstack;
 
 @Deprecated()
-public class NewRobot_v8_AutoTeleOp_V1 extends Robotv8_Fullstack {
+public class NewRobot_v8_AutoTeleOp_V1 extends Fullstack {
 
     public void MainLoop() {
         PassiveArmResetCheck();

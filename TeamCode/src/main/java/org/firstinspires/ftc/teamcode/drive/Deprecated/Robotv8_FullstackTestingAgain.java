@@ -46,7 +46,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Robotv8_Abstract;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Abstract;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -413,7 +413,7 @@ public class Robotv8_FullstackTestingAgain extends OpMode {
             resetTimer.reset();
         }
     }
-    public void Macros(Robotv8_Abstract handler) {
+    public void Macros(Abstract handler) {
         // test transfer stage macro
         if (gamepad1.dpad_left) {
             if (!wristActive) {
