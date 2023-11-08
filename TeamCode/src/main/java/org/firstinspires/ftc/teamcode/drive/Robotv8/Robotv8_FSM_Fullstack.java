@@ -620,6 +620,11 @@ public class Robotv8_FSM_Fullstack extends OpMode {
     public void HandleDrivetrainOverride() {
         // note: override in case things go die die
         if (gamepad1.dpad_left || gamepad1.dpad_right) {
+            backLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            backRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
             backLM.setPower(0);
             backRM.setPower(0);
             frontLM.setPower(0);
@@ -690,6 +695,11 @@ public class Robotv8_FSM_Fullstack extends OpMode {
         double power = error > 0 ? speed : -speed; // which turning direction is closest?
 
         if (Math.abs(error) < 1.0) {
+            backLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            backRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
             backLM.setPower(0);
             backRM.setPower(0);
             frontLM.setPower(0);
@@ -705,6 +715,11 @@ public class Robotv8_FSM_Fullstack extends OpMode {
             frontLM.setPower(-power);
             frontRM.setPower(power);
         } else {
+            backLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontLM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            backRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            frontRM.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
             drivetrainState = FSM_Drivetrain.MANUAL;
         }
     }
