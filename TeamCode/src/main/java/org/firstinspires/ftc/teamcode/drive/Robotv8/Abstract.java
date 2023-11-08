@@ -181,9 +181,15 @@ public class Abstract {
                 BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
 
         stack.drive.followTrajectory(path(STARTING_POSE, spikePose));
+
+        // Placing purple pixel
+
         stack.MoveElbow(RobotConstants.ELBOW_DROPOFF);
         stack.intake.setPower(RobotConstants.INTAKE_OUTPUT);
         stack.Delay(RobotConstants.INTAKE_OUTPUT_TIME);
+
+
+        // Placing yellow pixel
         Pose2d pixelPose = (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION)
                 .plus(PIXEL_OFFSET.times(spikeMark * 2 + 1));
         stack.drive.followTrajectory(path(spikePose, pixelPose));
