@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated.VeryDeprecated;
+package org.firstinspires.ftc.teamcode.Deprecated.VeryDeprecated;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 

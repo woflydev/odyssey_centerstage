@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated.VeryDeprecated;
+package org.firstinspires.ftc.teamcode.Deprecated.VeryDeprecated;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -6,32 +6,18 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.testing.Robotv8_TestingOpMode;
 
 @Deprecated()
-// note: this class won't show up on the driver station, unless @TeleOp is added
-public class NewRobot_v8_HangIntakeNoDrive_v1 extends Robotv8_TestingOpMode {
+public class NewRobot_v8_TestingOpModeMotor_v1 extends Robotv8_TestingOpMode {
     private void RuntimeConfig() {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            if (gamepad1.right_bumper) {
-                servoHangR.setPower(1);
-                servoHangL.setPower(1);
-            } else if (gamepad1.left_bumper) {
-                servoHangR.setPower(-1);
-                servoHangL.setPower(-1);
+            if (gamepad1.right_trigger >= 0.6) {
+                armR.setPower(1);
+            } else if (gamepad1.left_trigger >= 0.6) {
+                armR.setPower(-1);
             } else {
-                servoHangR.setPower(0);
-                servoHangL.setPower(0);
+                armR.setPower(0);
             }
         }
-
-        double targetIntakePower = 0;
-        if (gamepad1.left_trigger > 0.2) {
-            targetIntakePower = 0.4;
-            if (gamepad1.left_bumper) {
-                targetIntakePower = 0.6;
-            }
-        }
-
-        intake.setPower(targetIntakePower);
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
 
@@ -45,7 +31,6 @@ public class NewRobot_v8_HangIntakeNoDrive_v1 extends Robotv8_TestingOpMode {
         }
     }
 
-    
     public void loop() {
         RuntimeConfig();
 
@@ -54,7 +39,6 @@ public class NewRobot_v8_HangIntakeNoDrive_v1 extends Robotv8_TestingOpMode {
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
-        //telemetry.addData("Intake Speed: ", gamepad1.left_trigger);
         telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");

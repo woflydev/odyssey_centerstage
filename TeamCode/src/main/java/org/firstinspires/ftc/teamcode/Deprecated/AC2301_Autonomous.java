@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.Deprecated;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Fullstack;
 

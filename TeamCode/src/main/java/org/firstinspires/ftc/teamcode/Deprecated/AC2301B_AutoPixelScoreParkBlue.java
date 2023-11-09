@@ -1,8 +1,7 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.Deprecated;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.drive.Deprecated.AC2301A_AutoPixelScorePark;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 
 //@Autonomous(name="AutoBlue1", group="Final")

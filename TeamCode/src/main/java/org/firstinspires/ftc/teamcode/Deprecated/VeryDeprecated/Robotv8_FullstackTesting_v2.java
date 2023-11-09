@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated.VeryDeprecated;
+package org.firstinspires.ftc.teamcode.Deprecated.VeryDeprecated;
 
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
 import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
@@ -29,6 +29,7 @@ import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityCons
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -46,6 +47,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.Abstract;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -56,7 +58,9 @@ import java.util.Arrays;
 import java.util.List;
 
 @Deprecated()
-public class Robotv8_FullstackTesting extends OpMode {
+public class Robotv8_FullstackTesting_v2 extends OpMode {
+    public Abstract handler;
+
     public RobotState state = RobotState.IDLE;
     public OuttakeState outtakeState = OuttakeState.IDLE;
 
@@ -64,29 +68,35 @@ public class Robotv8_FullstackTesting extends OpMode {
     public DcMotorEx backRM = null;
     public DcMotorEx frontLM = null;
     public DcMotorEx frontRM = null;
-    public DcMotorEx intake = null;
+    public Servo servoFlap = null;
     public Servo servoClaw = null;
     public Servo servoWrist = null;
     public Servo servoElbowR = null;
     public Servo servoElbowL = null;
     public Servo servoPlane = null;
+    public CRServo servoHangR = null;
+    public CRServo servoHangL = null;
     public DcMotorEx armR = null;
     public DcMotorEx armL = null;
     public IMU imu = null;
+    public DcMotorEx intake = null;
 
     public final ElapsedTime encoderRuntime = new ElapsedTime();
     public final ElapsedTime armRuntime = new ElapsedTime();
+    public final ElapsedTime resetTimer = new ElapsedTime();
 
     public double targetClawPosition = RobotConstants.CLAW_OPEN;
     public double targetWristPosition = RobotConstants.WRIST_PICKUP;
     public double targetElbowPosition = RobotConstants.ELBOW_STANDBY;
     public double targetPlanePosition = RobotConstants.PLANE_STANDBY;
+    public double targetFlapPosition = RobotConstants.FLAP_CLOSE;
     public int targetOuttakePosition = 0;
 
     public boolean planeTriggered = false;
     public boolean clawOpen = false;
     public boolean wristActive = false;
     public boolean elbowActive = false;
+    public boolean transferStageDeployed = false;
 
     public double current_v1 = 0;
     public double current_v2 = 0;
@@ -97,19 +107,11 @@ public class Robotv8_FullstackTesting extends OpMode {
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
 
-    public AutoMecanumDrive drive;
-
     public void Delay(double time) {
-        try {
-            sleep((long) time);
-        } catch (Exception e) {
-            System.out.println("interrupted");
-        }
+        try { sleep((long)time); } catch (Exception e) { System.out.println("interrupted"); }
     }
 
-    public static boolean IsPositive(double d) {
-        return !(Double.compare(d, 0.0) < 0);
-    }
+    public static boolean IsPositive(double d) { return !(Double.compare(d, 0.0) < 0); }
 
     public double Stabilize(double new_accel, double current_accel) {
         double dev = new_accel - current_accel;
@@ -118,9 +120,15 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public double GetHeading() {
         double currentHeading = imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
-        double rot = (double) (Math.round(-currentHeading + 720) % 360);
+        double rot = (double)(Math.round(-currentHeading + 720) % 360);
         rot = rot == 0 ? 360 : rot;
         return rot;
+    }
+
+    public void MoveElbow(double targetPos) {
+        servoElbowR.setPosition(targetPos);
+        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
+        Delay(50);
     }
 
     public void InitializeBlock() {
@@ -128,13 +136,10 @@ public class Robotv8_FullstackTesting extends OpMode {
 
         backLM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_LEFT);
         backRM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_RIGHT);
-        frontLM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_LEFT);
-        frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT);
-        intake = hardwareMap.get(DcMotorEx.class, RobotConstants.INTAKE_MOTOR);
 
-        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        intake.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        intake.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_LEFT);
+        frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT); //frontRM.setDirection(DcMotorSimple.Direction.REVERSE); // weird workaround Stanley put in
+        intake = hardwareMap.get(DcMotorEx.class, RobotConstants.INTAKE_MOTOR);
 
         backLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -166,22 +171,28 @@ public class Robotv8_FullstackTesting extends OpMode {
         armR.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        servoFlap = hardwareMap.get(Servo.class, RobotConstants.SERVO_FLAP);
         servoElbowR = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_R);
         servoElbowL = hardwareMap.get(Servo.class, RobotConstants.SERVO_ELBOW_L);
         servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
         servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
         servoPlane = hardwareMap.get(Servo.class, RobotConstants.SERVO_PLANE);
 
-        outtakeState = OuttakeState.IDLE;
+        servoHangR = hardwareMap.get(CRServo.class, RobotConstants.SERVO_HANG_R);
+        servoHangR.setDirection(DcMotorSimple.Direction.FORWARD);
+        servoHangR.setPower(0);
 
-        // outtake stuff
+        servoHangL = hardwareMap.get(CRServo.class, RobotConstants.SERVO_HANG_L);
+        servoHangL.setDirection(DcMotorSimple.Direction.REVERSE);
+        servoHangL.setPower(0);
+
         clawOpen = true;
-        wristActive = false;
-        elbowActive = false;
+        transferStageDeployed = false;
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos
+        MoveElbow(RobotConstants.ELBOW_STANDBY); // special function for inverted servos*/
 
         // -------------------------------------------------------------- IMU INIT
 
@@ -198,29 +209,230 @@ public class Robotv8_FullstackTesting extends OpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
-        drive = new AutoMecanumDrive(hardwareMap, frontLM, frontRM, backLM, backRM, imu);
-
-        Delay(500);
+        Delay(100);
     }
 
     public void init() {
-        telemetry.addData("Status", "INITIALIZING ROBOT...");    //
+        telemetry.addData("Status", "INITIALIZING ROBOT...");
         telemetry.update();
 
+        Delay(100);
+
         InitializeBlock();
+        MainInit();
 
         telemetry.addData("Status", "INITIALIZATION COMPLETE!");
         telemetry.update();
     }
-
-    public void loop() {
-        // yes
+    public void start() {
+        MainStart();
     }
 
-    public void MoveElbow(double targetPos) {
-        servoElbowR.setPosition(targetPos);
-        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
-        Delay(5);
+    public void loop() {
+        StatusTelemetry();
+
+        // Optional, to see position output
+        //handler.update();
+        MainLoop();
+    }
+    public void stop() {
+        MainStop();
+        handler.stop();
+    }
+
+    public void MainInit() {
+
+    }
+
+    public void MainStart() {
+
+    }
+
+    public void MainLoop() {
+
+    }
+
+    public void MainStop() {
+
+    }
+
+    public void StatusTelemetry() {
+        // TELEMETRY
+        telemetry.addData("Arm Left: ", armL.getCurrentPosition());
+        telemetry.addData("Arm Right: ", armR.getCurrentPosition());
+        telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
+        telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
+        telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
+        telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());
+        telemetry.addData("Target Flap Position: ", targetFlapPosition);
+        telemetry.addData("Target Wrist Position: ", targetWristPosition);
+        telemetry.addData("Target Elbow Position: ", targetElbowPosition);
+        telemetry.addData("Target Outtake Position: ", targetOuttakePosition);
+        telemetry.addData("Target Claw Position: ", targetClawPosition);
+        telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
+        telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
+        telemetry.addData("Current Speed Mode: ", driveSpeedModifier == RobotConstants.BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");
+        //telemetry.addData("IMU Yaw: ", GetHeading());
+
+        telemetry.update();
+    }
+
+    public void RuntimeConfig() {
+        // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
+        if (adjustmentAllowed) { // lining up arm for topmost cone
+            // slow down driving with analog trigger
+            if (gamepad1.right_trigger >= 0.2) {
+                driveSpeedModifier = gamepad1.right_trigger + 1.3;
+            } else {
+                driveSpeedModifier = 1;
+            }
+
+            if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
+                    targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
+                    UpdateOuttake(false, 0);
+                }
+            } else if (gamepad2.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
+                    targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
+                    UpdateOuttake(false, 0);
+                }
+            } else if (gamepad2.dpad_down) {
+                targetOuttakePosition = 30;
+                UpdateOuttake(true, 0);
+            } else if (gamepad2.dpad_up) {
+                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
+                UpdateOuttake(false, 0);
+            }
+
+            if (gamepad2.square) {
+                targetClawPosition -= 0.02;
+                servoClaw.setPosition(targetClawPosition);
+                Delay(50);
+            } else if (gamepad2.circle) {
+                targetClawPosition += 0.02;
+                servoClaw.setPosition(targetClawPosition);
+                Delay(50);
+            }
+
+            // todo: relinquish wrist control in favour of hanging
+            if (gamepad2.right_bumper) {
+                targetWristPosition += 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
+            } else if (gamepad2.left_bumper) {
+                targetWristPosition -= 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
+            }
+
+            /*if (gamepad2.right_bumper) {
+                servoHangR.setPower(1);
+                servoHangL.setPower(1);
+            } else if (gamepad2.left_bumper) {
+                servoHangR.setPower(-1);
+                servoHangL.setPower(-1);
+            } else {
+                servoHangR.setPower(0);
+                servoHangL.setPower(0);
+            }*/
+
+            // FLAP (FOR TUNING VALUES) -----------------------------------------------
+            if (gamepad2.dpad_right) {
+                targetFlapPosition += 0.02;
+                servoFlap.setPosition(targetFlapPosition);
+            } else if (gamepad2.dpad_left) {
+                targetFlapPosition -= 0.02;
+                servoFlap.setPosition(targetFlapPosition);
+            }
+
+            // PLANE -------------------------------------------------------------------
+            if (gamepad2.cross) {
+                if (!planeTriggered) {
+                    planeTriggered = true;
+                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
+                } else {
+                    planeTriggered = false;
+                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
+                }
+                Delay(250);
+            }
+
+            // ELBOW ------------------------------------------------------------------
+            if (gamepad1.dpad_up) {
+                targetElbowPosition += 0.02;
+                MoveElbow(targetElbowPosition);
+            } else if (gamepad1.dpad_down) {
+                targetElbowPosition -= 0.02;
+                MoveElbow(targetElbowPosition);
+            }
+        }
+
+        // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
+        if (gamepad1.start) { // re-calibrate field centric drive
+            imu.resetYaw();
+        }
+    }
+
+    private volatile boolean drivebaseMacroActive = false;
+    public void TurnToHeadingAsync(double targetHeading) {
+        if (drivebaseMacroActive) {
+            return; // A macro is already in progress
+        }
+
+        drivebaseMacroActive = true;
+
+        double frontLeftPower;
+        double backLeftPower;
+        double frontRightPower;
+        double backRightPower;
+
+        double currentHeading;
+        double error;
+        double Kp = 0.03; // Adjust this gain as needed
+
+        currentHeading = GetHeading();
+        error = targetHeading - currentHeading;
+
+        while (Math.abs(error) > 0.02) {
+            currentHeading = GetHeading();
+            error = targetHeading - currentHeading;
+
+            // Determine the direction of rotation (clockwise or counterclockwise)
+            double rotatePower;
+            if (error > 180) {
+                // If error is more than 180 degrees, rotate in the opposite direction
+                rotatePower = -Math.abs(error) * Kp;
+            } else {
+                rotatePower = Math.abs(error) * Kp;
+            }
+
+            // Apply the rotation power to the robot
+            frontLeftPower = -rotatePower;
+            backLeftPower = -rotatePower;
+            frontRightPower = rotatePower;
+            backRightPower = rotatePower;
+
+            // Update motor powers
+            frontLM.setPower(frontLeftPower);
+            frontRM.setPower(frontRightPower);
+            backLM.setPower(backLeftPower);
+            backRM.setPower(backRightPower);
+
+            // Allow other controls to run in parallel
+            // For example, you can continue reading gamepad input here
+
+            // Sleep for a short duration to avoid busy-waiting
+            Delay(20); // Adjust the sleep duration as needed
+        }
+
+        // Stop the robot
+        frontLM.setPower(0);
+        frontRM.setPower(0);
+        backLM.setPower(0);
+        backRM.setPower(0);
+
+        drivebaseMacroActive = false;
     }
 
     public void Mecanum() {
@@ -262,122 +474,62 @@ public class Robotv8_FullstackTesting extends OpMode {
         current_v3 = stable_v3;
         current_v4 = stable_v4;
 
+        /*if (gamepad1.dpad_right) {
+            double targetHeading = 270;
+            TurnToHeadingAsync(targetHeading);
+        } else if (gamepad1.dpad_left) {
+            double targetHeading = 90;
+            TurnToHeadingAsync(targetHeading);
+        }*/
         frontLM.setPower(stable_v3 / driveSpeedModifier);
         frontRM.setPower(stable_v2 / driveSpeedModifier);
         backLM.setPower(stable_v1 / driveSpeedModifier);
         backRM.setPower(stable_v4 / driveSpeedModifier);
-    }
 
-    public void RuntimeConfig() {
-        // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
-        if (adjustmentAllowed) { // lining up arm for topmost cone
-            if (gamepad2.right_trigger >= 0.6 && ((armL.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
-                if (targetOuttakePosition < RobotConstants.MAX_OUTTAKE_HEIGHT - RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
-                    targetOuttakePosition += RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    UpdateOuttake(false, 0);
-                }
-            } else if (gamepad2.left_trigger >= 0.6 && ((armL.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT))) {
-                if (targetOuttakePosition > RobotConstants.MIN_OUTTAKE_HEIGHT + RobotConstants.ARM_ADJUSTMENT_INCREMENT) {
-                    targetOuttakePosition -= RobotConstants.ARM_ADJUSTMENT_INCREMENT;
-                    UpdateOuttake(false, 0);
-                }
-            } else if (gamepad2.dpad_down) {
-                targetOuttakePosition = 30;
-                UpdateOuttake(true, 0);
-            } else if (gamepad2.dpad_up) {
-                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
-                UpdateOuttake(false, 0);
-            } /*else if (gamepad1.right_bumper || gamepad1.left_bumper) {
-                armR.setVelocity(0);
-                armL.setVelocity(0);
-            }*/
+        // TODO: test if deadzone works
+        if (Math.abs(gamepad1.left_stick_y) >= RobotConstants.JOYSTICK_DEADZONE && Math.abs(gamepad1.left_stick_x) >= RobotConstants.JOYSTICK_DEADZONE) {
 
-            if (gamepad2.square) {
-                targetClawPosition -= 0.02;
-                servoClaw.setPosition(targetClawPosition);
-                Delay(50);
-            } else if (gamepad2.circle) {
-                targetClawPosition += 0.02;
-                servoClaw.setPosition(targetClawPosition);
-                Delay(50);
-            }
-
-            if (gamepad2.right_bumper) {
-                targetWristPosition += 0.02;
-                servoWrist.setPosition(targetWristPosition);
-                Delay(50);
-            } else if (gamepad2.left_bumper) {
-                targetWristPosition -= 0.02;
-                servoWrist.setPosition(targetWristPosition);
-                Delay(50);
-            }
-
-            if (gamepad2.cross) {
-                if (!planeTriggered) {
-                    planeTriggered = true;
-                    servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
-                } else {
-                    planeTriggered = false;
-                    servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
-                }
-                Delay(250);
-            }
-
-            if (gamepad1.triangle) {
-                targetElbowPosition += 0.02;
-                MoveElbow(targetElbowPosition);
-            } else if (gamepad1.cross) {
-                targetElbowPosition -= 0.02;
-                MoveElbow(targetElbowPosition);
-            }
-        }
-
-        // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
-
-        /*if (gamepad1.x && gamepad1.back) { // toggle red / blue alliance for FCD
-            fieldCentricRed = !fieldCentricRed;
-            Delay(50);
-        }*/
-
-        if (gamepad1.start) { // re-calibrate field centric drive
-            imu.resetYaw();
         }
     }
 
     public void Macros() {
-        if (gamepad1.left_trigger > 0.2) {
+        // INTAKE
+        if (gamepad1.left_trigger > 0.2 || gamepad2.triangle) {
             intake.setPower(RobotConstants.MAX_MANUAL_INTAKE_POWER);
+        } else if (gamepad1.square) {
+            intake.setPower(-RobotConstants.MAX_MANUAL_INTAKE_POWER);
         } else {
             intake.setPower(0);
         }
 
+        // GRAB
         if (gamepad1.left_bumper && outtakeState == OuttakeState.IDLE) {
             intake.setPower(0);
             GrabAndReady();
             outtakeState = OuttakeState.GRABBED_AND_READY;
         }
 
-        if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
-            if (gamepad1.dpad_right) {
-                DepositSequence(RobotConstants.MAX_OUTTAKE_HEIGHT);
-            } else if (gamepad1.dpad_down) {
-                DepositSequence(RobotConstants.JUNCTION_LOW);
-            } else if (gamepad1.dpad_left) {
-                DepositSequence(RobotConstants.JUNCTION_MID);
-            } else if (gamepad1.dpad_up) {
-                DepositSequence(RobotConstants.JUNCTION_HIGH);
-            }
-        }
-
-        // it should not be able to drop and reset if it's ready to deposit
+        // RESET
         if (gamepad1.right_bumper && !(outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT)) {
             DropAndReset();
             outtakeState = OuttakeState.IDLE;
         }
 
+        // DEPLOY & RESET DEPENDING ON STATE
+        if (outtakeState == OuttakeState.GRABBED_AND_READY || outtakeState == OuttakeState.PRIMED_FOR_DEPOSIT) {
+            if (gamepad1.cross) {
+                DepositSequence(RobotConstants.JUNCTION_LOW);
+            } else if (gamepad1.circle) {
+                DepositSequence(RobotConstants.JUNCTION_MID);
+            } else if (gamepad1.triangle) {
+                DepositSequence(RobotConstants.JUNCTION_HIGH);
+            }
+        }
+
         Delay(5); // debounce
     }
 
+    // INTAKE/OUTTAKE SEQUENCE FUNCTIONS --------------------------------------------------
     public void DepositSequence(int height) {
         if (outtakeState == OuttakeState.GRABBED_AND_READY) {
             intake.setPower(0); // make sure intake is not running
@@ -392,20 +544,27 @@ public class Robotv8_FullstackTesting extends OpMode {
     }
 
     public void GrabAndReady() {
+        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
+        Delay(700);
+
+        // transfer stage sequence
         servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
         MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
-        Delay(400);
+        Delay(200);
         MoveElbow(RobotConstants.ELBOW_PICKUP);
 
-        Delay(50);
+        Delay(200);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(100);
+        Delay(250);
 
         // primes the elbow
         MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(100);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
     public void RaiseAndPrime(int height) {
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
@@ -419,14 +578,20 @@ public class Robotv8_FullstackTesting extends OpMode {
 
     public void DropAndReset() {
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(350); // elbow should come down after the slide is near done
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        Delay(300); // wait for claw to open
 
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+
+        Delay(350); // elbow should come down after the slide is near done
+
+        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         targetOuttakePosition = 10;
         UpdateOuttake(true, 0);
     }
 
+
+    // HELPER FUNCTIONS ------------------------------------------------------------------
     public void UpdateOuttake(boolean reset, double delay) { // test new function
         if (reset) {
             Delay(delay);
@@ -450,7 +615,9 @@ public class Robotv8_FullstackTesting extends OpMode {
             }
 
             telemetry.update();
-        } else {
+        }
+
+        else {
             Delay(delay);
             armR.setTargetPosition(targetOuttakePosition);
             armL.setTargetPosition(targetOuttakePosition);
@@ -502,7 +669,7 @@ public class Robotv8_FullstackTesting extends OpMode {
         private List<Integer> lastEncPositions = new ArrayList<>();
         private List<Integer> lastEncVels = new ArrayList<>();
 
-        public AutoMecanumDrive(HardwareMap hardwareMap, DcMotorEx frontLM, DcMotorEx frontRM, DcMotorEx backLM, DcMotorEx backRM, IMU i) {
+        public AutoMecanumDrive(Abstract handler, HardwareMap hardwareMap, DcMotorEx frontLM, DcMotorEx frontRM, DcMotorEx backLM, DcMotorEx backRM, IMU i) {
             super(DriveConstants.kV, DriveConstants.kA, DriveConstants.kStatic,
                     TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
             follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
@@ -548,15 +715,13 @@ public class Robotv8_FullstackTesting extends OpMode {
             List<Integer> lastTrackingEncPositions = new ArrayList<>();
             List<Integer> lastTrackingEncVels = new ArrayList<>();
 
-            // TODO: if desired, use setLocalizer() to change the localization method
-            //setLocalizer(new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0)));
+            setLocalizer(handler.localizer);
 
             trajectorySequenceRunner = new TrajectorySequenceRunner(
                     follower, HEADING_PID, batteryVoltageSensor,
                     lastEncPositions, lastEncVels, lastTrackingEncPositions, lastTrackingEncVels
             );
         }
-
         public TrajectoryBuilder trajectoryBuilder(Pose2d startPose) {
             return new TrajectoryBuilder(startPose, VEL_CONSTRAINT, ACCEL_CONSTRAINT);
         }

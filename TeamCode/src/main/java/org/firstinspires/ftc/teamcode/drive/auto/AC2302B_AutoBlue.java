@@ -1,14 +1,16 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.auto;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import org.firstinspires.ftc.teamcode.drive.Robotv8.AutoBase;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.opencv.core.Point;
 
 @Config
-@Autonomous(name="BlueAutoNationals", group="Final")
-public class AC2302B_AutoBlue extends AC2302_AutoBase {
+@Autonomous(name="BlueBackdropAuto", group="Final")
+public class AC2302B_AutoBlue extends AutoBase {
     public static double r1x = 25;
     public static double r1y = 90;
     public static double r2x = 150;
@@ -19,6 +21,7 @@ public class AC2302B_AutoBlue extends AC2302_AutoBase {
     public AC2302B_AutoBlue() {
         super(
                 RobotAlliance.BLUE,
+                RobotStartingPosition.BACKDROP,
                 new Point(r1x, r1y),
                 new Point(r2x, r2y),
                 new Point(r3x, r3y)

@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated.VeryDeprecated;
+package org.firstinspires.ftc.teamcode.Deprecated.VeryDeprecated;
 
 @Deprecated()
 public class NewV2Robot_v8_DriveBaseTest_v1 extends Robotv8_FullstackTesting_v2 {
