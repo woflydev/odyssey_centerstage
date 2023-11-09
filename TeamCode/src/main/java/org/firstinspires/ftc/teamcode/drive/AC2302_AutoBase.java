@@ -42,7 +42,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
 
     public void MainInit() {
         BackboardToPixels(); // note: testing smooth spline
-        helper.Delay(5000);
+        Delay(5000);
 
         OpenCvWebcam webcam;
 
@@ -142,9 +142,9 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         }
 
         GrabAndReady();
-        helper.Delay(1000);
+        Delay(1000);
         RaiseAndPrime(300);
-        helper.Delay(1000);
+        Delay(1000);
         DropAndReset();
 
         VisualMove(0.7, 0.3, 0.3, false, false, 3);
@@ -168,32 +168,32 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     // note: helper functions -----------------------------------------------------------
     private void ExpelPixel() {
         intake.setPower(-0.4);
-        helper.Delay(2000);
+        Delay(2000);
         intake.setPower(0);
     }
 
     public void GrabAndReady() {
-        helper.MoveElbow(RobotConstants.ELBOW_STANDBY);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        helper.Delay(500);
+        Delay(500);
 
         servoFlap.setPosition(RobotConstants.FLAP_OPEN);
-        helper.Delay(700);
+        Delay(700);
 
         // transfer stage sequence
         servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-        helper.Delay(200);
-        helper.MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
-        helper.Delay(200);
-        helper.MoveElbow(RobotConstants.ELBOW_PICKUP);
+        Delay(200);
+        MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
+        Delay(200);
+        MoveElbow(RobotConstants.ELBOW_PICKUP);
 
-        helper.Delay(200);
+        Delay(200);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        helper.Delay(500);
+        Delay(500);
 
         // primes the elbow
-        helper.MoveElbow(RobotConstants.ELBOW_STANDBY);
-        helper.Delay(100);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(100);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
@@ -201,30 +201,30 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         intake.setPower(0); // make sure intake is not running
 
         targetOuttakePosition = height;
-        helper.UpdateOuttake(false, 0);
+        UpdateOuttake(false, 0);
 
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
-        helper.MoveElbow(RobotConstants.ELBOW_ACTIVE);
+        MoveElbow(RobotConstants.ELBOW_ACTIVE);
 
         outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
-        helper.Delay(50); // debounce
+        Delay(50); // debounce
     }
 
     public void DropAndReset() {
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        helper.Delay(800); // wait for claw to open
+        Delay(800); // wait for claw to open
 
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        helper.MoveElbow(RobotConstants.ELBOW_STANDBY);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
 
-        helper.Delay(350); // elbow should come down after the slide is near done
+        Delay(350); // elbow should come down after the slide is near done
 
         targetOuttakePosition = 10;
-        helper.UpdateOuttake(true, 0);
+        UpdateOuttake(true, 0);
     }
 
     private double TilesToTicks(double input) {
@@ -298,6 +298,6 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     }
 
     private void AutoWait() {
-        helper.Delay(200);
+        Delay(200);
     }
 }
