@@ -165,7 +165,7 @@ public class CameraLocalizer implements Localizer {
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "PropsRecognition.tflite";
+    private static final String TFOD_MODEL_ASSET = "RedPropNewCamera.tflite";
 
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
