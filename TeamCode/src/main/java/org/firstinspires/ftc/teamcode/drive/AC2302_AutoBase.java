@@ -33,7 +33,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     private final PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
 
     // note: custom behaviour -----------------------------------------------------------
-    public AC2302_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3){
+    public AC2302_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
         this.r1 = r1;
         this.r2 = r2;
@@ -42,6 +42,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
 
     public void MainInit() {
         BackboardToPixels(); // note: testing smooth spline
+        Delay(5000);
 
         OpenCvWebcam webcam;
 
