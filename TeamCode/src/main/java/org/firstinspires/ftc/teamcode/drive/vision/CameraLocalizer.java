@@ -473,7 +473,9 @@ public class CameraLocalizer implements Localizer {
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
 
-            double angle = recognition.estimateAngleToObject(AngleUnit.RADIANS);
+            double angle = Math.atan2((recognition.getBottom() + recognition.getTop()) / 2, (recognition.getLeft() + recognition.getRight()) / 2 - SCREEN_WIDTH / 2);
+            t.addData("Angle", Math.toDegrees(angle));
+            t.update();
             visionPortal.setProcessorEnabled(tfod, false);
             visionPortal.setProcessorEnabled(aprilTag, true);
             if (recognition.getLabel() == LABELS[playingBlue ? 0 : 1]) {
