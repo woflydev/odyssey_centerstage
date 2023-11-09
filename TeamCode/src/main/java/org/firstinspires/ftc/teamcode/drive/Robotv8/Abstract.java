@@ -27,7 +27,12 @@ public class Abstract {
 
     public static boolean PLAYING_BLUE = true;
 
-    public static Pose2d STARTING_POSE = new Pose2d(0, 0, 0);
+    public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
+    public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
+
+    public static int ALLIANCE_INDEX = 0;
+
+    public static Pose2d STARTING_POSE = PLAYING_BLUE ? BLUE_STARTING_POSES[ALLIANCE_INDEX] : RED_STARTING_POSES[ALLIANCE_INDEX];
 
     public static Pose2d TILE_LOCATION = new Pose2d(-0.89,  -1.62 * (PLAYING_BLUE ? 1 : -1), 0).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
     public static Pose2d[] PIXEL_LOCATIONS = {
