@@ -83,9 +83,8 @@ public class AC2302_AutoBase extends FSM_Fullstack {
 
         //randomization = pipeline.getRandomization();
         telemetry.addData("TEAM_PROP_LOCATION", randomization);
-        telemetry.addData("dir", dir);
+        telemetry.addData("SELECTED_ALLIANCE", alliance);
         telemetry.update();
-        Delay(2000);
 
         // note: drop off at correct spikemark
         switch(randomization) {
@@ -100,9 +99,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
             case LOCATION_2: // note： forward
                 VisualMove(0.6, 1.08, 1.08, false, false, 3);
                 AutoWait();
-                AutoWait();
                 ExpelPixel();
-                AutoWait();
                 AutoWait();
                 VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
                 break;
@@ -123,18 +120,18 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         AutoWait();
         VisualMove(0.6, -1.565, -1.565, false, false, 3);
 
-        Delay(1000);
-        RaiseAndPrime(200);
-        Delay(1000);
+        Delay(200);
+        RaiseAndPrime(150);
+        Delay(500);
         DropAndReset();
 
         // note: drop off at correct april tag
         switch(randomization) {
-            case LOCATION_1: // note: left
+            case LOCATION_1:
                 break;
-            case LOCATION_2: // note： forward
+            case LOCATION_2:
                 break;
-            case LOCATION_3: // note: right
+            case LOCATION_3:
                 break;
             default:
                 break;
@@ -293,6 +290,6 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     }
 
     private void AutoWait() {
-        Delay(200);
+        Delay(400);
     }
 }
