@@ -180,7 +180,11 @@ public class Abstract {
         // Back to straight
         stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);*/
 
-        int spikeMark = localizer.propTfod(PLAYING_BLUE);
+        int spikeMark = -1;
+        while (spikeMark == -1) {
+            spikeMark = localizer.propTfod(PLAYING_BLUE);
+        }
+
 
         Pose2d spikePose = PLAYING_BLUE ?
                 BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
