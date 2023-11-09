@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.apache.commons.math3.analysis.function.Exp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
@@ -75,15 +76,18 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     public void MainStart() {
         randomization = pipeline.getRandomization();
 
-        VisualMove(0.8, 1, 1, false, false, 3);
-        AutoWait();
-
         // note: drop off at correct spikemark
         switch(randomization) {
             case LOCATION_1: // note: left
+                VisualMove(0.8, 1, 1, false, false, 3);
+                AutoWait();
+                VisualMove(0.5, -dir, dir, false, false, 3);
+                AutoWait();
+                ExpelPixel();
+                AutoWait();
                 break;
             case LOCATION_2: // note： forward
-                VisualMove(0.5, 0.3, 0.3, false, false, 3);
+                VisualMove(0.8, 1.2, 1.2, false, false, 3);
                 AutoWait();
                 ExpelPixel();
                 AutoWait();
@@ -92,6 +96,14 @@ public class AC2302_AutoBase extends FSM_Fullstack {
                 VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
                 break;
             case LOCATION_3: // note: rights
+                VisualMove(0.8, 1, 1, false, false, 3);
+                AutoWait();
+                VisualMove(0.5, dir, -dir, false, false, 3);
+                AutoWait();
+                ExpelPixel();
+                AutoWait();
+                VisualMove(0.5, -2 * dir, 2 * dir, false, false, 3);
+                AutoWait();
                 break;
             default:
                 break;
