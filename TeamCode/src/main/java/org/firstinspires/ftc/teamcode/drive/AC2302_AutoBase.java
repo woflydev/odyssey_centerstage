@@ -8,12 +8,12 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.apache.commons.math3.analysis.function.Exp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.firstinspires.ftc.teamcode.drive.vision2.PropPipeline;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -26,6 +26,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     private PropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;
+    public RobotStartingPosition startingPosition;
     public int dir;
     private Point r1;
     private Point r2;
@@ -88,47 +89,30 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         telemetry.update();
 
         // note: drop off at correct spikemark
-        switch(randomization) {
-            case LOCATION_1: // note: left
-                VisualMove(0.6, 1, 1, false, false, 3);
-                AutoWait();
-                VisualMove(0.5, -dir, dir, false, false, 3);
-                AutoWait();
-                ExpelPixel();
-                AutoWait();
-                VisualMove(0.5, 0.15, 0.15, true, true, 3); // note: strafe right to align with backdrop objective
+        switch(startingPosition) {
+            case BACKDROP:
+                HandlePurplePixel(); AutoWait();
+                VisualMove(0.6, -1.565, -1.565, false, false, 3); AutoWait();
+
+                RaiseAndPrime(150); AutoWait();
+                DropAndReset();
+
+                VisualMove(0.7, 0.1, 0.1, false, false, 3); // note: move a little away from the backdrop
+                BackdropToParking();
                 break;
-            case LOCATION_2: // note： forward
-                VisualMove(0.6, 1.08, 1.08, false, false, 3);
-                AutoWait();
-                ExpelPixel();
-                AutoWait();
-                VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
-                break;
-            case LOCATION_3: // note: right
-                VisualMove(0.6, 1, 1, false, false, 3);
-                AutoWait();
-                VisualMove(0.5, dir, -dir, false, false, 3);
-                AutoWait();
-                ExpelPixel();
-                AutoWait();
-                VisualMove(0.5, -2 * dir, 2 * dir, false, false, 3);
-                AutoWait();
-                VisualMove(0.5, 0.15, 0.15, true, false, 3); // note: strafe right to align with backdrop objective
-                break;
-            default:
+            case AUDIENCE:
+                HandlePurplePixel(); AutoWait();
+                VisualMove(0.6, -3.565, -3.565, false, false, 6); AutoWait();
+
+                RaiseAndPrime(150); AutoWait();
+                DropAndReset();
+
+                VisualMove(0.7, 0.1, 0.1, false, false, 3);
+                BackdropToParking();
                 break;
         }
 
-        AutoWait();
-        VisualMove(0.6, -1.565, -1.565, false, false, 3);
-
-        Delay(200);
-        RaiseAndPrime(150);
-        Delay(500);
-        DropAndReset();
-
-        // note: drop off at correct april tag
+        /*// note: drop off at correct april tag
         switch(randomization) {
             case LOCATION_1:
                 break;
@@ -138,21 +122,63 @@ public class AC2302_AutoBase extends FSM_Fullstack {
                 break;
             default:
                 break;
-        }
-
-        VisualMove(0.7, 0.1, 0.1, false, false, 3);
-        BackboardToParking();
+        }*/
     }
 
     // note: sequenced movement  --------------------------------------------------------
-    private void BackboardToParking() {
+    private void HandlePurplePixel() {
+        if (startingPosition == RobotStartingPosition.BACKDROP) {
+            switch(randomization) {
+                case LOCATION_1: // note: left
+                    VisualMove(0.6, 1, 1, false, false, 3); AutoWait();
+                    VisualMove(0.5, -dir, dir, false, false, 3); AutoWait();
+                    ExpelPixel(); AutoWait();
+                    VisualMove(0.5, 0.15, 0.15, true, true, 3); // note: strafe right to align with backdrop objective
+                    break;
+                case LOCATION_2: // note： forward
+                    VisualMove(0.6, 1.08, 1.08, false, false, 3); AutoWait();
+                    ExpelPixel(); AutoWait();
+                    VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
+                    break;
+                case LOCATION_3: // note: right
+                    VisualMove(0.6, 1, 1, false, false, 3); AutoWait();
+                    VisualMove(0.5, dir, -dir, false, false, 3); AutoWait();
+                    ExpelPixel(); AutoWait();
+                    VisualMove(0.5, -2 * dir, 2 * dir, false, false, 3); AutoWait();
+                    VisualMove(0.5, 0.15, 0.15, true, false, 3); // note: strafe right to align with backdrop objective
+                    break;
+            }
+        } else {
+            switch (randomization) {
+                // TODO: pathing for audience side
+                case LOCATION_1:
+                    VisualMove(0.6, 1, 1, false, false, 3); AutoWait();
+                    VisualMove(0.5, -dir, dir, false, false, 3); AutoWait();
+                    ExpelPixel(); AutoWait();
+                    break;
+                case LOCATION_2:
+                    VisualMove(0.6, 1.08, 1.08, false, false, 3); AutoWait();
+                    ExpelPixel(); AutoWait();
+                    VisualMove(0.6, -dir, dir, false, false, 3);
+                    break;
+                case LOCATION_3:
+                    VisualMove(0.6, 1, 1, false, false, 3); AutoWait();
+                    VisualMove(0.5, dir, -dir, false, false, 3); AutoWait();
+                    ExpelPixel(); AutoWait();
+                    VisualMove(0.5, -2 * dir, 2 * dir, false, false, 3); AutoWait();
+                    break;
+            }
+        }
+    }
+
+    private void BackdropToParking() {
         VisualMove(0.7, 1, 1, true, false, 5); // note: strafe
         VisualMove(0.5, dir, -dir, false, false, 3);
         AutoWait();
         VisualMove(0.5, 0.2, 0.2, true, true, 3);
     }
 
-    private void BackboardToPixels() {
+    private void BackdropToPixels() {
         VisualMove(0.6, 2, 2, false, false, 3);
         AutoWait();
         VisualMove(0.6, 0.1, 2, false, false, 3);
@@ -162,7 +188,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
 
     // note: helper functions -----------------------------------------------------------
     private void ExpelPixel() {
-        intake.setPower(-0.4);
+        intake.setPower(-0.37);
         Delay(800);
         intake.setPower(0);
     }

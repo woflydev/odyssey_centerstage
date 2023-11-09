@@ -1,8 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
-
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
-import org.firstinspires.ftc.teamcode.drive.Deprecated.Robotv8_FullstackTesting_v2;
+package org.firstinspires.ftc.teamcode.drive.Deprecated.VeryDeprecated;
 
 @Deprecated()
 public class NewV2Robot_v8_DriveBaseTest_v1 extends Robotv8_FullstackTesting_v2 {

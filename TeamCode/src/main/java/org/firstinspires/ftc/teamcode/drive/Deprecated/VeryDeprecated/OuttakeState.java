@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.drive.Deprecated.VeryDeprecated;
 
 @Deprecated()
 public enum OuttakeState {

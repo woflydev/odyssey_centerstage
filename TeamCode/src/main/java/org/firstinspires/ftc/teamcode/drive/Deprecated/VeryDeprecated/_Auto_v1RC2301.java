@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.drive.Deprecated.VeryDeprecated;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.*;
 
