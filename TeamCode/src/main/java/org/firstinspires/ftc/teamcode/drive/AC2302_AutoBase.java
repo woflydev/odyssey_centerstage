@@ -5,7 +5,6 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConsta
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -21,8 +20,8 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-@Autonomous(name="NationalsAuto", group="Final")
-public class AC2302A_Auto extends FSM_Fullstack {
+//@Autonomous(name="NationalsAutoBase", group="Final")
+public class AC2302_AutoBase extends FSM_Fullstack {
     private PropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance = RobotAlliance.RED;
@@ -165,6 +164,13 @@ public class AC2302A_Auto extends FSM_Fullstack {
 
     private void AutoWait() {
         Delay(200);
+    }
+
+    public AC2302_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3){
+        this.alliance = alliance;
+        this.r1 = r1;
+        this.r2 = r2;
+        this.r3 = r3;
     }
 
     public void MainInit() {
