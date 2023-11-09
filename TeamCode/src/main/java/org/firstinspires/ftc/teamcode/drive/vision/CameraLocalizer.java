@@ -68,6 +68,8 @@ public class CameraLocalizer implements Localizer {
     private String FRONT_CAMERA;
     private String BACK_CAMERA;
 
+    private double WIDTH_LIMIT = 150;
+
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
@@ -85,7 +87,7 @@ public class CameraLocalizer implements Localizer {
 
     private static int ACQUISITION_TIME = 10;
 
-    private static double ANGLE_THRESHOLD = Math.toRadians(15);
+    private static double ANGLE_THRESHOLD = Math.toRadians(30);
 
     // This assumes the april tag starts facing along the y-axis, may change later
     public static AprilTagMetadata[] tagArray = {
@@ -145,8 +147,8 @@ public class CameraLocalizer implements Localizer {
 
     private int AVERAGE_LENGTH = 3;
 
-    public static int SCREEN_WIDTH = 1920;
-    public static int SCREEN_HEIGHT = 1080;
+    public static int SCREEN_WIDTH = 640;
+    public static int SCREEN_HEIGHT = 480;
 
     public double MIDDLE_X = (double) SCREEN_WIDTH / 2;
 
@@ -169,7 +171,7 @@ public class CameraLocalizer implements Localizer {
 
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
-            "BlueProp",
+            //"BlueProp",
             "RedProp"
     };
 
@@ -264,9 +266,9 @@ public class CameraLocalizer implements Localizer {
                 // == CAMERA CALIBRATION ==
                 // If you do not manually specify calibration parameters, the SDK will attempt
                 // to load a predefined calibration for your camera.
-                .setLensIntrinsics(OLD_CALIBRATION[0], OLD_CALIBRATION[1], OLD_CALIBRATION[2], OLD_CALIBRATION[3])
+                //.setLensIntrinsics(OLD_CALIBRATION[0], OLD_CALIBRATION[1], OLD_CALIBRATION[2], OLD_CALIBRATION[3])
                 // New camera
-                //.setLensIntrinsics(NEW_CALIBRATION[0], NEW_CALIBRATION[1], NEW_CALIBRATION[2], NEW_CALIBRATION[3])
+                .setLensIntrinsics(NEW_CALIBRATION[0], NEW_CALIBRATION[1], NEW_CALIBRATION[2], NEW_CALIBRATION[3])
                 // ... these parameters are fx, fy, cx, cy.
 
                 .build();
@@ -475,8 +477,8 @@ public class CameraLocalizer implements Localizer {
             t.update();
             visionPortal.setProcessorEnabled(tfod, false);
             visionPortal.setProcessorEnabled(aprilTag, true);
-            if (recognition.getLabel() == LABELS[playingBlue ? 0 : 1]) {
-                return (angle > ANGLE_THRESHOLD) ? 2 : ((angle > -ANGLE_THRESHOLD) ? 1 : 0);
+            if (recognition.getLabel() == LABELS[playingBlue ? 0 : 1] && recognition.getWidth() < WIDTH_LIMIT) {
+                return (angle - 90 > ANGLE_THRESHOLD) ? 2 : ((angle - 90 > -ANGLE_THRESHOLD) ? 1 : 0);
             }
 
         }   // end for() loop

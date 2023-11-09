@@ -179,6 +179,7 @@ public class Abstract {
         }
         // Back to straight
         stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);*/
+        stack.Delay(2000);
 
         int spikeMark = -1;
         while (spikeMark == -1) {
