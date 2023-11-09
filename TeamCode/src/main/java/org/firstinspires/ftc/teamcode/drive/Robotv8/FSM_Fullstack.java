@@ -51,6 +51,8 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_PlaneLauncher;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
 import org.firstinspires.ftc.teamcode.drive.vision.FieldPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
@@ -67,7 +69,7 @@ import java.util.List;
 
 public class FSM_Fullstack extends OpMode {
     //public AutoMecanumDrive drive;
-    //public Abstract handler;
+    public Abstract handler;
 
     public RobotState state = RobotState.IDLE;
     public FSM_Outtake outtakeState = FSM_Outtake.IDLE;
@@ -121,6 +123,8 @@ public class FSM_Fullstack extends OpMode {
 
     public OpenCvWebcam backCamera;
     public FieldPipeline backPipeline;
+
+    public AutoMecanumDrive drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu); //note: test if abstract class crashes
 
     public void InitializeBlock() {
         // NOTE: giant initialization block stored here instead of directly in init.
