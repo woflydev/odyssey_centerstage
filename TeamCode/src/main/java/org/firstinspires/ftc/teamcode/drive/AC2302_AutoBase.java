@@ -46,21 +46,13 @@ public class AC2302_AutoBase extends FSM_Fullstack {
 
         OpenCvWebcam webcam;
 
-        @SuppressLint("DiscouragedApi")
-        int cameraMonitorViewId = hardwareMap
-            .appContext
-            .getResources()
-            .getIdentifier(
-                "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName()
-            );
-
-        webcam = OpenCvCameraFactory
-                .getInstance()
-                .createWebcam(
-                        hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId
-                );
-
+        @SuppressLint("DiscouragedApi") int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "cameraMonitorViewId",
+                "id",
+                hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
         webcam.setPipeline(pipeline);
+
         webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override

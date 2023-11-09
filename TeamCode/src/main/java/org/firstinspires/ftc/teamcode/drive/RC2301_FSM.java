@@ -16,7 +16,7 @@ public class RC2301_FSM extends FSM_Fullstack {
         PlaneLauncherSubsystem();
 
         // note: redundancies
-        helper.PassiveArmResetCheck();
+        PassiveArmResetCheck();
 
         // note: telemetry is handled in FSM_FullStackTesting
     }
