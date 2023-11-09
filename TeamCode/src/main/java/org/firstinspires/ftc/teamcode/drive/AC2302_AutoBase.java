@@ -25,26 +25,27 @@ import org.openftc.easyopencv.OpenCvWebcam;
 public class AC2302_AutoBase extends FSM_Fullstack {
     private PropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
-    private RobotAlliance alliance;
-    private final int dir = alliance == RobotAlliance.RED ? 1 : -1;
+    public RobotAlliance alliance;
+    public int dir;
     private Point r1;
     private Point r2;
     private Point r3;
-    private final PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
 
     // note: custom behaviour -----------------------------------------------------------
     public AC2302_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
+        this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
         this.r2 = r2;
         this.r3 = r3;
     }
 
     public void MainInit() {
-        BackboardToPixels(); // note: testing smooth spline
-        Delay(5000);
+        //BackboardToPixels(); // note: testing smooth spline
+        //Delay(5000);
 
         OpenCvWebcam webcam;
+        PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
 
         @SuppressLint("DiscouragedApi") int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "cameraMonitorViewId",
@@ -64,25 +65,32 @@ public class AC2302_AutoBase extends FSM_Fullstack {
             @Override
             public void onError(int errorCode) {
                 // intentional noop
+                telemetry.addLine("error, you stupid idiot");
             }
         });
 
         autoTimer.reset();
         while (autoTimer.seconds() < 5) {
             randomization = pipeline.getRandomization();
-            telemetry.addData("Randomization", randomization);
+            telemetry.addData("TEAM_PROP_LOCATION", randomization);
             telemetry.update();
         }
         webcam.closeCameraDevice();
     }
 
     public void MainStart() {
-        randomization = pipeline.getRandomization();
+        GrabAndReady();
+
+        //randomization = pipeline.getRandomization();
+        telemetry.addData("TEAM_PROP_LOCATION", randomization);
+        telemetry.addData("dir", dir);
+        telemetry.update();
+        Delay(2000);
 
         // note: drop off at correct spikemark
         switch(randomization) {
             case LOCATION_1: // note: left
-                VisualMove(0.8, 1, 1, false, false, 3);
+                VisualMove(0.6, 1, 1, false, false, 3);
                 AutoWait();
                 VisualMove(0.5, -dir, dir, false, false, 3);
                 AutoWait();
@@ -90,16 +98,16 @@ public class AC2302_AutoBase extends FSM_Fullstack {
                 AutoWait();
                 break;
             case LOCATION_2: // note： forward
-                VisualMove(0.8, 1.2, 1.2, false, false, 3);
+                VisualMove(0.6, 1.08, 1.08, false, false, 3);
+                AutoWait();
                 AutoWait();
                 ExpelPixel();
                 AutoWait();
-                VisualMove(0.5, -0.3, -0.3, false, false, 3);
                 AutoWait();
                 VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
                 break;
-            case LOCATION_3: // note: rights
-                VisualMove(0.8, 1, 1, false, false, 3);
+            case LOCATION_3: // note: right
+                VisualMove(0.6, 1, 1, false, false, 3);
                 AutoWait();
                 VisualMove(0.5, dir, -dir, false, false, 3);
                 AutoWait();
@@ -112,20 +120,19 @@ public class AC2302_AutoBase extends FSM_Fullstack {
                 break;
         }
 
-        VisualMove(0.6, -1.54, -1.54, false, false, 3);
+        AutoWait();
+        VisualMove(0.6, -1.565, -1.565, false, false, 3);
+
+        Delay(1000);
+        RaiseAndPrime(200);
+        Delay(1000);
+        DropAndReset();
 
         // note: drop off at correct april tag
         switch(randomization) {
             case LOCATION_1: // note: left
                 break;
             case LOCATION_2: // note： forward
-                VisualMove(0.5, 0.3, 0.3, false, false, 3);
-                AutoWait();
-                ExpelPixel();
-                AutoWait();
-                VisualMove(0.5, -0.3, -0.3, false, false, 3);
-                AutoWait();
-                VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
                 break;
             case LOCATION_3: // note: right
                 break;
@@ -133,14 +140,8 @@ public class AC2302_AutoBase extends FSM_Fullstack {
                 break;
         }
 
-        GrabAndReady();
-        Delay(1000);
-        RaiseAndPrime(300);
-        Delay(1000);
-        DropAndReset();
-
-        VisualMove(0.7, 0.3, 0.3, false, false, 3);
-        //BackboardToParking();
+        VisualMove(0.7, 0.1, 0.1, false, false, 3);
+        BackboardToParking();
     }
 
     // note: sequenced movement  --------------------------------------------------------
@@ -152,15 +153,17 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     }
 
     private void BackboardToPixels() {
-        VisualMove(0.6, 1, 0.5, false, false, 3);
-        VisualMove(0.6, 0.5, 1, false, false, 3);
+        VisualMove(0.6, 2, 2, false, false, 3);
+        AutoWait();
+        VisualMove(0.6, 0.1, 2, false, false, 3);
+        VisualMove(0.6, 2, 2, false, false, 3);
         AutoWait();
     }
 
     // note: helper functions -----------------------------------------------------------
     private void ExpelPixel() {
         intake.setPower(-0.4);
-        Delay(2000);
+        Delay(800);
         intake.setPower(0);
     }
 

@@ -66,8 +66,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FSM_Fullstack extends OpMode {
-    public AutoMecanumDrive drive;
-    public Abstract handler;
+    //public AutoMecanumDrive drive;
+    //public Abstract handler;
 
     public RobotState state = RobotState.IDLE;
     public FSM_Outtake outtakeState = FSM_Outtake.IDLE;
@@ -275,7 +275,7 @@ public class FSM_Fullstack extends OpMode {
     }
     public void stop() {
         MainStop();
-        handler.stop();
+        //handler.stop();
     }
     public void MainInit() {
 

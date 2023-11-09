@@ -13,8 +13,8 @@ public class PropPipeline extends OpenCvPipeline {
     private final Point region2Pos;
     private final Point region3Pos;
 
-    private static final int REGION_WIDTH = 20;
-    private static final int REGION_HEIGHT = 20;
+    private static final int REGION_WIDTH = 50;
+    private static final int REGION_HEIGHT = 40;
 
     private static final Scalar BLUE = new Scalar(0, 0, 255);
     private static final Scalar GREEN = new Scalar(0, 255, 0);
@@ -79,6 +79,10 @@ public class PropPipeline extends OpenCvPipeline {
         Imgproc.rectangle(matToShow, centerRectangle, BLUE);
         Imgproc.rectangle(matToShow, rightRectangle, BLUE);
 
+        Imgproc.rectangle(input, leftRectangle, BLUE);
+        Imgproc.rectangle(input, centerRectangle, BLUE);
+        Imgproc.rectangle(input, rightRectangle, BLUE);
+
         double leftAverage = Core.mean(leftRegion).val[0];
         double centerAverage = Core.mean(centerRegion).val[0];
         double rightAverage = Core.mean(rightRegion).val[0];
@@ -95,9 +99,10 @@ public class PropPipeline extends OpenCvPipeline {
             randomization = Randomization.LOCATION_3;
         }
 
-        Imgproc.putText(matToShow, "" + randomization, new Point(0, 50), Imgproc.FONT_HERSHEY_PLAIN, 1.0, GREEN);
+        Imgproc.putText(input, "" + randomization, new Point(0, 50), Imgproc.FONT_HERSHEY_PLAIN, 2.0, GREEN);
 
-        return matToShow;
+        //return matToShow;
+        return input;
     }
 
     public Randomization getRandomization() {

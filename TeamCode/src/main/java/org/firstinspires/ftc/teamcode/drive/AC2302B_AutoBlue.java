@@ -18,7 +18,7 @@ public class AC2302B_AutoBlue extends AC2302_AutoBase {
 
     public AC2302B_AutoBlue() {
         super(
-                RobotAlliance.RED,
+                RobotAlliance.BLUE,
                 new Point(r1x, r1y),
                 new Point(r2x, r2y),
                 new Point(r3x, r3y)
