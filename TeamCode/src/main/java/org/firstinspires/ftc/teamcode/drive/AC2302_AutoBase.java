@@ -91,7 +91,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
                 AutoWait();
                 VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
                 break;
-            case LOCATION_3: // note: right
+            case LOCATION_3: // note: rights
                 break;
             default:
                 break;
@@ -125,12 +125,16 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         DropAndReset();
 
         VisualMove(0.7, 0.3, 0.3, false, false, 3);
+        BackboardToParking();
+    }
+
+    // note: sequenced movement  --------------------------------------------------------
+    private void BackboardToParking() {
         VisualMove(0.7, 1, 1, true, false, 5); // note: strafe
         VisualMove(0.5, dir, -dir, false, false, 3);
         AutoWait();
         VisualMove(0.5, 0.2, 0.2, true, true, 3);
     }
-
 
     // note: helper functions -----------------------------------------------------------
     private void ExpelPixel() {
