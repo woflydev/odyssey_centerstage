@@ -27,7 +27,12 @@ public class Abstract {
 
     public static boolean PLAYING_BLUE = true;
 
-    public static Pose2d STARTING_POSE = new Pose2d(0, 0, 0);
+    public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
+    public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
+
+    public static int ALLIANCE_INDEX = 0;
+
+    public static Pose2d STARTING_POSE = PLAYING_BLUE ? BLUE_STARTING_POSES[ALLIANCE_INDEX] : RED_STARTING_POSES[ALLIANCE_INDEX];
 
     public static Pose2d TILE_LOCATION = new Pose2d(-0.89,  -1.62 * (PLAYING_BLUE ? 1 : -1), 0).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
     public static Pose2d[] PIXEL_LOCATIONS = {
@@ -158,7 +163,8 @@ public class Abstract {
     }
 
     public void initTask() {
-        Trajectory forward = stack.drive.trajectoryBuilder(STARTING_POSE).forward(RobotConstants.INITIAL_FORWARD).build();
+        // Below code assumes bad FOV
+        /*Trajectory forward = stack.drive.trajectoryBuilder(STARTING_POSE).forward(RobotConstants.INITIAL_FORWARD).build();
         stack.drive.followTrajectory(forward);
 
         int spikeMark = 1;
@@ -172,14 +178,27 @@ public class Abstract {
             stack.drive.turn(- TURN_AUTO_ANGLE);
         }
         // Back to straight
-        stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);
+        stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);*/
+
+        int spikeMark = -1;
+        while (spikeMark == -1) {
+            spikeMark = localizer.propTfod(PLAYING_BLUE);
+        }
+
+
         Pose2d spikePose = PLAYING_BLUE ?
                 BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
 
-        stack.drive.followTrajectory(path(forward.end(), spikePose));
+        stack.drive.followTrajectory(path(STARTING_POSE, spikePose));
+
+        // Placing purple pixel
+
         stack.MoveElbow(RobotConstants.ELBOW_DROPOFF);
         stack.intake.setPower(RobotConstants.INTAKE_OUTPUT);
         stack.Delay(RobotConstants.INTAKE_OUTPUT_TIME);
+
+
+        // Placing yellow pixel
         Pose2d pixelPose = (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION)
                 .plus(PIXEL_OFFSET.times(spikeMark * 2 + 1));
         stack.drive.followTrajectory(path(spikePose, pixelPose));

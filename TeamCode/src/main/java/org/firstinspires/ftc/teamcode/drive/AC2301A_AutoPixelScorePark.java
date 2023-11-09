@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 
-@Autonomous(name="AutoRed1", group="Final")
+@Autonomous(name="AutoRed1Pixel", group="Final")
 public class AC2301A_AutoPixelScorePark extends FSM_Fullstack {
     public ElapsedTime autoTimer = new ElapsedTime();
 
