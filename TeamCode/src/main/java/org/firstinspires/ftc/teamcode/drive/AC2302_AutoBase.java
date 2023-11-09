@@ -41,6 +41,8 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     }
 
     public void MainInit() {
+        BackboardToPixels(); // note: testing smooth spline
+
         OpenCvWebcam webcam;
 
         @SuppressLint("DiscouragedApi") int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
@@ -137,7 +139,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         DropAndReset();
 
         VisualMove(0.7, 0.3, 0.3, false, false, 3);
-        BackboardToParking();
+        //BackboardToParking();
     }
 
     // note: sequenced movement  --------------------------------------------------------
@@ -146,6 +148,12 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         VisualMove(0.5, dir, -dir, false, false, 3);
         AutoWait();
         VisualMove(0.5, 0.2, 0.2, true, true, 3);
+    }
+
+    private void BackboardToPixels() {
+        VisualMove(0.6, 1, 0.5, false, false, 3);
+        VisualMove(0.6, 0.5, 1, false, false, 3);
+        AutoWait();
     }
 
     // note: helper functions -----------------------------------------------------------
@@ -274,10 +282,10 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-        backLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        /*backLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         backRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);*/
     }
 
     private void AutoWait() {
