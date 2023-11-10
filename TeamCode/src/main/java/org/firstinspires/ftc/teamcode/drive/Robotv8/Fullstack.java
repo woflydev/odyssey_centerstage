@@ -195,7 +195,6 @@ public class Fullstack extends OpMode {
 
         if (RobotConstants.USE_DRIVE && RobotConstants.USE_LOCALISER) {
             drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
-            handler.initialisePaths();
             if (!handler.localizer.isBlind) {
                 drive.setPoseEstimate(handler.localizer.poseEstimate);
             } else {
