@@ -14,7 +14,7 @@ public class PropPipeline extends OpenCvPipeline {
     private final Point region3Pos;
 
     private static final int REGION_WIDTH = 50;
-    private static final int REGION_HEIGHT = 40;
+    private static final int REGION_HEIGHT = 50;
 
     private static final Scalar BLUE = new Scalar(0, 0, 255);
     private static final Scalar GREEN = new Scalar(0, 255, 0);

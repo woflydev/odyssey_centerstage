@@ -82,12 +82,12 @@ public class AC2303RR_AutoBase extends FSM_Fullstack {
         }
         webcam.closeCameraDevice();
 
-        Pose2d startPose = new Pose2d(10.59, -60.49, Math.toRadians(90.00));
+        /*Pose2d startPose = new Pose2d(10.59, -60.49, Math.toRadians(90.00));
         drive.setPoseEstimate(startPose);
         TrajectorySequence trajectory = drive.trajectorySequenceBuilder(new Pose2d(10.59, -60.49, Math.toRadians(90.00)))
                 .splineTo(new Vector2d(35.75, -11.73), Math.toRadians(90.00))
                 .build();
-        drive.followTrajectorySequence(trajectory);
+        drive.followTrajectorySequence(trajectory);*/
     }
 
     public void MainStart() {
@@ -116,8 +116,9 @@ public class AC2303RR_AutoBase extends FSM_Fullstack {
 
         Delay(200);
         RaiseAndPrime(150);
-        Delay(500);
+        Delay(2000);
         DropAndReset();
+        Delay(500);
 
         // note: drop off at correct april tag
         switch(randomization) {

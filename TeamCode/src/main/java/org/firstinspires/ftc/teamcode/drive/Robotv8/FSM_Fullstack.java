@@ -124,7 +124,7 @@ public class FSM_Fullstack extends OpMode {
     public OpenCvWebcam backCamera;
     public FieldPipeline backPipeline;
 
-    public AutoMecanumDrive drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu); //note: test if abstract class crashes
+    //public AutoMecanumDrive drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu); //note: test if abstract class crashes
 
     public void InitializeBlock() {
         // NOTE: giant initialization block stored here instead of directly in init.
