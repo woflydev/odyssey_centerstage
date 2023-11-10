@@ -35,7 +35,7 @@ public class AutoBase extends FSM_Fullstack {
     private static final double MAX_STRAFE_SPEED = 0.5;
     private static final double MAX_TRAJECTORY_SPEED = 0.6;
     private static final double MAX_CAUTIOUS_SPEED = 0.4;
-    private static final double BACKDROP_ALIGN_STRAFE = 0.35;
+    private static final double BACKDROP_ALIGN_STRAFE = 0.3;
 
     // note: custom behaviour -----------------------------------------------------------
     public AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, Point r1, Point r2, Point r3) {
@@ -97,7 +97,7 @@ public class AutoBase extends FSM_Fullstack {
         switch(startingPosition) {
             case BACKDROP:
                 HandlePurplePixel(); AutoWait();
-                VisualMove(MAX_TRAJECTORY_SPEED, -1.63, -1.63, false, false, 3); AutoWait();
+                VisualMove(MAX_TRAJECTORY_SPEED, -1.58, -1.58, false, false, 3); AutoWait();
 
                 RaiseAndPrime(150); Delay(600);
                 DropAndReset();
@@ -108,7 +108,7 @@ public class AutoBase extends FSM_Fullstack {
                 break;
             case AUDIENCE:
                 HandlePurplePixel(); AutoWait();
-                VisualMove(MAX_CAUTIOUS_SPEED, -3.63, -3.63, false, false, 10); AutoWait();
+                VisualMove(MAX_CAUTIOUS_SPEED, -3.58, -3.58, false, false, 10); AutoWait();
 
                 RaiseAndPrime(150); Delay(600);
                 DropAndReset();
