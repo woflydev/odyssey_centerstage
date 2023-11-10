@@ -77,7 +77,7 @@ public class AutoBase extends FSM_Fullstack {
         });
 
         autoTimer.reset();
-        while (autoTimer.seconds() < 5) {
+        while (autoTimer.seconds() < 3) {
             randomization = pipeline.getRandomization();
             telemetry.addData("TEAM_PROP_LOCATION", randomization);
             telemetry.update();
@@ -97,25 +97,25 @@ public class AutoBase extends FSM_Fullstack {
         switch(startingPosition) {
             case BACKDROP:
                 HandlePurplePixel(); AutoWait();
-                VisualMove(MAX_TRAJECTORY_SPEED, -1.57, -1.57, false, false, 3); AutoWait();
+                VisualMove(MAX_TRAJECTORY_SPEED, -1.59, -1.59, false, false, 3); AutoWait();
 
                 RaiseAndPrime(150); Delay(600);
                 DropAndReset();
 
-
-
                 VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); // note: move a little away from the backdrop
-                BackdropToParking();
+                BackdropToParking(); AutoWait();
+                HandleBackdropLocalize();
                 break;
             case AUDIENCE:
                 HandlePurplePixel(); AutoWait();
-                VisualMove(MAX_CAUTIOUS_SPEED, -3.57, -3.57, false, false, 10); AutoWait();
+                VisualMove(MAX_CAUTIOUS_SPEED, -3.59, -3.59, false, false, 10); AutoWait();
 
                 RaiseAndPrime(150); Delay(600);
                 DropAndReset();
 
                 VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3);
-                BackdropToParking();
+                BackdropToParking(); AutoWait();
+                HandleBackdropLocalize();
                 break;
         }
 
@@ -138,18 +138,18 @@ public class AutoBase extends FSM_Fullstack {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
             switch(randomization) {
                 case LOCATION_1: // note: left
-                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 3); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 4); AutoWait();
                     VisualMove(MAX_TRAJECTORY_SPEED, -dir, dir, false, false, 5); AutoWait();
                     ExpelPixel(); AutoWait();
                     VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, true, 3); // note: strafe right to align with backdrop objective
                     break;
                 case LOCATION_2: // note： forward
-                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 3); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 4); AutoWait();
                     ExpelPixel(); AutoWait();
                     VisualMove(MAX_TRAJECTORY_SPEED, -dir, dir, false, false, 5); // note: turn 90 deg on same tile.
                     break;
                 case LOCATION_3: // note: right
-                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 3); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 4); AutoWait();
                     VisualMove(MAX_TRAJECTORY_SPEED, dir, -dir, false, false, 5); AutoWait();
                     ExpelPixel(); AutoWait();
                     VisualMove(MAX_TRAJECTORY_SPEED, -2 * dir, 2 * dir, false, false, 5); AutoWait();
@@ -182,10 +182,12 @@ public class AutoBase extends FSM_Fullstack {
     private void HandleBackdropLocalize() {
         switch(randomization) {
             case LOCATION_1:
+                VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, false, 3); // note: strafe right to align with backdrop objective
                 break;
             case LOCATION_2:
                 break;
             case LOCATION_3:
+                VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, true, 3);
                 break;
         }
     }

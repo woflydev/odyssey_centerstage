@@ -57,7 +57,7 @@ public class RobotConstants {
     public static final double MAX_MANUAL_INTAKE_POWER = 0.55;
 
     public static final double PPR = 375; // gobuilda motor 85203 Series
-    public static final double ENCODER_TICKS_PER_TILE = 680; // in encoder ticks
+    public static final double ENCODER_TICKS_PER_TILE = 640; // in encoder ticks
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
