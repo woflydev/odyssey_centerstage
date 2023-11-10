@@ -23,7 +23,7 @@ public class DriveConstants {
     /*
      * These are motor constants that should be listed online for your motors.
      */
-    public static final double TICKS_PER_REV = 300;
+    public static final double TICKS_PER_REV = 537.7;
     public static final double MAX_RPM = 312;
 
     /*
@@ -47,8 +47,8 @@ public class DriveConstants {
      * convenience. Make sure to exclude any gear ratio included in MOTOR_CONFIG from GEAR_RATIO.
      */
     public static double WHEEL_RADIUS = 1.8898; // in
-    public static double GEAR_RATIO = 1.4285714285714286; // output (wheel) speed / input (motor) speed
-    public static double TRACK_WIDTH = 18; // in    19.85
+    public static double GEAR_RATIO = 1.053809; // output (wheel) speed / input (motor) speed
+    public static double TRACK_WIDTH = 24.5; // in    19.85
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -92,7 +92,7 @@ public class DriveConstants {
      */
     public static double MAX_VEL = 74.9755986904361;
     public static double MAX_ACCEL = 74.9755986904361;
-    public static double MAX_ANG_VEL = Math.toRadians(100.50002483038097); //135.50002483038097
+    public static double MAX_ANG_VEL = Math.toRadians(136.3500063556); //135.50002483038097
     public static double MAX_ANG_ACCEL = Math.toRadians(351.9779569697387);
 
     public static RevHubOrientationOnRobot.LogoFacingDirection LOGO_FACING_DIR =
