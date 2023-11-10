@@ -552,7 +552,7 @@ public class CameraLocalizer implements Localizer {
     // Heading is clockwise
     public double yawFromPose(AprilTagDetection detection) {
         AprilTagPoseFtc pose = detection.ftcPose;
-        return mod((float) (pose.bearing - pose.yaw - Math.acos(detection.metadata.fieldOrientation.w) * 2), (float) (2 * Math.PI));
+        return mod((float) Math.toDegrees(pose.bearing - pose.yaw - Math.acos(detection.metadata.fieldOrientation.w) * 2), 360);
     }
 
     public VectorF cross(VectorF a, VectorF b) {

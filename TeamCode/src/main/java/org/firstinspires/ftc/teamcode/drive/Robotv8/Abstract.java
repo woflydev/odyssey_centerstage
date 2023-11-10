@@ -27,39 +27,23 @@ public class Abstract {
 
     public static boolean PLAYING_BLUE = true;
 
-    public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
-    public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0, 0, 0), new Pose2d(0, 0, 0)};
+    public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0.29, -1.565, 90).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -1.565, 90).times(RobotConstants.ROAD_RUNNER_SCALE)};
+    public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0.29, 1.565, 270).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, 1.565, 270).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
+    // 0 is backdrop, 1 is audience
     public static int ALLIANCE_INDEX = 0;
 
     public static Pose2d STARTING_POSE = PLAYING_BLUE ? BLUE_STARTING_POSES[ALLIANCE_INDEX] : RED_STARTING_POSES[ALLIANCE_INDEX];
 
-    public static Pose2d TILE_LOCATION = new Pose2d(-0.89,  -1.62 * (PLAYING_BLUE ? 1 : -1), 0).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
-    public static Pose2d[] PIXEL_LOCATIONS = {
-            new Pose2d(- RobotConstants.FIELD_LENGTH / 2 + RobotConstants.PIXEL_SPACE, -0.2, - Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE),
-            new Pose2d(),
-            new Pose2d(),
-            new Pose2d()
-    };
-
-    public Trajectory[] TILE_TO_PIXEL = new Trajectory[PIXEL_LOCATIONS.length];
-
 
     // Location of the robot when it is about to drop a pixel on the leftmost slot
-    public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
-    public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).div(1 / RobotConstants.ROAD_RUNNER_SCALE);
+    public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE);
+    public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE);
 
-    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS;
-    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS;
+    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, 0.85, 270).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(0.9, 0.85, 270).times(RobotConstants.ROAD_RUNNER_SCALE)};
+    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, -0.85, 90).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -0.85, 90).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
-    public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0);
-
-    public static double TURN_AUTO_ANGLE = Math.toRadians(45);
-
-    public Trajectory[] PIXEL_TO_BACKDROP = new Trajectory[PIXEL_LOCATIONS.length];
-
-    public Trajectory TILE_TO_BACKDROP;
-    public Trajectory BACKDROP_TO_TILE;
+    public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0).times(RobotConstants.ROAD_RUNNER_SCALE);
 
     private HardwareMap hardwareMap;
 
@@ -123,17 +107,6 @@ public class Abstract {
             }
             telemetry.update();
         }
-    }
-
-    public void initialisePaths() {
-        for (int i = 0; i < TILE_TO_PIXEL.length; i++) {
-            TILE_TO_PIXEL[i] = path(TILE_LOCATION, PIXEL_LOCATIONS[i]);
-            PIXEL_TO_BACKDROP[i] = path(PIXEL_LOCATIONS[i], PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
-        }
-
-        TILE_TO_BACKDROP = path(TILE_LOCATION, PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION);
-
-        BACKDROP_TO_TILE = path(PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION, TILE_LOCATION);
     }
 
     public Trajectory path(Pose2d start, Pose2d end) {
@@ -206,28 +179,5 @@ public class Abstract {
 
         // FIXME: BREAKING API CHANGES IN FULLSTACK
         //stack.DepositSequence(RobotConstants.INITIAL_HEIGHT);
-    }
-    public void transferPixel(int pixelColour, int pixelSlot, int height, boolean fromTile) {
-        // FIXME: BREAKING API CHANGES
-        //stack.DropAndReset();
-
-        stack.intake.setPower(RobotConstants.INTAKE_POWER);
-        stack.Delay(RobotConstants.INTAKE_TIME);
-
-        // FIXME: BREAKING API CHANGES
-        //stack.GrabAndReady();
-
-        if (fromTile) {
-            stack.drive.followTrajectory(TILE_TO_BACKDROP);
-        } else {
-            stack.drive.followTrajectory(PIXEL_TO_BACKDROP[pixelColour]);
-        }
-
-        stack.drive.followTrajectory(
-                path(PIXEL_TO_BACKDROP[pixelColour].end(), PIXEL_TO_BACKDROP[pixelColour].end().plus(PIXEL_OFFSET.times(pixelSlot)))
-        );
-        // FIXME: BREAKING API CHANGES
-        //stack.DepositSequence(height);
-
     }
 }
