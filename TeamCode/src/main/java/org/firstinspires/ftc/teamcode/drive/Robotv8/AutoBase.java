@@ -102,9 +102,9 @@ public class AutoBase extends FSM_Fullstack {
                 RaiseAndPrime(150); Delay(600);
                 DropAndReset();
 
-                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); // note: move a little away from the backdrop
+                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); AutoWait(); // note: move a little away from the backdrop
+                HandleBackdropLocalize(); AutoWait();
                 BackdropToParking(); AutoWait();
-                HandleBackdropLocalize();
                 break;
             case AUDIENCE:
                 HandlePurplePixel(); AutoWait();
@@ -113,9 +113,9 @@ public class AutoBase extends FSM_Fullstack {
                 RaiseAndPrime(150); Delay(600);
                 DropAndReset();
 
-                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3);
+                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); AutoWait();
+                HandleBackdropLocalize(); AutoWait();
                 BackdropToParking(); AutoWait();
-                HandleBackdropLocalize();
                 break;
         }
 
