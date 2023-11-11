@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.Deprecated.VeryDeprecated;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 

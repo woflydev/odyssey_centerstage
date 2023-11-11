@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.Deprecated;
+package org.firstinspires.ftc.teamcode.Deprecated.VeryDeprecated;
 
 import static java.lang.Thread.sleep;
 
@@ -7,8 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -16,24 +16,22 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 
 @Deprecated()
-public class NewRobot_v8_TransferServoTest_v1 extends OpMode {
+public class NewRobot_v8_OutSlideTest_v1 extends OpMode {
     // -------------------------------------------------------------- SYSTEM VAR
     private DcMotorEx backLM = null;
     private DcMotorEx backRM = null;
     private DcMotorEx frontLM = null;
     private DcMotorEx frontRM = null;
-    private Servo servoClaw = null;
-    private Servo servoWrist = null;
+    private DcMotorEx armR = null;
+    private DcMotorEx armL = null;
     private IMU imu = null;
+    //private Servo claw = null;
 
     private final ElapsedTime encoderRuntime = new ElapsedTime();
     private final ElapsedTime armRuntime = new ElapsedTime();
     private final ElapsedTime resetTimer = new ElapsedTime();
 
-    private double targetClawPosition = 0.4;
-    private double targetWristPosition = 0;
-    private boolean clawOpen = false;
-    private boolean transferStageActive = false;
+    private int targetArmPosition = 0;
 
     private double current_v1 = 0;
     private double current_v2 = 0;
@@ -54,20 +52,14 @@ public class NewRobot_v8_TransferServoTest_v1 extends OpMode {
     private static final String BACK_RIGHT = "backR";
     private static final String ARM_R = "armR";
     private static final String ARM_L = "armL";
-    private static final String SERVO_CLAW = "claw";
-    private static final String SERVO_WRIST = "wrist";
     private static final String HUB_IMU = "imu";
 
-    private static final int MAX_ARM_HEIGHT = 4000; // TODO: CHANGE THIS BACK TO 4300 when stable
+    private static final int MAX_ARM_HEIGHT = 3800;
     private static final int MIN_ARM_HEIGHT = 0;
-    private static final int ARM_ADJUSTMENT_INCREMENT = 50;
+
+    private static final int ARM_ADJUSTMENT_INCREMENT = 20;
     private static final int ARM_BOOST_MODIFIER = 1;
     private static final int ARM_RESET_TIMEOUT = 3;
-
-    private static final double CLAW_CLOSE = 0;
-    private static final double CLAW_OPEN = 0.2;
-    private static final double WRIST_STANDBY = 0.8;
-    private static final double WRIST_ACTIVE = 0.4;
 
     private static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
     private static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed
@@ -134,39 +126,46 @@ public class NewRobot_v8_TransferServoTest_v1 extends OpMode {
         // -------------------------------------------------------------- MANUAL ARM CONTROL (directly effects bot)
 
         if (adjustmentAllowed) { // lining up arm for topmost cone
-            /*if (gamepad1.left_bumper) {
-                if (clawOpen) {
-                    clawOpen = false;
-                    servoClaw.setPosition(CLAW_CLOSE);
-                } else {
-                    clawOpen = true;
-                    servoClaw.setPosition(CLAW_OPEN);
+            if (gamepad1.right_trigger >= 0.6 && ((armL.getCurrentPosition() < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetArmPosition < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT) {
+                    targetArmPosition += ARM_ADJUSTMENT_INCREMENT;
+                    NewUpdateOuttake(false);
                 }
+            } else if (gamepad1.left_trigger >= 0.6 && ((armL.getCurrentPosition() > MIN_ARM_HEIGHT + ARM_ADJUSTMENT_INCREMENT) && (armR.getCurrentPosition() > MIN_ARM_HEIGHT + ARM_ADJUSTMENT_INCREMENT))) {
+                if (targetArmPosition > MIN_ARM_HEIGHT + ARM_ADJUSTMENT_INCREMENT) {
+                    targetArmPosition -= ARM_ADJUSTMENT_INCREMENT;
+                    NewUpdateOuttake(false);
+                }
+            } else if (gamepad1.dpad_down) {
+                targetArmPosition = 30;
+                NewUpdateOuttake(true);
+            } else if (gamepad1.dpad_up) {
+                targetArmPosition = MAX_ARM_HEIGHT;
+                NewUpdateOuttake(false);
+            } else if (gamepad1.right_bumper || gamepad1.left_bumper) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            }
 
-                Delay(100);
+            /*if ((gamepad1.right_trigger >= 0.6 || gamepad2.right_trigger >= 0.5) && armL.getCurrentPosition() < MAX_ARM_HEIGHT - ARM_ADJUSTMENT_INCREMENT) {
+                targetArmPosition += ARM_ADJUSTMENT_INCREMENT;
+                NewUpdateArm(false);
+            }
+
+            else if ((gamepad1.left_trigger >= 0.6 || gamepad2.left_trigger >= 0.5) && armL.getCurrentPosition() > MIN_ARM_HEIGHT + ARM_ADJUSTMENT_INCREMENT) {
+                targetArmPosition -= ARM_ADJUSTMENT_INCREMENT;
+                NewUpdateArm(false);
+            }
+
+            else if (gamepad1.dpad_down || gamepad2.dpad_down) { // off
+                targetArmPosition = JUNCTION_OFF;
+                NewUpdateArm(true);
+            }
+
+            else if (gamepad1.dpad_up || gamepad2.dpad_up) { // high junction
+                targetArmPosition = JUNCTION_HIGH;
+                NewUpdateArm(false);
             }*/
-
-            if (gamepad1.left_bumper) {
-                targetClawPosition -= 0.05;
-                servoClaw.setPosition(targetClawPosition);
-                Delay(50);
-            } else if (gamepad1.right_bumper) {
-                targetClawPosition += 0.05;
-                servoClaw.setPosition(targetClawPosition);
-                Delay(50);
-            }
-
-            if (gamepad1.right_trigger >= 0.6) {
-                targetWristPosition += 0.05;
-                servoWrist.setPosition(targetWristPosition);
-                Delay(50);
-            } else if (gamepad1.left_trigger >= 0.6) {
-                targetWristPosition -= 0.05;
-                servoWrist.setPosition(targetWristPosition);
-                Delay(50);
-            }
-
-
         }
 
         // -------------------------------------------------------------- CONFIGURATION (don't directly move the bot)
@@ -180,29 +179,13 @@ public class NewRobot_v8_TransferServoTest_v1 extends OpMode {
             imu.resetYaw();
         }
 
+        else if ((gamepad1.left_trigger >= 0.25 && gamepad1.right_trigger >= 0.25) ||
+                (gamepad2.left_trigger >= 0.25 && gamepad2.right_trigger >= 0.25)) {
+            driveSpeedModifier = (driveSpeedModifier == BASE_DRIVE_SPEED_MODIFIER) ? PRECISION_DRIVE_SPEED_MODIFIER : BASE_DRIVE_SPEED_MODIFIER;
+        }
+
         else {
             driveSpeedModifier = BASE_DRIVE_SPEED_MODIFIER;
-        }
-    }
-
-    private void Macros() {
-        // test transfer stage macro
-        if (gamepad1.cross) {
-            if (!transferStageActive) {
-                transferStageActive = true;
-                servoClaw.setPosition(CLAW_CLOSE);
-                Delay(800);
-                servoClaw.setPosition(CLAW_CLOSE);
-                servoWrist.setPosition(WRIST_ACTIVE);
-
-            } else {
-                transferStageActive = false;
-                servoClaw.setPosition(CLAW_OPEN);
-                Delay(200);
-                servoWrist.setPosition(WRIST_STANDBY);
-                servoClaw.setPosition(CLAW_OPEN);
-            }
-            Delay(200);
         }
     }
 
@@ -389,6 +372,47 @@ public class NewRobot_v8_TransferServoTest_v1 extends OpMode {
         Delay(50);
     }
 
+    private void NewUpdateOuttake(boolean reset) { // test new function
+        armR.setTargetPosition(targetArmPosition);
+        armL.setTargetPosition(targetArmPosition);
+
+        if (reset) {
+            armR.setTargetPosition(10);
+            armL.setTargetPosition(10);
+            targetArmPosition = 10;
+            armRuntime.reset();
+
+            /*while (armM.getCurrentPosition() >= 50 || armRuntime.seconds() <= ARM_RESET_TIMEOUT) {
+                armM.setVelocity((double)2100 / ARM_BOOST_MODIFIER);
+
+                if (armM.getCurrentPosition() <= 50 || armRuntime.seconds() >= ARM_RESET_TIMEOUT) {
+                    break;
+                }
+            }*/
+
+            if ((armL.getCurrentPosition() <= 15 || armR.getCurrentPosition() <= 15) || armRuntime.seconds() >= ARM_RESET_TIMEOUT) {
+                armR.setVelocity(0);
+                armL.setVelocity(0);
+            }
+
+            telemetry.update();
+        }
+
+        else {
+            armRuntime.reset();
+            armR.setVelocity(800);
+            armL.setVelocity(800); // velocity used to be 1800
+        }
+    }
+
+    private void PassiveArmResetCheck() {
+        if ((armL.getCurrentPosition() <= 20 && armR.getCurrentPosition() <= 20) && targetArmPosition <= 30) {
+            armR.setVelocity(0);
+            armL.setVelocity(0);
+            resetTimer.reset();
+        }
+    }
+
     // -------------------------------------------------------------- MAIN INIT & LOOP
 
     private void InitializeBlock() {
@@ -418,13 +442,20 @@ public class NewRobot_v8_TransferServoTest_v1 extends OpMode {
         frontRM.setDirection(DcMotorSimple.Direction.REVERSE);
         backRM.setDirection(DcMotorSimple.Direction.REVERSE);*/
 
-        servoClaw = hardwareMap.get(Servo.class, SERVO_CLAW);
-        servoWrist = hardwareMap.get(Servo.class, SERVO_WRIST);
+        armR = hardwareMap.get(DcMotorEx.class, ARM_R);
+        armL = hardwareMap.get(DcMotorEx.class, ARM_L);
+        armR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        armR.setTargetPosition(0);
+        armL.setTargetPosition(0);
+        armR.setMode(DcMotor.RunMode.RUN_TO_POSITION); // TODO: CHANGE BACK TO RUN_TO_POS
+        armL.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armR.setDirection(DcMotorSimple.Direction.FORWARD);
+        armL.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        clawOpen = true;
-        transferStageActive = false;
-        servoClaw.setPosition(CLAW_OPEN);
-        servoWrist.setPosition(WRIST_STANDBY);
+        //armM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        armR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        armL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         // -------------------------------------------------------------- IMU INIT
 
@@ -461,19 +492,19 @@ public class NewRobot_v8_TransferServoTest_v1 extends OpMode {
         // -------------------------------------------------------------- DRIVE AND MANUAL OVERRIDES
 
         RuntimeConfig();
-        //PassiveArmResetCheck();
-        Macros();
+        PassiveArmResetCheck();
         //Mecanum();
 
         // -------------------------------------------------------------- TELEMETRY
 
+        telemetry.addData("Arm Left: ", armL.getCurrentPosition());
+        telemetry.addData("Arm Right: ", armR.getCurrentPosition());
         /*telemetry.addData("FrontRM Encoder Value: ", frontRM.getCurrentPosition());
         telemetry.addData("FrontLM Encoder Value: ", frontLM.getCurrentPosition());
         telemetry.addData("BackRM Encoder Value: ", backRM.getCurrentPosition());
         telemetry.addData("BackLM Encoder Value: ", backLM.getCurrentPosition());*/
-        telemetry.addData("target claw pos: ", targetClawPosition);
-        telemetry.addData("Claw Open? ", clawOpen ? "YES" : "NO");
-        telemetry.addData("Target Wrist Position: ", targetWristPosition);
+
+        telemetry.addData("Target Arm Position: ", targetArmPosition);
         telemetry.addData("Adjustment Allowed: ", adjustmentAllowed);
         telemetry.addData("Field Centric Mode : ", fieldCentricRed ? "RED" : "BLUE");
         telemetry.addData("Current Speed Mode: ", driveSpeedModifier == BASE_DRIVE_SPEED_MODIFIER ? "BASE SPEED" : "PRECISION MODE");

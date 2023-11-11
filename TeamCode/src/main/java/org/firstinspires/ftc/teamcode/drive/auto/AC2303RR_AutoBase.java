@@ -1,20 +1,24 @@
-package org.firstinspires.ftc.teamcode.drive;
+package org.firstinspires.ftc.teamcode.drive.auto;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.ENCODER_TICKS_PER_TILE;
 
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.acmerobotics.roadrunner.geometry.Vector2d;
+import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.apache.commons.math3.analysis.function.Exp;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.vision2.PropPipeline;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -22,7 +26,8 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 //@Autonomous(name="NationalsAutoBase", group="Final")
-public class AC2302_AutoBase extends FSM_Fullstack {
+@Disabled
+public class AC2303RR_AutoBase extends FSM_Fullstack {
     private PropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;
@@ -32,7 +37,7 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     private Point r3;
 
     // note: custom behaviour -----------------------------------------------------------
-    public AC2302_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3) {
+    public AC2303RR_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
         this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
@@ -76,45 +81,31 @@ public class AC2302_AutoBase extends FSM_Fullstack {
             telemetry.update();
         }
         webcam.closeCameraDevice();
+
+        /*Pose2d startPose = new Pose2d(10.59, -60.49, Math.toRadians(90.00));
+        drive.setPoseEstimate(startPose);
+        TrajectorySequence trajectory = drive.trajectorySequenceBuilder(new Pose2d(10.59, -60.49, Math.toRadians(90.00)))
+                .splineTo(new Vector2d(35.75, -11.73), Math.toRadians(90.00))
+                .build();
+        drive.followTrajectorySequence(trajectory);*/
     }
 
     public void MainStart() {
+        // note: should grab yellow pixel
         GrabAndReady();
 
         //randomization = pipeline.getRandomization();
         telemetry.addData("TEAM_PROP_LOCATION", randomization);
-        telemetry.addData("dir", dir);
+        telemetry.addData("SELECTED_ALLIANCE", alliance);
         telemetry.update();
-        Delay(2000);
 
         // note: drop off at correct spikemark
         switch(randomization) {
             case LOCATION_1: // note: left
-                VisualMove(0.6, 1, 1, false, false, 3);
-                AutoWait();
-                VisualMove(0.5, -dir, dir, false, false, 3);
-                AutoWait();
-                ExpelPixel();
-                AutoWait();
                 break;
             case LOCATION_2: // note： forward
-                VisualMove(0.6, 1.08, 1.08, false, false, 3);
-                AutoWait();
-                AutoWait();
-                ExpelPixel();
-                AutoWait();
-                AutoWait();
-                VisualMove(0.6, -dir, dir, false, false, 3); // note: turn 90 deg on same tile.
                 break;
             case LOCATION_3: // note: right
-                VisualMove(0.6, 1, 1, false, false, 3);
-                AutoWait();
-                VisualMove(0.5, dir, -dir, false, false, 3);
-                AutoWait();
-                ExpelPixel();
-                AutoWait();
-                VisualMove(0.5, -2 * dir, 2 * dir, false, false, 3);
-                AutoWait();
                 break;
             default:
                 break;
@@ -123,18 +114,19 @@ public class AC2302_AutoBase extends FSM_Fullstack {
         AutoWait();
         VisualMove(0.6, -1.565, -1.565, false, false, 3);
 
-        Delay(1000);
-        RaiseAndPrime(200);
-        Delay(1000);
+        Delay(200);
+        RaiseAndPrime(150);
+        Delay(2000);
         DropAndReset();
+        Delay(500);
 
         // note: drop off at correct april tag
         switch(randomization) {
-            case LOCATION_1: // note: left
+            case LOCATION_1:
                 break;
-            case LOCATION_2: // note： forward
+            case LOCATION_2:
                 break;
-            case LOCATION_3: // note: right
+            case LOCATION_3:
                 break;
             default:
                 break;
@@ -293,6 +285,6 @@ public class AC2302_AutoBase extends FSM_Fullstack {
     }
 
     private void AutoWait() {
-        Delay(200);
+        Delay(400);
     }
 }

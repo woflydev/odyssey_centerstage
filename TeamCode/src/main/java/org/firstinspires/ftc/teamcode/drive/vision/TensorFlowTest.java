@@ -55,15 +55,16 @@ public class TensorFlowTest extends LinearOpMode {
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
-    private static final String TFOD_MODEL_ASSET = "PropsRecognition.tflite";
+    private static final String TFOD_MODEL_ASSET = "RedPropNewCamera.tflite";
     // TFOD_MODEL_FILE points to a model file stored onboard the Robot Controller's storage,
     // this is used when uploading models directly to the RC using the model upload interface.
     private static final String TFOD_MODEL_FILE = "/sdcard/FIRST/tflitemodels/myCustomModel.tflite";
     // Define the labels recognized in the model for TFOD (must be in training order!)
     private static final String[] LABELS = {
-            "BlueProp",
+            //"BlueProp",
             "RedProp"
     };
+    private static final double MIDDLE_X = 640 / 2;
 
     /**
      * The variable to store our instance of the TensorFlow Object Detection processor.
@@ -187,14 +188,20 @@ public class TensorFlowTest extends LinearOpMode {
 
         // Step through the list of recognitions and display info for each one.
         for (Recognition recognition : currentRecognitions) {
-            double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
-            double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+            if (recognition.getWidth() < 150) {
+                double x = (recognition.getLeft() + recognition.getRight()) / 2 ;
+                double y = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+                double angle = Math.atan2((recognition.getBottom() + recognition.getTop()) / 2, (recognition.getLeft() + recognition.getRight()) / 2 - MIDDLE_X);
+                telemetry.addData("Angle", Math.toDegrees(angle));
+                telemetry.update();
 
-            telemetry.addData(""," ");
-            telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
-            telemetry.addData("- Position", "%.0f / %.0f", x, y);
-            telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
-            telemetry.addData("- Angle", recognition.estimateAngleToObject(AngleUnit.DEGREES));
+
+                telemetry.addData(""," ");
+                telemetry.addData("Image", "%s (%.0f %% Conf.)", recognition.getLabel(), recognition.getConfidence() * 100);
+                telemetry.addData("- Position", "%.0f / %.0f", x, y);
+                telemetry.addData("- Size", "%.0f x %.0f", recognition.getWidth(), recognition.getHeight());
+                telemetry.addData("- Angle", Math.toDegrees(angle));
+            }
         }   // end for() loop
 
     }   // end method telemetryTfod()
