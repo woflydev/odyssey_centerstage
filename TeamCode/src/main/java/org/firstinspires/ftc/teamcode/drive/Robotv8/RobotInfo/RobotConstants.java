@@ -59,6 +59,12 @@ public class RobotConstants {
     public static final double PPR = 375; // gobuilda motor 85203 Series
     public static final double ENCODER_TICKS_PER_TILE = 640; // in encoder ticks
 
+
+    // -------------------------------------------------------------- RR
+    public static final double RR_LATERAL_MULTI = -1.89831257;
+    public static final double RR_HEADING_PID_kP = 7;
+    public static final double RR_TRANSLATIONAL_PID_kP = 30;
+
     // -------------------------------------------------------------- JUNCTION PRESETS
 
     public static final int JUNCTION_LOW = 600;
