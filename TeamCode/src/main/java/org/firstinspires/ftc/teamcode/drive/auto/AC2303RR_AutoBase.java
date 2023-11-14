@@ -17,6 +17,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.firstinspires.ftc.teamcode.drive.vision2.PropPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Point;
@@ -31,10 +32,16 @@ public class AC2303RR_AutoBase extends FSM_Fullstack {
     private PropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;
+    public RobotStartingPosition startingPosition;
     public int dir;
     private Point r1;
     private Point r2;
     private Point r3;
+
+    private static final double MAX_STRAFE_SPEED = 0.5;
+    private static final double MAX_TRAJECTORY_SPEED = 0.6;
+    private static final double MAX_CAUTIOUS_SPEED = 0.4;
+    private static final double BACKDROP_ALIGN_STRAFE = 0.3;
 
     // note: custom behaviour -----------------------------------------------------------
     public AC2303RR_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3) {
@@ -46,8 +53,10 @@ public class AC2303RR_AutoBase extends FSM_Fullstack {
     }
 
     public void MainInit() {
-        //BackboardToPixels(); // note: testing smooth spline
-        //Delay(5000);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(1000);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
         OpenCvWebcam webcam;
         PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
@@ -75,7 +84,7 @@ public class AC2303RR_AutoBase extends FSM_Fullstack {
         });
 
         autoTimer.reset();
-        while (autoTimer.seconds() < 5) {
+        while (autoTimer.seconds() < 3) {
             randomization = pipeline.getRandomization();
             telemetry.addData("TEAM_PROP_LOCATION", randomization);
             telemetry.update();
@@ -91,49 +100,131 @@ public class AC2303RR_AutoBase extends FSM_Fullstack {
     }
 
     public void MainStart() {
-        // note: should grab yellow pixel
-        GrabAndReady();
+        PrimePurple();
 
         //randomization = pipeline.getRandomization();
         telemetry.addData("TEAM_PROP_LOCATION", randomization);
         telemetry.addData("SELECTED_ALLIANCE", alliance);
         telemetry.update();
 
-        // note: drop off at correct spikemark
-        switch(randomization) {
-            case LOCATION_1: // note: left
+        switch(startingPosition) {
+            case BACKDROP:
+                HandlePurplePixel(); AutoWait();
+                GrabAndReady(); AutoWait();
+
+                RaiseAndPrime(100); Delay(600);
+                VisualMove(MAX_TRAJECTORY_SPEED, -1.6, -1.6, false, false, 3); AutoWait();
+
+                DropAndReset();
+
+                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); AutoWait(); // note: move a little away from the backdrop
+                HandleBackdropLocalize(); AutoWait();
+                BackdropToParking(); AutoWait();
                 break;
-            case LOCATION_2: // note： forward
-                break;
-            case LOCATION_3: // note: right
-                break;
-            default:
+            case AUDIENCE:
+                HandlePurplePixel(); AutoWait();
+                GrabAndReady(); AutoWait();
+
+                RaiseAndPrime(100); Delay(600);
+                VisualMove(MAX_CAUTIOUS_SPEED, -3.6, -3.6, false, false, 10); AutoWait();
+
+                DropAndReset();
+
+                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); AutoWait();
+                HandleBackdropLocalize(); AutoWait();
+                BackdropToParking(); AutoWait();
                 break;
         }
+    }
 
-        AutoWait();
-        VisualMove(0.6, -1.565, -1.565, false, false, 3);
+    // note: sequenced movement  --------------------------------------------------------
+    private void HandlePurplePixel() {
+        // note: drop off at correct spikemark
+        if (startingPosition == RobotStartingPosition.BACKDROP) {
+            switch(randomization) {
+                case LOCATION_1: // note: left
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, -dir, dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, -2 * dir, 2 * dir, false, false, 5); AutoWait();
+                    VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, true, 3); // note: strafe right to align with backdrop objective
+                    break;
+                case LOCATION_2: // note： forward
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, dir, -dir, false, false, 5); // note: turn 90 deg on same tile.
+                    break;
+                case LOCATION_3: // note: right
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, dir, -dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, false, 3);
+                    break;
+            }
+        } else {
+            switch (randomization) {
+                // TODO: pathing for audience side
+                case LOCATION_1:
+                    VisualMove(0.6, -1, -1, false, false, 3); AutoWait();
+                    VisualMove(0.6, -dir, dir, false, false, 5);
+                    ExpelPurple(); AutoWait();
+                    VisualMove(0.5, -2 * dir, 2 * dir, false, false, 5); AutoWait();
+                    break;
+                case LOCATION_2:
+                    VisualMove(0.6, -1.08, -1.08, false, false, 3); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(0.6, -dir, dir, false, false, 5);
+                    break;
+                case LOCATION_3:
+                    VisualMove(0.6, -1, -1, false, false, 3); AutoWait();
+                    VisualMove(0.5, dir, -dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    break;
+            }
+        }
+    }
 
-        Delay(200);
-        RaiseAndPrime(150);
-        Delay(2000);
-        DropAndReset();
-        Delay(500);
-
-        // note: drop off at correct april tag
+    private void HandleBackdropLocalize() {
         switch(randomization) {
             case LOCATION_1:
+                VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, false, 3); // note: strafe right to align with backdrop objective
                 break;
             case LOCATION_2:
                 break;
             case LOCATION_3:
-                break;
-            default:
+                VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, true, 3);
                 break;
         }
+    }
 
-        VisualMove(0.7, 0.1, 0.1, false, false, 3);
-        BackboardToParking();
+    private void BackdropToParking() {
+        VisualMove(MAX_STRAFE_SPEED, 1, 1, true, true, 5); // note: strafe
+        VisualMove(0.8, dir, -dir, false, false, 5);
+        AutoWait();
+        VisualMove(MAX_STRAFE_SPEED, 0.2, 0.2, true, true, 4);
+    }
+
+    private void BackdropToPixels() {
+        VisualMove(0.6, 2, 2, false, false, 3);
+        AutoWait();
+        VisualMove(0.6, 0.1, 2, false, false, 3);
+        VisualMove(0.6, 2, 2, false, false, 3);
+        AutoWait();
+    }
+
+    // note: helper functions -----------------------------------------------------------
+    private void PrimePurple() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+    }
+
+    private void ExpelPurple() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        Delay(500);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
     // note: sequenced movement  --------------------------------------------------------

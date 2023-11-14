@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
+import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.vision2.PropPipeline;
 import org.opencv.core.Point;
@@ -34,21 +36,22 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     private PropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;
-
-    public AutoMecanumDrive drive;
+    public RobotStartingPosition startingPosition;
     public int dir;
     private Point r1;
     private Point r2;
     private Point r3;
-    public static boolean PLAYING_BLUE = true;
+
+    private static final double MAX_STRAFE_SPEED = 0.5;
+    private static final double MAX_TRAJECTORY_SPEED = 0.6;
+    private static final double MAX_CAUTIOUS_SPEED = 0.4;
+    private static final double BACKDROP_ALIGN_STRAFE = 0.3;
+
+    public AutoMecanumDrive drive;
 
     public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0.29, -1.565, 90).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -1.565, 90).times(RobotConstants.ROAD_RUNNER_SCALE)};
     public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0.29, 1.565, 270).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, 1.565, 270).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
-    // 0 is backdrop, 1 is audience
-    public static int ALLIANCE_INDEX = 0;
-
-    public static Pose2d STARTING_POSE = PLAYING_BLUE ? BLUE_STARTING_POSES[ALLIANCE_INDEX] : RED_STARTING_POSES[ALLIANCE_INDEX];
 
 
     // Location of the robot when it is about to drop a pixel on the leftmost slot
@@ -58,21 +61,29 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, 0.85, 270).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(0.9, 0.85, 270).times(RobotConstants.ROAD_RUNNER_SCALE)};
     public static Pose2d[] RED_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, -0.85, 90).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -0.85, 90).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
+    public Pose2d STARTING_POSE;
+    public Pose2d SPIKE_POSE;
     public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0).times(RobotConstants.ROAD_RUNNER_SCALE);
 
 
     // note: custom behaviour -----------------------------------------------------------
-    public AC2304RR_AutoBase(RobotAlliance alliance, Point r1, Point r2, Point r3) {
+    public AC2304RR_AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
+        this.startingPosition = startPos;
         this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
         this.r2 = r2;
         this.r3 = r3;
+        int allianceIndex = this.startingPosition == RobotStartingPosition.AUDIENCE ? 0 : 1;
+        this.STARTING_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_STARTING_POSES[allianceIndex] : RED_STARTING_POSES[allianceIndex];
+        this.SPIKE_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_SPIKE_MARK_LOCATIONS[allianceIndex] : RED_SPIKE_MARK_LOCATIONS[allianceIndex];
     }
 
     public void MainInit() {
-        //BackboardToPixels(); // note: testing smooth spline
-        //Delay(5000);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(1000);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
         OpenCvWebcam webcam;
         drive = new AutoMecanumDrive(hardwareMap, STARTING_POSE, telemetry);
@@ -101,12 +112,14 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         });
 
         autoTimer.reset();
-        while (autoTimer.seconds() < 5) {
+        while (autoTimer.seconds() < 3) {
             randomization = pipeline.getRandomization();
             telemetry.addData("TEAM_PROP_LOCATION", randomization);
             telemetry.update();
         }
         webcam.closeCameraDevice();
+
+
 
         /*Pose2d startPose = new Pose2d(10.59, -60.49, Math.toRadians(90.00));
         drive.setPoseEstimate(startPose);
@@ -117,49 +130,130 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     }
 
     public void MainStart() {
-        // note: should grab yellow pixel
-        GrabAndReady();
+        PrimePurple();
 
         //randomization = pipeline.getRandomization();
         telemetry.addData("TEAM_PROP_LOCATION", randomization);
         telemetry.addData("SELECTED_ALLIANCE", alliance);
         telemetry.update();
 
-        // note: drop off at correct spikemark
-        switch(randomization) {
-            case LOCATION_1: // note: left
+        drive.followTrajectory(path(STARTING_POSE, SPIKE_POSE));
+        switch(startingPosition) {
+            case BACKDROP:
+                HandlePurplePixel(); AutoWait();
+                GrabAndReady(); AutoWait();
+
+                RaiseAndPrime(100); Delay(600);
+                VisualMove(MAX_TRAJECTORY_SPEED, -1.6, -1.6, false, false, 3); AutoWait();
+
+                DropAndReset();
+
+                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); AutoWait(); // note: move a little away from the backdrop
+                HandleBackdropLocalize(); AutoWait();
+                BackdropToParking(); AutoWait();
                 break;
-            case LOCATION_2: // note： forward
-                break;
-            case LOCATION_3: // note: right
-                break;
-            default:
+            case AUDIENCE:
+                HandlePurplePixel(); AutoWait();
+                GrabAndReady(); AutoWait();
+
+                RaiseAndPrime(100); Delay(600);
+                VisualMove(MAX_CAUTIOUS_SPEED, -3.6, -3.6, false, false, 10); AutoWait();
+
+                DropAndReset();
+
+                VisualMove(MAX_TRAJECTORY_SPEED, 0.1, 0.1, false, false, 3); AutoWait();
+                HandleBackdropLocalize(); AutoWait();
+                BackdropToParking(); AutoWait();
                 break;
         }
+    }
+    private void HandlePurplePixel() {
+        // note: drop off at correct spikemark
+        if (startingPosition == RobotStartingPosition.BACKDROP) {
+            switch(randomization) {
+                case LOCATION_1: // note: left
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, -dir, dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, -2 * dir, 2 * dir, false, false, 5); AutoWait();
+                    VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, true, 3); // note: strafe right to align with backdrop objective
+                    break;
+                case LOCATION_2: // note： forward
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, dir, -dir, false, false, 5); // note: turn 90 deg on same tile.
+                    break;
+                case LOCATION_3: // note: right
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, dir, -dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, false, 3);
+                    break;
+            }
+        } else {
+            switch (randomization) {
+                // TODO: pathing for audience side
+                case LOCATION_1:
+                    VisualMove(0.6, -1, -1, false, false, 3); AutoWait();
+                    VisualMove(0.6, -dir, dir, false, false, 5);
+                    ExpelPurple(); AutoWait();
+                    VisualMove(0.5, -2 * dir, 2 * dir, false, false, 5); AutoWait();
+                    break;
+                case LOCATION_2:
+                    VisualMove(0.6, -1.08, -1.08, false, false, 3); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(0.6, -dir, dir, false, false, 5);
+                    break;
+                case LOCATION_3:
+                    VisualMove(0.6, -1, -1, false, false, 3); AutoWait();
+                    VisualMove(0.5, dir, -dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    break;
+            }
+        }
+    }
 
-        AutoWait();
-        VisualMove(0.6, -1.565, -1.565, false, false, 3);
-
-        Delay(200);
-        RaiseAndPrime(150);
-        Delay(2000);
-        DropAndReset();
-        Delay(500);
-
-        // note: drop off at correct april tag
+    private void HandleBackdropLocalize() {
         switch(randomization) {
             case LOCATION_1:
+                VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, false, 3); // note: strafe right to align with backdrop objective
                 break;
             case LOCATION_2:
                 break;
             case LOCATION_3:
-                break;
-            default:
+                VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, true, 3);
                 break;
         }
+    }
 
-        VisualMove(0.7, 0.1, 0.1, false, false, 3);
-        BackboardToParking();
+    private void BackdropToParking() {
+        VisualMove(MAX_STRAFE_SPEED, 1, 1, true, true, 5); // note: strafe
+        VisualMove(0.8, dir, -dir, false, false, 5);
+        AutoWait();
+        VisualMove(MAX_STRAFE_SPEED, 0.2, 0.2, true, true, 4);
+    }
+
+    private void BackdropToPixels() {
+        VisualMove(0.6, 2, 2, false, false, 3);
+        AutoWait();
+        VisualMove(0.6, 0.1, 2, false, false, 3);
+        VisualMove(0.6, 2, 2, false, false, 3);
+        AutoWait();
+    }
+
+    // note: helper functions -----------------------------------------------------------
+    private void PrimePurple() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+    }
+
+    private void ExpelPurple() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        Delay(500);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
     // note: sequenced movement  --------------------------------------------------------
@@ -185,6 +279,9 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         intake.setPower(0);
     }
 
+    public void CloseClaw() {
+
+    }
     public void GrabAndReady() {
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
@@ -338,5 +435,35 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
                     .splineTo(end.vec(), end.getHeading())
                     .build();
         }
+    }
+
+    public Trajectory path(Pose2d[] points) {
+        TrajectoryBuilder currentTrajectory = drive.trajectoryBuilder(points[0]);
+        for (int i = 0; i < points.length - 1; i++) {
+            Pose2d start = points[i];
+            Pose2d end = points[i + 1];
+            // Same side of the truss
+            if (start.getX() * end.getX() >= 0) {
+                currentTrajectory = currentTrajectory.splineTo(end.vec(), end.getHeading());
+            } else {
+                double avgY = (start.getY() + end.getY()) / 2;
+                Double[] diffY = RobotConstants.PATH_Y;
+                for (int j = 0; j < diffY.length; j++) {
+                    diffY[j] = Math.abs(diffY[j] - avgY);
+                }
+
+                Function<Double, Double> cmpFn = (Double x) -> x;
+
+                double pathValue = RobotConstants.PATH_Y[CameraLocalizer.maxOfArr(diffY, cmpFn, false)];
+                currentTrajectory = currentTrajectory
+                        .splineTo(new Vector2d(((start.getX() >= 0) ? 1 : -1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
+                                ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
+                        .splineTo(new Vector2d(((start.getX() >= 0) ? -1 : 1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
+                                ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
+                        .splineTo(end.vec(), end.getHeading());
+            }
+
+        }
+        return currentTrajectory.build();
     }
 }
