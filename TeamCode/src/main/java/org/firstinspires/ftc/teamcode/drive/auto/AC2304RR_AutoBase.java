@@ -21,6 +21,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.vision2.PropDetection;
 import org.firstinspires.ftc.teamcode.drive.vision2.PropPipeline;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -33,7 +34,7 @@ import java.util.function.Function;
 //@Autonomous(name="NationalsAutoBase", group="Final")
 @Disabled
 public class AC2304RR_AutoBase extends FSM_Fullstack {
-    private PropPipeline.Randomization randomization;
+    private PropDetection.Randomisation location;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;
     public RobotStartingPosition startingPosition;
@@ -96,9 +97,27 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         Delay(1000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-
-        OpenCvWebcam webcam;
         drive = new AutoMecanumDrive(hardwareMap, STARTING_POSE, telemetry);
+
+        DetectProp();
+
+        drive.setPoseEstimate(STARTING_POSE);
+    }
+
+    public void MainStart() {
+        //randomization = pipeline.getRandomization();
+        telemetry.addData("TEAM_PROP_LOCATION", location);
+        telemetry.addData("SELECTED_ALLIANCE", alliance);
+        telemetry.update();
+
+        HandlePurplePixel(); AutoWait();
+        HandleYellowPixel(); AutoWait();
+        Park(); AutoWait();
+
+    }
+
+    private void DetectProp() {
+        OpenCvWebcam webcam;
         PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
 
         @SuppressLint("DiscouragedApi") int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
@@ -125,44 +144,43 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
 
         autoTimer.reset();
         while (autoTimer.seconds() < 3) {
-            randomization = pipeline.getRandomization();
-            telemetry.addData("TEAM_PROP_LOCATION", randomization);
+            location = convert(pipeline.getRandomization());
+            telemetry.addData("TEAM_PROP_LOCATION", location);
             telemetry.update();
         }
         webcam.closeCameraDevice();
-
-        drive.setPoseEstimate(STARTING_POSE);
     }
 
-    public void MainStart() {
-        //randomization = pipeline.getRandomization();
-        telemetry.addData("TEAM_PROP_LOCATION", randomization);
-        telemetry.addData("SELECTED_ALLIANCE", alliance);
-        telemetry.update();
-
-        HandlePurplePixel(); AutoWait();
-        HandleYellowPixel(); AutoWait();
-        Park(); AutoWait();
-
+    private void NewDetectProp() {
+        PropDetection detector = new PropDetection(hardwareMap.get(WebcamName.class, "Webcam 1"), alliance, telemetry);
+        autoTimer.reset();
+        while (autoTimer.seconds() < 3) {
+            location = detector.getLocation();
+            telemetry.addData("TEAM_PROP_LOCATION", location);
+            telemetry.update();
+        }
+        detector.stop();
     }
+
+
     private void HandlePurplePixel() {
         PrimePurple();
         drive.followTrajectory(path(STARTING_POSE, SPIKE_POSE));
-        drive.turn((2 - randomization.ordinal()) * Math.PI / 2);
+        drive.turn((2 - location.ordinal()) * Math.PI / 2);
         ExpelPurple(); AutoWait();
-        drive.turn((randomization.ordinal() - 2) * Math.PI / 2);
+        drive.turn((location.ordinal() - 2) * Math.PI / 2);
     }
 
     private void HandleYellowPixel() {
         GrabAndReady(); AutoWait();
 
         RaiseAndPrime(100); Delay(600);
-        drive.followTrajectory(path(SPIKE_POSE, BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * randomization.ordinal()))));
+        drive.followTrajectory(path(SPIKE_POSE, BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal()))));
         DropAndReset();
     }
 
     private void Park() {
-        drive.followTrajectory(path(BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * randomization.ordinal())), PARKING_POSE));
+        drive.followTrajectory(path(BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal())), PARKING_POSE));
     }
 
     // note: helper functions -----------------------------------------------------------
@@ -293,5 +311,18 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
 
         }
         return currentTrajectory.build();
+    }
+
+    public PropDetection.Randomisation convert(PropPipeline.Randomization x) {
+        switch (x) {
+            case LOCATION_1:
+                return PropDetection.Randomisation.LOCATION_1;
+            case LOCATION_2:
+                return PropDetection.Randomisation.LOCATION_2;
+            case LOCATION_3:
+                return PropDetection.Randomisation.LOCATION_3;
+            default:
+                return PropDetection.Randomisation.NONE;
+        }
     }
 }

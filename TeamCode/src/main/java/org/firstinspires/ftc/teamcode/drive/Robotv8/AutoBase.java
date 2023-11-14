@@ -31,6 +31,7 @@ public class AutoBase extends FSM_Fullstack {
     private Point r2;
     private Point r3;
 
+
     private static final double MAX_STRAFE_SPEED = 0.5;
     private static final double MAX_TRAJECTORY_SPEED = 0.6;
     private static final double MAX_CAUTIOUS_SPEED = 0.4;
