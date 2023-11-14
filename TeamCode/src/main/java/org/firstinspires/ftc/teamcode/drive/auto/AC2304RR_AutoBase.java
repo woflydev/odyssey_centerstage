@@ -49,8 +49,10 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
 
     public AutoMecanumDrive drive;
 
-    public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0.29, -1.565, 90).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -1.565, 90).times(RobotConstants.ROAD_RUNNER_SCALE)};
-    public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0.29, 1.565, 270).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, 1.565, 270).times(RobotConstants.ROAD_RUNNER_SCALE)};
+    public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0.29, -1.565, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE),
+            new Pose2d(-0.9, -1.565, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
+    public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0.29, 1.565, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE),
+            new Pose2d(-0.9, 1.565, 3* Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
 
 
@@ -59,8 +61,8 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE);
     public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE);
 
-    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, 0.85, 270).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(0.9, 0.85, 270).times(RobotConstants.ROAD_RUNNER_SCALE)};
-    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, -0.85, 90).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -0.85, 90).times(RobotConstants.ROAD_RUNNER_SCALE)};
+    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, 0.85, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(0.9, 0.85, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
+    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, -0.85, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -0.85, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
     public static Pose2d[] BLUE_PARKING_LOCATIONS = {};
     public static Pose2d[] RED_PARKING_LOCATIONS = {};
@@ -129,14 +131,7 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         }
         webcam.closeCameraDevice();
 
-
-
-        /*Pose2d startPose = new Pose2d(10.59, -60.49, Math.toRadians(90.00));
-        drive.setPoseEstimate(startPose);
-        TrajectorySequence trajectory = drive.trajectorySequenceBuilder(new Pose2d(10.59, -60.49, Math.toRadians(90.00)))
-                .splineTo(new Vector2d(35.75, -11.73), Math.toRadians(90.00))
-                .build();
-        drive.followTrajectorySequence(trajectory);*/
+        drive.setPoseEstimate(STARTING_POSE);
     }
 
     public void MainStart() {
@@ -152,21 +147,9 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     private void HandlePurplePixel() {
         PrimePurple();
         drive.followTrajectory(path(STARTING_POSE, SPIKE_POSE));
-        switch(randomization) {
-            case LOCATION_1:
-                drive.turn(-90);
-                break;
-            case LOCATION_2:
-                break;
-            case LOCATION_3:
-                drive.turn(90);
-                break;
-            default:
-                telemetry.addLine("No location specified, defaulting to front");
-                telemetry.update();
-        }
+        drive.turn((2 - randomization.ordinal()) * Math.PI / 2);
         ExpelPurple(); AutoWait();
-
+        drive.turn((randomization.ordinal() - 2) * Math.PI / 2);
     }
 
     private void HandleYellowPixel() {
@@ -192,28 +175,6 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
-    // note: sequenced movement  --------------------------------------------------------
-    private void BackboardToParking() {
-        VisualMove(0.7, 1, 1, true, false, 5); // note: strafe
-        VisualMove(0.5, dir, -dir, false, false, 3);
-        AutoWait();
-        VisualMove(0.5, 0.2, 0.2, true, true, 3);
-    }
-
-    private void BackboardToPixels() {
-        VisualMove(0.6, 2, 2, false, false, 3);
-        AutoWait();
-        VisualMove(0.6, 0.1, 2, false, false, 3);
-        VisualMove(0.6, 2, 2, false, false, 3);
-        AutoWait();
-    }
-
-    // note: helper functions -----------------------------------------------------------
-    private void ExpelPixel() {
-        intake.setPower(-0.4);
-        Delay(800);
-        intake.setPower(0);
-    }
     public void GrabAndReady() {
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
@@ -267,76 +228,6 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
 
         targetOuttakePosition = 10;
         UpdateOuttake(true, 0);
-    }
-
-    private double TilesToTicks(double input) {
-        return ENCODER_TICKS_PER_TILE * input;
-    }
-
-    private void VisualMove(double power, double left, double right, boolean strafe, boolean strafeRight, double safetyTimeout) {
-
-        int backLMTarget;
-        int frontLMTarget;
-        int backRMTarget;
-        int frontRMTarget;
-
-        if (!strafe) {
-            backLMTarget = backLM.getCurrentPosition() - (int)(TilesToTicks(left));
-            frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left));
-            backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right));
-            frontRMTarget = frontRM.getCurrentPosition() - (int)(TilesToTicks(right));
-        }
-
-        else {
-            int dir = strafeRight ? 1 : -1;
-            dir *= alliance == RobotAlliance.RED ? 1 : -1;
-            backLMTarget = backLM.getCurrentPosition() + (int)(TilesToTicks(left) * dir);
-            frontLMTarget = frontLM.getCurrentPosition() - (int)(TilesToTicks(left) * dir);
-            backRMTarget = backRM.getCurrentPosition() - (int)(TilesToTicks(right) * dir);
-            frontRMTarget = frontRM.getCurrentPosition() + (int)(TilesToTicks(right) * dir);
-        }
-
-        backLM.setTargetPosition(backLMTarget);
-        frontLM.setTargetPosition(frontLMTarget);
-        backRM.setTargetPosition(backRMTarget);
-        frontRM.setTargetPosition(frontRMTarget);
-
-        backLM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontLM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        backRM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        frontRM.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-        backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        encoderRuntime.reset();
-        backLM.setPower(Math.abs(power));
-        frontLM.setPower(Math.abs(power));
-        backRM.setPower(Math.abs(power));
-        frontRM.setPower(Math.abs(power));
-
-        while ((encoderRuntime.seconds() <= safetyTimeout) && (backRM.isBusy() && backLM.isBusy())) {
-            telemetry.clear();
-            telemetry.addData("CURRENT COORDINATE: ",  "%7d :%7d", backLM.getCurrentPosition(), backRM.getCurrentPosition());
-            telemetry.update();
-        }
-
-        backLM.setPower(0);
-        frontLM.setPower(0);
-        backRM.setPower(0);
-        frontRM.setPower(0);
-
-        backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        /*backLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontLM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRM.setMode(DcMotor.RunMode.RUN_USING_ENCODER);*/
     }
 
     private void AutoWait() {
