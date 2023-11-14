@@ -142,7 +142,8 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
 
         HandlePurplePixel(); AutoWait();
         HandleYellowPixel(); AutoWait();
-        drive.followTrajectory(path(drive.getPoseEstimate(), PARKING_POSE));
+        Park(); AutoWait();
+
     }
     private void HandlePurplePixel() {
         PrimePurple();
@@ -156,8 +157,12 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         GrabAndReady(); AutoWait();
 
         RaiseAndPrime(100); Delay(600);
-        drive.followTrajectory(path(drive.getPoseEstimate(), BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * randomization.ordinal()))));
+        drive.followTrajectory(path(SPIKE_POSE, BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * randomization.ordinal()))));
         DropAndReset();
+    }
+
+    private void Park() {
+        drive.followTrajectory(path(BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * randomization.ordinal())), PARKING_POSE));
     }
 
     // note: helper functions -----------------------------------------------------------
