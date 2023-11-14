@@ -9,7 +9,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
@@ -48,8 +47,10 @@ public class AutoBase extends FSM_Fullstack {
     }
 
     public void MainInit() {
-        //BackboardToPixels(); // note: testing smooth spline
-        //Delay(5000);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        Delay(1000);
+        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
         OpenCvWebcam webcam;
         PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
@@ -86,8 +87,8 @@ public class AutoBase extends FSM_Fullstack {
     }
 
     public void MainStart() {
-        // note: should grab yellow pixel
-        GrabAndReady();
+        PrimePurple();
+        intake.setPower(0.8);
 
         //randomization = pipeline.getRandomization();
         telemetry.addData("TEAM_PROP_LOCATION", randomization);
@@ -97,6 +98,7 @@ public class AutoBase extends FSM_Fullstack {
         switch(startingPosition) {
             case BACKDROP:
                 HandlePurplePixel(); AutoWait();
+                GrabAndReady(); AutoWait();
 
                 RaiseAndPrime(100); Delay(600);
                 VisualMove(MAX_TRAJECTORY_SPEED, -1.6, -1.6, false, false, 3); AutoWait();
@@ -109,6 +111,7 @@ public class AutoBase extends FSM_Fullstack {
                 break;
             case AUDIENCE:
                 HandlePurplePixel(); AutoWait();
+                GrabAndReady(); AutoWait();
 
                 RaiseAndPrime(100); Delay(600);
                 VisualMove(MAX_CAUTIOUS_SPEED, -3.6, -3.6, false, false, 10); AutoWait();
@@ -140,21 +143,21 @@ public class AutoBase extends FSM_Fullstack {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
             switch(randomization) {
                 case LOCATION_1: // note: left
-                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 4); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
                     VisualMove(MAX_TRAJECTORY_SPEED, -dir, dir, false, false, 5); AutoWait();
-                    ExpelPixel(); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, -2 * dir, 2 * dir, false, false, 5); AutoWait();
                     VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, true, 3); // note: strafe right to align with backdrop objective
                     break;
                 case LOCATION_2: // note： forward
-                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 4); AutoWait();
-                    ExpelPixel(); AutoWait();
-                    VisualMove(MAX_TRAJECTORY_SPEED, -dir, dir, false, false, 5); // note: turn 90 deg on same tile.
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
+                    ExpelPurple(); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, dir, -dir, false, false, 5); // note: turn 90 deg on same tile.
                     break;
                 case LOCATION_3: // note: right
-                    VisualMove(MAX_TRAJECTORY_SPEED, 1.08, 1.08, false, false, 4); AutoWait();
+                    VisualMove(MAX_TRAJECTORY_SPEED, -1.08, -1.08, false, false, 4); AutoWait();
                     VisualMove(MAX_TRAJECTORY_SPEED, dir, -dir, false, false, 5); AutoWait();
-                    ExpelPixel(); AutoWait();
-                    VisualMove(MAX_TRAJECTORY_SPEED, -2 * dir, 2 * dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
                     VisualMove(MAX_STRAFE_SPEED, BACKDROP_ALIGN_STRAFE, BACKDROP_ALIGN_STRAFE, true, false, 3);
                     break;
             }
@@ -162,20 +165,20 @@ public class AutoBase extends FSM_Fullstack {
             switch (randomization) {
                 // TODO: pathing for audience side
                 case LOCATION_1:
-                    VisualMove(0.6, 1, 1, false, false, 3); AutoWait();
-                    VisualMove(0.5, -dir, dir, false, false, 5); AutoWait();
-                    ExpelPixel(); AutoWait();
+                    VisualMove(0.6, -1, -1, false, false, 3); AutoWait();
+                    VisualMove(0.6, -dir, dir, false, false, 5);
+                    ExpelPurple(); AutoWait();
+                    VisualMove(0.5, -2 * dir, 2 * dir, false, false, 5); AutoWait();
                     break;
                 case LOCATION_2:
-                    VisualMove(0.6, 1.08, 1.08, false, false, 3); AutoWait();
-                    ExpelPixel(); AutoWait();
+                    VisualMove(0.6, -1.08, -1.08, false, false, 3); AutoWait();
+                    ExpelPurple(); AutoWait();
                     VisualMove(0.6, -dir, dir, false, false, 5);
                     break;
                 case LOCATION_3:
-                    VisualMove(0.6, 1, 1, false, false, 3); AutoWait();
+                    VisualMove(0.6, -1, -1, false, false, 3); AutoWait();
                     VisualMove(0.5, dir, -dir, false, false, 5); AutoWait();
-                    ExpelPixel(); AutoWait();
-                    VisualMove(0.5, -2 * dir, 2 * dir, false, false, 5); AutoWait();
+                    ExpelPurple(); AutoWait();
                     break;
             }
         }
@@ -210,10 +213,18 @@ public class AutoBase extends FSM_Fullstack {
     }
 
     // note: helper functions -----------------------------------------------------------
-    private void ExpelPixel() {
-        intake.setPower(-0.35);
-        Delay(1500);
-        intake.setPower(0);
+    private void PrimePurple() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+    }
+
+    private void ExpelPurple() {
+        MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        Delay(500);
+        MoveElbow(RobotConstants.ELBOW_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
     public void GrabAndReady() {
