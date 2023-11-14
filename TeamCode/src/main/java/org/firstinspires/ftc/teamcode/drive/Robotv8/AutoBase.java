@@ -88,7 +88,6 @@ public class AutoBase extends FSM_Fullstack {
 
     public void MainStart() {
         PrimePurple();
-        intake.setPower(0.8);
 
         //randomization = pipeline.getRandomization();
         telemetry.addData("TEAM_PROP_LOCATION", randomization);

@@ -8,9 +8,9 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 public class RC2301_TUNING extends FSM_Fullstack {
     @Override
     public void loop() {
-        double y = -gamepad1.left_stick_y;
-        double x = gamepad1.left_stick_x * 1.1;
-        double rx = gamepad1.right_stick_x;
+        double y = gamepad1.left_stick_y;
+        double x = -gamepad1.left_stick_x * 1.1;
+        double rx = -gamepad1.right_stick_x;
 
         double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
         double frontL = (y + x + rx) / denominator;
