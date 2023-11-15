@@ -29,7 +29,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.function.Function;
 
 @Config
-public class RR_AutoBase2 extends FSM_Fullstack {
+public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     private SampleMecanumDrive drive;
     private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
@@ -83,10 +83,10 @@ public class RR_AutoBase2 extends FSM_Fullstack {
     };
 
     // note: custom behaviour -----------------------------------------------------------
-    public RR_AutoBase2(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
-        this.alliance = alliance;
-        this.startingPosition = startPos;
-        this.parkingLocation = parkLoc;
+    public RR_DRIVE_ONLY_AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
+        this.alliance = RobotAlliance.RED;
+        this.startingPosition = RobotStartingPosition.BACKDROP;
+        this.parkingLocation = RobotParkingLocation.INNER;
         this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
         this.r2 = r2;
@@ -100,11 +100,6 @@ public class RR_AutoBase2 extends FSM_Fullstack {
     }
 
     public void MainInit() {
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        Delay(1000);
-        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-
         drive = new SampleMecanumDrive(hardwareMap);
         drive.setPoseEstimate(START_POSE);
 
@@ -157,8 +152,6 @@ public class RR_AutoBase2 extends FSM_Fullstack {
     }
 
     private void HandleYellowPixel() {
-        RaiseAndPrime(100); Delay(600);
-
         switch (randomization) {
             case LOCATION_1:
                 drive.followTrajectory(CalcKinematics(YELLOW_PIXEL_VARIANCE[0])); AutoWait();
@@ -171,18 +164,13 @@ public class RR_AutoBase2 extends FSM_Fullstack {
                 break;
         }
 
-        drive.followTrajectory(CalcRotation(180)); // note: robot has to be backwards to deposit
+        drive.turn(Math.toRadians(0));
         drive.followTrajectory(CalcKinematics(1.45)); AutoWait();
-        DropAndReset(); AutoWait();
         CenterRobotAtBackboard();
     }
 
     private void HandlePurplePixel() {
-        drive.followTrajectory(CalcRotation(0));
-
-        GrabAndReady();
-        PrimePurple();
-
+        drive.turn(Math.toRadians(180));
         switch (randomization) {
             case LOCATION_1:
                 drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[0]));
@@ -291,14 +279,6 @@ public class RR_AutoBase2 extends FSM_Fullstack {
     public Trajectory CalcKinematics(double tiles) {
         return drive.trajectoryBuilder(drive.getPoseEstimate())
                 .forward(tiles * INCHES_PER_TILE)
-                .build();
-    }
-
-    public Trajectory CalcRotation(double deg) {
-        double x = drive.getPoseEstimate().getX();
-        double y = drive.getPoseEstimate().getY();
-        return drive.trajectoryBuilder(drive.getPoseEstimate())
-                .lineToLinearHeading(new Pose2d(x, y, Math.toRadians(deg)))
                 .build();
     }
 
