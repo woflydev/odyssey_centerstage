@@ -27,7 +27,6 @@ public class RoadRunnerTest extends LinearOpMode {
     public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0.29, 1.565, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE),
             new Pose2d(-0.9, 1.565, 3* Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
-
     public void runOpMode() {
         //drive = new AutoMecanumDrive(hardwareMap, RED_STARTING_POSES[1], telemetry);
         drive = new SampleMecanumDrive(hardwareMap);
@@ -46,16 +45,6 @@ public class RoadRunnerTest extends LinearOpMode {
         drive.followTrajectorySequence(testTraj);
 
         sleep(500);
-
-
-
-
-        /*telemetry.addLine("Beginning trajectory!");
-        telemetry.update();
-        drive.setPoseEstimate(RED_STARTING_POSES[1]);
-        drive.followTrajectory(path(RED_STARTING_POSES[1], new Pose2d(-49.26, 59.18, Math.toRadians(135))));
-        telemetry.addLine("Finished trajectory!");
-        telemetry.update();*/
     }
 
 

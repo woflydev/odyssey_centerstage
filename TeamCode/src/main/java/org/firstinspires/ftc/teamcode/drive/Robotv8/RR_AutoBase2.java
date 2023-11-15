@@ -3,19 +3,20 @@ package org.firstinspires.ftc.teamcode.drive.Robotv8;
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.AutoMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotParkingLocation;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.vision2.TFPropPipeline;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
@@ -27,70 +28,75 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.function.Function;
 
-//@Autonomous(name="NationalsAutoBase", group="Final")
-@Disabled
-public class RR_AutoBase extends FSM_Fullstack {
-    private TFPropPipeline.Randomisation location;
+@Config
+public class RR_AutoBase2 extends FSM_Fullstack {
+    private SampleMecanumDrive drive;
+    private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
+    public static Pose2d START_POSE = new Pose2d();
+    public static Pose2d PARKING_POSE = new Pose2d();
+
     public RobotAlliance alliance;
     public RobotStartingPosition startingPosition;
+    public RobotParkingLocation parkingLocation;
+    public int allianceIndex;
+    public int startingPositionIndex;
+    public int parkingLocationIndex;
     public int dir;
-    private Point r1;
-    private Point r2;
-    private Point r3;
+    public Point r1;
+    public Point r2;
+    public Point r3;
 
+    public static final double INCHES_PER_TILE = 24;
 
-    public AutoMecanumDrive drive;
-
-    public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0.29, -1.565, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE),
-            new Pose2d(-0.9, -1.565, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
-    public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0.29, 1.565, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE),
-            new Pose2d(-0.9, 1.565, 3* Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
-
-
-
-    // Index 0 is audience, index 1 is backdrop
-
-    public static Pose2d BLUE_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, -0.88, -Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE);
-    public static Pose2d RED_BACKDROP_LOCATION = new Pose2d(RobotConstants.BACKDROP_DEPTH, 1.08, -Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE);
-
-    public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, 0.85, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(0.9, 0.85, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
-    public static Pose2d[] RED_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, -0.85, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -0.85, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
-
-
-    public static Pose2d BLUE_INTER_POINT = new Pose2d(36.06, 16.37, Math.PI / 2);
-    public static Pose2d RED_INTER_POINT = new Pose2d(36.06, -16.37, -Math.PI / 2);
-
-    public static Pose2d[] BLUE_PARKING_LOCATIONS = {new Pose2d(60.55, 14.31, 0), new Pose2d(60.55, 60.1, 0)};
-    public static Pose2d[] RED_PARKING_LOCATIONS = {new Pose2d(60.55, -14.31, 0), new Pose2d(60.55, -60.1, 0)};
-
-    public static double TURN_ANGLE = Math.toRadians(30);
-
-    public Pose2d STARTING_POSE;
-    public Pose2d SPIKE_POSE;
-
-    public Pose2d BACKDROP_POSE;
-
-    public Pose2d PARKING_POSE;
-
-    public Pose2d INTER_POSE;
-    public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0).times(RobotConstants.ROAD_RUNNER_SCALE);
-
+    public static final Pose2d[] RED_STARTING_POSES = {
+            new Pose2d(11.5, -60, Math.toRadians(90)),
+            new Pose2d(-35, -60, Math.toRadians(90)),
+    };
+    public static final Pose2d[] BLUE_STARTING_POSES = {
+            new Pose2d(11.5, 60, Math.toRadians(270)),
+            new Pose2d(-35, 60, Math.toRadians(270)),
+    };
+    public static final Pose2d[] RED_PARKING_POSES = {
+            // note: inner is first
+            new Pose2d(50, -8.5, Math.toRadians(90)),
+            new Pose2d(50, -53.5, Math.toRadians(90)),
+    };
+    public static final Pose2d[] BLUE_PARKING_POSES = {
+            new Pose2d(50, 8.5, Math.toRadians(270)),
+            new Pose2d(50, 53.5, Math.toRadians(270))
+    };
+    public static final Pose2d[] BACKBOARD_CENTER_POSES = {
+            // note: red first
+            new Pose2d(53.5, -36.5, Math.toRadians(180)),
+            new Pose2d(53.5, 36.5, Math.toRadians(180)),
+    };
+    public static final double[] YELLOW_PIXEL_VARIANCE = {
+            1.2,
+            1,
+            0.8,
+    };
+    public static final double[] PURPLE_PIXEL_VARIANCE = {
+            1.5,
+            1,
+            0.5,
+    };
 
     // note: custom behaviour -----------------------------------------------------------
-    public RR_AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, Point r1, Point r2, Point r3) {
+    public RR_AutoBase2(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
         this.startingPosition = startPos;
+        this.parkingLocation = parkLoc;
         this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
         this.r2 = r2;
         this.r3 = r3;
-        int allianceIndex = this.startingPosition == RobotStartingPosition.AUDIENCE ? 0 : 1;
-        this.STARTING_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_STARTING_POSES[allianceIndex] : RED_STARTING_POSES[allianceIndex];
-        this.SPIKE_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_SPIKE_MARK_LOCATIONS[allianceIndex] : RED_SPIKE_MARK_LOCATIONS[allianceIndex];
-        this.INTER_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_INTER_POINT : RED_INTER_POINT;
-        this.PARKING_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_PARKING_LOCATIONS[allianceIndex] : RED_PARKING_LOCATIONS[allianceIndex];
-        this.BACKDROP_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION;
+
+        allianceIndex = this.alliance == RobotAlliance.RED ? 0 : 1;
+        startingPositionIndex = this.startingPosition == RobotStartingPosition.BACKDROP ? 0 : 1;
+        parkingLocationIndex = this.parkingLocation == RobotParkingLocation.INNER ? 0 : 1;
+        START_POSE = this.alliance == RobotAlliance.RED ? RED_STARTING_POSES[startingPositionIndex] : BLUE_STARTING_POSES[startingPositionIndex];
+        PARKING_POSE = this.alliance == RobotAlliance.RED ? RED_PARKING_POSES[parkingLocationIndex] : BLUE_PARKING_POSES[parkingLocationIndex];
     }
 
     public void MainInit() {
@@ -98,26 +104,24 @@ public class RR_AutoBase extends FSM_Fullstack {
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         Delay(1000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        drive = new AutoMecanumDrive(hardwareMap, STARTING_POSE, telemetry);
 
-        DetectProp();
-        //TODO: Test Machine Learning model
+        drive = new SampleMecanumDrive(hardwareMap);
+        drive.setPoseEstimate(START_POSE);
 
-        drive.setPoseEstimate(STARTING_POSE);
+        VisionPropDetection(); // note: assert where the prop is
+
+        telemetry.addData("TEAM_PROP_LOCATION", randomization);
+        telemetry.addData("SELECTED_ALLIANCE", alliance);
+        telemetry.update();
     }
 
     public void MainStart() {
-        //randomization = pipeline.getRandomization();
-        telemetry.addData("TEAM_PROP_LOCATION", location);
-        telemetry.addData("SELECTED_ALLIANCE", alliance);
-        telemetry.update();
-
         HandleYellowPixel(); AutoWait();
         HandlePurplePixel(); AutoWait();
-        Park(); AutoWait();
+        ParkRobotAtBackboard(); AutoWait();
     }
 
-    private void DetectProp() {
+    private void VisionPropDetection() {
         OpenCvWebcam webcam;
         VisionPropPipeline pipeline = new VisionPropPipeline( alliance, r1, r2, r3 );
 
@@ -145,45 +149,67 @@ public class RR_AutoBase extends FSM_Fullstack {
 
         autoTimer.reset();
         while (autoTimer.seconds() < 3) {
-            location = convert(pipeline.getRandomization());
-            telemetry.addData("TEAM_PROP_LOCATION", location);
+            randomization = pipeline.getRandomization();
+            telemetry.addData("TEAM_PROP_LOCATION", randomization);
             telemetry.update();
         }
         webcam.closeCameraDevice();
     }
 
-    private void NewDetectProp() {
-        TFPropPipeline detector = new TFPropPipeline(hardwareMap.get(WebcamName.class, "Webcam 1"), alliance, telemetry);
-        autoTimer.reset();
-        while (autoTimer.seconds() < 3) {
-            location = detector.getLocation();
-            telemetry.addData("TEAM_PROP_LOCATION", location);
-            telemetry.update();
-        }
-        detector.stop();
-    }
+    private void HandleYellowPixel() {
+        RaiseAndPrime(100); Delay(600);
 
+        switch (randomization) {
+            case LOCATION_1:
+                drive.followTrajectory(CalcKinematics(YELLOW_PIXEL_VARIANCE[0])); AutoWait();
+                break;
+            case LOCATION_2:
+                drive.followTrajectory(CalcKinematics(YELLOW_PIXEL_VARIANCE[1])); AutoWait();
+                break;
+            case LOCATION_3:
+                drive.followTrajectory(CalcKinematics(YELLOW_PIXEL_VARIANCE[2])); AutoWait();
+                break;
+        }
+
+        drive.turn(Math.toRadians(0));
+        drive.followTrajectory(CalcKinematics(1.45)); AutoWait();
+        DropAndReset(); AutoWait();
+        CenterRobotAtBackboard();
+    }
 
     private void HandlePurplePixel() {
+        GrabAndReady();
         PrimePurple();
-        drive.followTrajectory(path(drive.getPoseEstimate(), SPIKE_POSE));
-        drive.turn((1 - location.ordinal()) * TURN_ANGLE);
+
+        switch (randomization) {
+            case LOCATION_1:
+                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[0]));
+                break;
+            case LOCATION_2:
+                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[1]));
+                break;
+            case LOCATION_3:
+                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[2]));
+                break;
+        }
+
         ExpelPurple(); AutoWait();
-        drive.turn((location.ordinal() - 1) * TURN_ANGLE);
     }
 
-    private void HandleYellowPixel() {
-        GrabAndReady(); AutoWait();
+    private void ParkRobotAtBackboard() {
+        Trajectory parking = drive
+                .trajectoryBuilder(drive.getPoseEstimate())
+                .lineToLinearHeading(PARKING_POSE).build();
 
-        RaiseAndPrime(100); Delay(600);
-        drive.followTrajectory(drive.trajectoryBuilder(drive.getPoseEstimate()).forward(-10).build());
-        drive.followTrajectory(path(drive.getPoseEstimate(), BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal()))));
-        DropAndReset();
+        drive.followTrajectory(parking);
     }
 
-    private void Park() {
-        Pose2d[] array = {BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal())), INTER_POSE, PARKING_POSE};
-        drive.followTrajectory(path(array));
+    public void CenterRobotAtBackboard() {
+        Trajectory center = drive
+                .trajectoryBuilder(new Pose2d(53.5, -35.5, Math.toRadians(180)))
+                .lineToLinearHeading(BACKBOARD_CENTER_POSES[allianceIndex]).build();
+
+        drive.followTrajectory(center);
     }
 
     // note: helper functions -----------------------------------------------------------
@@ -258,6 +284,12 @@ public class RR_AutoBase extends FSM_Fullstack {
 
     private void AutoWait() {
         Delay(400);
+    }
+
+    public Trajectory CalcKinematics(double tiles) {
+        return drive.trajectoryBuilder(drive.getPoseEstimate())
+                .forward(tiles * INCHES_PER_TILE)
+                .build();
     }
 
     public Trajectory path(Pose2d start, Pose2d end) {

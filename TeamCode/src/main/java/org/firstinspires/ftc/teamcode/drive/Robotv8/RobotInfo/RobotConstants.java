@@ -39,7 +39,7 @@ public class RobotConstants {
     public static final double CLAW_CLOSE = 0.79;
     public static final double CLAW_OPEN = 0.585;
     public static final double WRIST_PICKUP = 0;
-    public static final double WRIST_STANDBY_BACK = 0.86;
+    public static final double WRIST_STANDBY_BACK = 0.95;
     public static final double WRIST_STANDBY = 0.3; // 0.48
     public static final double WRIST_ACTIVE = 0.83;
     public static final double ELBOW_PICKUP = 0.05;
@@ -60,7 +60,7 @@ public class RobotConstants {
 
 
     // -------------------------------------------------------------- RR
-    public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.89831257 oldv2 - -1.31460328144
+    public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.31460328144
     public static final double RR_HEADING_PID_kP = 7;
     public static final double RR_TRANSLATIONAL_PID_kP = 30;
 

@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
-import org.firstinspires.ftc.teamcode.drive.vision2.PropPipeline;
+import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -22,7 +22,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 //@Autonomous(name="NationalsAutoBase", group="Final")
 public class AutoBase extends FSM_Fullstack {
-    private PropPipeline.Randomization randomization;
+    private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;
     public RobotStartingPosition startingPosition;
@@ -54,7 +54,7 @@ public class AutoBase extends FSM_Fullstack {
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
         OpenCvWebcam webcam;
-        PropPipeline pipeline = new PropPipeline( alliance, r1, r2, r3 );
+        VisionPropPipeline pipeline = new VisionPropPipeline( alliance, r1, r2, r3 );
 
         @SuppressLint("DiscouragedApi") int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "cameraMonitorViewId",
