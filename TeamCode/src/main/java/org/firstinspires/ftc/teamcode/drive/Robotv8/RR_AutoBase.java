@@ -112,8 +112,8 @@ public class RR_AutoBase extends FSM_Fullstack {
         telemetry.addData("SELECTED_ALLIANCE", alliance);
         telemetry.update();
 
-        HandlePurplePixel(); AutoWait();
         HandleYellowPixel(); AutoWait();
+        HandlePurplePixel(); AutoWait();
         Park(); AutoWait();
     }
 
