@@ -29,7 +29,6 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.function.Function;
 
-@Autonomous
 public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     private SampleMecanumDrive drive;
     private VisionPropPipeline.Randomization randomization;
@@ -166,7 +165,7 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
         }
 
         drive.followTrajectory(CalcRotation(180)); // note: robot has to be backwards to deposit
-        drive.followTrajectory(CalcKinematics(1.45)); AutoWait();
+        drive.followTrajectory(CalcKinematics(-1.45)); AutoWait();
         CenterRobotAtBackboard();
     }
 
@@ -228,8 +227,9 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     public Trajectory CalcRotation(double deg) {
         double x = drive.getPoseEstimate().getX();
         double y = drive.getPoseEstimate().getY();
-        return drive.trajectoryBuilder(drive.getPoseEstimate())
-                .lineToLinearHeading(new Pose2d(x, y, Math.toRadians(deg)))
+        Pose2d current = drive.getPoseEstimate();
+        return drive.trajectoryBuilder(current)
+                .lineToLinearHeading(new Pose2d(current.getX(), current.getY(), Math.toRadians(deg)))
                 .build();
     }
 
