@@ -9,7 +9,9 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.drive.AutoMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 
 import java.util.function.Function;
 
@@ -17,24 +19,46 @@ import java.util.function.Function;
 @Autonomous(name="Road Runner Test", group="Test")
 
 public class RoadRunnerTest extends LinearOpMode {
-    private AutoMecanumDrive drive;
+    //private AutoMecanumDrive drive;
+    private SampleMecanumDrive drive;
 
     public static Pose2d[] RED_STARTING_POSES = {new Pose2d(0.29, -1.565, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE),
             new Pose2d(-0.9, -1.565, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
     public static Pose2d[] BLUE_STARTING_POSES = {new Pose2d(0.29, 1.565, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE),
             new Pose2d(-0.9, 1.565, 3* Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
+
+
     public void runOpMode() {
-        drive = new AutoMecanumDrive(hardwareMap, RED_STARTING_POSES[1], telemetry);
+        //drive = new AutoMecanumDrive(hardwareMap, RED_STARTING_POSES[1], telemetry);
+        drive = new SampleMecanumDrive(hardwareMap);
+
+        Pose2d startPose = new Pose2d(11.16, -61.62, Math.toRadians(92.66));
+        drive.setPoseEstimate(startPose);
+
         telemetry.addLine("Drive initialised!");
         telemetry.update();
         waitForStart();
-        telemetry.addLine("Beginning trajectory!");
+
+        TrajectorySequence testTraj = drive.trajectorySequenceBuilder(new Pose2d(11.16, -61.62, Math.toRadians(92.66)))
+                .splineTo(new Vector2d(36.18, 24.52), Math.toRadians(90))
+                .build();
+
+        drive.followTrajectorySequence(testTraj);
+
+        sleep(500);
+
+
+
+
+        /*telemetry.addLine("Beginning trajectory!");
         telemetry.update();
         drive.setPoseEstimate(RED_STARTING_POSES[1]);
         drive.followTrajectory(path(RED_STARTING_POSES[1], new Pose2d(-49.26, 59.18, Math.toRadians(135))));
         telemetry.addLine("Finished trajectory!");
-        telemetry.update();
+        telemetry.update();*/
     }
+
+
     public Trajectory path(Pose2d start, Pose2d end) {
         // Same side of the truss
         if (start.getX() * end.getX() >= 0) {

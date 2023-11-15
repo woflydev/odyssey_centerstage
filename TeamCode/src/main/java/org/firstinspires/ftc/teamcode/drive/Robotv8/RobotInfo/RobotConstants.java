@@ -34,7 +34,7 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double FLAP_CLOSE = 0.8;
+    public static final double FLAP_CLOSE = 0.793;
     public static final double FLAP_OPEN = 0.44;
     public static final double CLAW_CLOSE = 0.79;
     public static final double CLAW_OPEN = 0.585;
@@ -60,9 +60,9 @@ public class RobotConstants {
 
 
     // -------------------------------------------------------------- RR
-    public static final double RR_LATERAL_MULTI = -0.75460328144; // note: old - -1.89831257
-    public static final double RR_HEADING_PID_kP = 9;
-    public static final double RR_TRANSLATIONAL_PID_kP = 35;
+    public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.89831257 oldv2 - -1.31460328144
+    public static final double RR_HEADING_PID_kP = 7;
+    public static final double RR_TRANSLATIONAL_PID_kP = 30;
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
