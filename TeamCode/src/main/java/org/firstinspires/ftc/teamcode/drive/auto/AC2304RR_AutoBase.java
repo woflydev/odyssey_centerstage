@@ -181,6 +181,7 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         GrabAndReady(); AutoWait();
 
         RaiseAndPrime(100); Delay(600);
+        drive.followTrajectory(drive.trajectoryBuilder(drive.getPoseEstimate()).forward(-10).build());
         drive.followTrajectory(path(drive.getPoseEstimate(), BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal()))));
         DropAndReset();
     }
