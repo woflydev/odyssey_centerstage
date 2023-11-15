@@ -491,7 +491,7 @@ public class FSM_Fullstack extends OpMode {
         if (adjustmentAllowed) {
             // slow down driving with analog trigger
             if (gamepad1.right_trigger >= 0.2) {
-                driveSpeedModifier = gamepad1.right_trigger + 1.3;
+                driveSpeedModifier = gamepad1.right_trigger + 1.6;
             } else {
                 driveSpeedModifier = 1;
             }
