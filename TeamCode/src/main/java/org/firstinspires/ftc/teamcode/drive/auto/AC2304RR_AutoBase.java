@@ -43,10 +43,6 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     private Point r2;
     private Point r3;
 
-    private static final double MAX_STRAFE_SPEED = 0.5;
-    private static final double MAX_TRAJECTORY_SPEED = 0.6;
-    private static final double MAX_CAUTIOUS_SPEED = 0.4;
-    private static final double BACKDROP_ALIGN_STRAFE = 0.3;
 
     public AutoMecanumDrive drive;
 
@@ -65,8 +61,14 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     public static Pose2d[] BLUE_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, 0.85, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(0.9, 0.85, 3 * Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
     public static Pose2d[] RED_SPIKE_MARK_LOCATIONS = {new Pose2d(0.29, -0.85, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE), new Pose2d(-0.9, -0.85, Math.PI / 2).times(RobotConstants.ROAD_RUNNER_SCALE)};
 
-    public static Pose2d[] BLUE_PARKING_LOCATIONS = {};
-    public static Pose2d[] RED_PARKING_LOCATIONS = {};
+
+    public static Pose2d BLUE_INTER_POINT = new Pose2d(36.06, 16.37, Math.PI / 2);
+    public static Pose2d RED_INTER_POINT = new Pose2d(36.06, -16.37, -Math.PI / 2);
+
+    public static Pose2d[] BLUE_PARKING_LOCATIONS = {new Pose2d(60.55, 14.31, 0), new Pose2d(60.55, 60.1, 0)};
+    public static Pose2d[] RED_PARKING_LOCATIONS = {new Pose2d(60.55, -14.31, 0), new Pose2d(60.55, -60.1, 0)};
+
+    public static double TURN_ANGLE = Math.toRadians(30);
 
     public Pose2d STARTING_POSE;
     public Pose2d SPIKE_POSE;
@@ -74,6 +76,8 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     public Pose2d BACKDROP_POSE;
 
     public Pose2d PARKING_POSE;
+
+    public Pose2d INTER_POSE;
     public static Pose2d PIXEL_OFFSET = new Pose2d(0, -0.005, 0).times(RobotConstants.ROAD_RUNNER_SCALE);
 
 
@@ -88,6 +92,7 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         int allianceIndex = this.startingPosition == RobotStartingPosition.AUDIENCE ? 0 : 1;
         this.STARTING_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_STARTING_POSES[allianceIndex] : RED_STARTING_POSES[allianceIndex];
         this.SPIKE_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_SPIKE_MARK_LOCATIONS[allianceIndex] : RED_SPIKE_MARK_LOCATIONS[allianceIndex];
+        this.INTER_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_INTER_POINT : RED_INTER_POINT;
         this.PARKING_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_PARKING_LOCATIONS[allianceIndex] : RED_PARKING_LOCATIONS[allianceIndex];
         this.BACKDROP_POSE = this.alliance == RobotAlliance.BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION;
     }
@@ -100,6 +105,7 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         drive = new AutoMecanumDrive(hardwareMap, STARTING_POSE, telemetry);
 
         DetectProp();
+        //TODO: Test Machine Learning model
 
         drive.setPoseEstimate(STARTING_POSE);
     }
@@ -166,9 +172,9 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     private void HandlePurplePixel() {
         PrimePurple();
         drive.followTrajectory(path(STARTING_POSE, SPIKE_POSE));
-        drive.turn((2 - location.ordinal()) * Math.PI / 2);
+        drive.turn((1 - location.ordinal()) * TURN_ANGLE);
         ExpelPurple(); AutoWait();
-        drive.turn((location.ordinal() - 2) * Math.PI / 2);
+        drive.turn((location.ordinal() -1) * TURN_ANGLE);
     }
 
     private void HandleYellowPixel() {
@@ -180,7 +186,8 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     }
 
     private void Park() {
-        drive.followTrajectory(path(BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal())), PARKING_POSE));
+        Pose2d[] array = {BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal())), INTER_POSE, PARKING_POSE}
+        drive.followTrajectory(path(array));
     }
 
     // note: helper functions -----------------------------------------------------------
