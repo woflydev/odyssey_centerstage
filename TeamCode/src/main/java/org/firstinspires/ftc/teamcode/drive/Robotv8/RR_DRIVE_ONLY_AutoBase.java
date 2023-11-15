@@ -8,6 +8,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -28,7 +29,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 import java.util.function.Function;
 
-@Config
+@Autonomous
 public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     private SampleMecanumDrive drive;
     private VisionPropPipeline.Randomization randomization;
@@ -164,13 +165,14 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
                 break;
         }
 
-        drive.turn(Math.toRadians(0));
+        drive.followTrajectory(CalcRotation(180)); // note: robot has to be backwards to deposit
         drive.followTrajectory(CalcKinematics(1.45)); AutoWait();
         CenterRobotAtBackboard();
     }
 
     private void HandlePurplePixel() {
-        drive.turn(Math.toRadians(180));
+        drive.followTrajectory(CalcRotation(0));
+
         switch (randomization) {
             case LOCATION_1:
                 drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[0]));
@@ -203,10 +205,6 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     }
 
     // note: helper functions -----------------------------------------------------------
-    private void PrimePurple() {
-        MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
-    }
 
     private void ExpelPurple() {
         MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
@@ -217,61 +215,6 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
 
-    public void GrabAndReady() {
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        Delay(500);
-
-        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
-        Delay(700);
-
-        // transfer stage sequence
-        servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
-        Delay(200);
-        MoveElbow(RobotConstants.ELBOW_STANDBY); // moves it up a little to avoid tubes
-        Delay(200);
-        MoveElbow(RobotConstants.ELBOW_PICKUP);
-
-        Delay(200);
-        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        Delay(500);
-
-        // primes the elbow
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-        Delay(100);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-    }
-
-    public void RaiseAndPrime(int height) {
-        intake.setPower(0); // make sure intake is not running
-
-        targetOuttakePosition = height;
-        UpdateOuttake(false, 0);
-
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
-        servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
-        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
-
-        MoveElbow(RobotConstants.ELBOW_ACTIVE);
-
-        outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
-        Delay(50); // debounce
-    }
-
-    public void DropAndReset() {
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(800); // wait for claw to open
-
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
-        MoveElbow(RobotConstants.ELBOW_STANDBY);
-
-        Delay(350); // elbow should come down after the slide is near done
-
-        targetOuttakePosition = 10;
-        UpdateOuttake(true, 0);
-    }
-
     private void AutoWait() {
         Delay(400);
     }
@@ -279,6 +222,14 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     public Trajectory CalcKinematics(double tiles) {
         return drive.trajectoryBuilder(drive.getPoseEstimate())
                 .forward(tiles * INCHES_PER_TILE)
+                .build();
+    }
+
+    public Trajectory CalcRotation(double deg) {
+        double x = drive.getPoseEstimate().getX();
+        double y = drive.getPoseEstimate().getY();
+        return drive.trajectoryBuilder(drive.getPoseEstimate())
+                .lineToLinearHeading(new Pose2d(x, y, Math.toRadians(deg)))
                 .build();
     }
 
