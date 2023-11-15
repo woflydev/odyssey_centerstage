@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.drive.auto;
-
-import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.ENCODER_TICKS_PER_TILE;
+package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
 import android.annotation.SuppressLint;
 
@@ -10,12 +8,10 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.AutoMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
@@ -33,7 +29,7 @@ import java.util.function.Function;
 
 //@Autonomous(name="NationalsAutoBase", group="Final")
 @Disabled
-public class AC2304RR_AutoBase extends FSM_Fullstack {
+public class RR_AutoBase extends FSM_Fullstack {
     private PropDetection.Randomisation location;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;
@@ -82,7 +78,7 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
 
 
     // note: custom behaviour -----------------------------------------------------------
-    public AC2304RR_AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, Point r1, Point r2, Point r3) {
+    public RR_AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
         this.startingPosition = startPos;
         this.dir = alliance == RobotAlliance.RED ? 1 : -1;
@@ -116,10 +112,9 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         telemetry.addData("SELECTED_ALLIANCE", alliance);
         telemetry.update();
 
-        HandlePurplePixel(); AutoWait();
         HandleYellowPixel(); AutoWait();
+        HandlePurplePixel(); AutoWait();
         Park(); AutoWait();
-
     }
 
     private void DetectProp() {
@@ -174,7 +169,7 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
         drive.followTrajectory(path(drive.getPoseEstimate(), SPIKE_POSE));
         drive.turn((1 - location.ordinal()) * TURN_ANGLE);
         ExpelPurple(); AutoWait();
-        drive.turn((location.ordinal() -1) * TURN_ANGLE);
+        drive.turn((location.ordinal() - 1) * TURN_ANGLE);
     }
 
     private void HandleYellowPixel() {
