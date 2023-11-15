@@ -186,7 +186,7 @@ public class AC2304RR_AutoBase extends FSM_Fullstack {
     }
 
     private void Park() {
-        Pose2d[] array = {BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal())), INTER_POSE, PARKING_POSE}
+        Pose2d[] array = {BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal())), INTER_POSE, PARKING_POSE};
         drive.followTrajectory(path(array));
     }
 
