@@ -166,7 +166,7 @@ public class RR_AutoBase extends FSM_Fullstack {
 
     private void HandlePurplePixel() {
         PrimePurple();
-        drive.followTrajectory(path(STARTING_POSE, SPIKE_POSE));
+        drive.followTrajectory(path(drive.getPoseEstimate(), SPIKE_POSE));
         drive.turn((1 - location.ordinal()) * TURN_ANGLE);
         ExpelPurple(); AutoWait();
         drive.turn((location.ordinal() - 1) * TURN_ANGLE);
@@ -176,7 +176,8 @@ public class RR_AutoBase extends FSM_Fullstack {
         GrabAndReady(); AutoWait();
 
         RaiseAndPrime(100); Delay(600);
-        drive.followTrajectory(path(SPIKE_POSE, BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal()))));
+        drive.followTrajectory(drive.trajectoryBuilder(drive.getPoseEstimate()).forward(-10).build());
+        drive.followTrajectory(path(drive.getPoseEstimate(), BACKDROP_POSE.plus(PIXEL_OFFSET.times(2 * location.ordinal()))));
         DropAndReset();
     }
 
