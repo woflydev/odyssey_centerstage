@@ -16,26 +16,33 @@ public class RobotAutoConstants {
     };
     public static final Pose2d[] RED_PARKING_POSES = {
             // note: inner is first
-            new Pose2d(50, -8.5, Math.toRadians(90)),
-            new Pose2d(50, -53.5, Math.toRadians(90)),
+            new Pose2d(45, -15, Math.toRadians(90)),
+            new Pose2d(45, -53.5, Math.toRadians(90)),
     };
     public static final Pose2d[] BLUE_PARKING_POSES = {
-            new Pose2d(50, 8.5, Math.toRadians(270)),
-            new Pose2d(50, 53.5, Math.toRadians(270))
+            new Pose2d(45, 15, Math.toRadians(270)),
+            new Pose2d(45, 53.5, Math.toRadians(270))
     };
-    public static final Pose2d[] BACKBOARD_CENTER_POSES = {
+    public static final Pose2d[] SPIKEMARK_CENTER_POSES = {
             // note: red is first
-            new Pose2d(48.5, -36.5, Math.toRadians(180)),
-            new Pose2d(48.5, 36.5, Math.toRadians(180)),
+            new Pose2d(48.5, -30, Math.toRadians(180)),
+            new Pose2d(48.5, 30, Math.toRadians(180)),
     };
-    public static final double[] YELLOW_PIXEL_VARIANCE = {
+    public static final double[] BACKDROP_YELLOW_PIXEL_VARIANCE = {
             1,
             1.2,
             1.4,
     };
-    public static final double[] PURPLE_PIXEL_VARIANCE = {
-            1.3,
+    public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
+            0.35,
             0.8,
-            0.3,
+            1.4,
     };
+    public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
+            2.2,
+            2.2,
+            2.2,
+    };
+    public static final double CENTER_SPIKEMARK_ALIGN_TURN = 20;
+    public static final double SPIKE_TO_BACKBOARD_TRANSIT = 1.55;
 }

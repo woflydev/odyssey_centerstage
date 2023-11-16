@@ -48,7 +48,7 @@ public class DriveConstants {
      */
     public static double WHEEL_RADIUS = 1.8898; // in
     public static double GEAR_RATIO = 1.47107712333; // output (wheel) speed / input (motor) speed //note: old - 1.933094243921361
-    public static double TRACK_WIDTH = 24.52; // in
+    public static double TRACK_WIDTH = 28.52; // in
 
     /*
      * These are the feedforward parameters used to model the drive motor behavior. If you are using
@@ -57,8 +57,8 @@ public class DriveConstants {
      * empirically tuned.
      */
     //public static double kV = 1.0 / rpmToVelocity(MAX_RPM);
-    public static double kV = 0.0115; // note old: 0.0118
-    public static double kA = 0.0020; // note old: 0.003
+    public static double kV = 0.0118; // note old: 0.0118
+    public static double kA = 0.0021; // note old: 0.003
     public static double kStatic = 0.13; // note old: 0.09
     public static double wheelBase = TRACK_WIDTH;
 
@@ -90,10 +90,10 @@ public class DriveConstants {
      * You are free to raise this on your own if you would like. It is best determined through experimentation.
 
      */
-    public static double MAX_VEL = 50.9755986904361; // note: old - 74.9755986904361
-    public static double MAX_ACCEL = 50.9755986904361; // note: old - 74.9755986904361
+    public static double MAX_VEL = 60.9755986904361; // note: old - 74.9755986904361
+    public static double MAX_ACCEL = 60.9755986904361; // note: old - 74.9755986904361
     public static double MAX_ANG_VEL = Math.toRadians(135.40001506801428); //135.50002483038097
-    public static double MAX_ANG_ACCEL = Math.toRadians(300.9779569697387);
+    public static double MAX_ANG_ACCEL = Math.toRadians(135.9779569697387);
 
     public static RevHubOrientationOnRobot.LogoFacingDirection LOGO_FACING_DIR =
             RevHubOrientationOnRobot.LogoFacingDirection.RIGHT;

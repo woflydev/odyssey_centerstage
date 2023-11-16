@@ -6,9 +6,7 @@ import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -17,16 +15,12 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotParkingLocation;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
-import org.firstinspires.ftc.teamcode.drive.vision2.TFPropPipeline;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
-
-import java.util.function.Function;
 
 public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     private SampleMecanumDrive drive;
@@ -118,18 +112,18 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     private void HandleYellowPixel() {
         switch (randomization) {
             case LOCATION_1:
-                drive.followTrajectory(CalcKinematics(YELLOW_PIXEL_VARIANCE[0])); AutoWait();
+                drive.followTrajectory(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[0])); AutoWait();
                 break;
             case LOCATION_2:
-                drive.followTrajectory(CalcKinematics(YELLOW_PIXEL_VARIANCE[1])); AutoWait();
+                drive.followTrajectory(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[1])); AutoWait();
                 break;
             case LOCATION_3:
-                drive.followTrajectory(CalcKinematics(YELLOW_PIXEL_VARIANCE[2])); AutoWait();
+                drive.followTrajectory(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[2])); AutoWait();
                 break;
         }
 
         ExecuteRotation(180); // note: robot has to be backwards to deposit
-        drive.followTrajectory(CalcKinematics(-1.45)); AutoWait();
+        drive.followTrajectory(CalcKinematics(-SPIKE_TO_BACKBOARD_TRANSIT));
         CenterRobotAtBackboard();
     }
 
@@ -138,17 +132,20 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
 
         switch (randomization) {
             case LOCATION_1:
-                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[0])); // note: has to drive backwards
+                drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[0])); // note: has to drive backwards
+                ExpelPurple(); AutoWait();
                 break;
             case LOCATION_2:
-                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[1]));
+                drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[1]));
+                drive.turn(Math.toRadians(-25 * dir)); AutoWait(); // note: always counterclockwise
+                ExpelPurple(); AutoWait();
+                drive.turn(Math.toRadians(25 * dir)); AutoWait();
                 break;
             case LOCATION_3:
-                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[2]));
+                drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[2]));
+                ExpelPurple(); AutoWait();
                 break;
         }
-
-        ExpelPurple(); AutoWait();
     }
 
     private void ParkRobotAtBackboard() {
@@ -163,7 +160,8 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     public void CenterRobotAtBackboard() {
         Trajectory center = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
-                .splineToConstantHeading(BACKBOARD_CENTER_POSES[allianceIndex].vec(), BACKBOARD_CENTER_POSES[allianceIndex].getHeading()).build();
+                .splineToConstantHeading(SPIKEMARK_CENTER_POSES[allianceIndex].vec(), SPIKEMARK_CENTER_POSES[allianceIndex].getHeading())
+                .build();
 
         drive.followTrajectory(center);
     }
@@ -191,7 +189,7 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     }
 
     public void ExecuteRotation(double heading) {
-        double diff = Math.toRadians(heading) - drive.getPoseEstimate().getHeading();
-        drive.turn(diff > 180 ? -(360 - diff) : diff);
+        double diff = heading - Math.toDegrees(drive.getPoseEstimate().getHeading());
+        drive.turn(diff > 180 ? Math.toRadians(-(360 - diff)) : Math.toRadians(diff));
     }
 }
