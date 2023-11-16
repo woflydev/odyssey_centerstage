@@ -160,7 +160,7 @@ public class CameraLocalizer implements Localizer {
     public boolean isBlind = false;
     public boolean stopTrigger = false;
 
-    public Fullstack stack;
+    //public Fullstack stack;
 
     private Telemetry t;
     private boolean TELEMETRY_GIVEN;
@@ -205,7 +205,7 @@ public class CameraLocalizer implements Localizer {
         this.TELEMETRY_GIVEN = true;
         this.FRONT_CAMERA = front;
         this.BACK_CAMERA = back;
-        this.stack = stack;
+        //this.stack = stack;
 
         elapsedTime.reset();
 
@@ -390,14 +390,14 @@ public class CameraLocalizer implements Localizer {
                     blindTime = elapsedTime.time(timeUnit);
                     isBlind = true;
                 }
-                if (RobotConstants.USE_DRIVE) {
+                /*if (RobotConstants.USE_DRIVE) {
                     MecanumLocalization();
-                }
+                }*/
             }
         }
     }
 
-    public void MecanumLocalization() {
+    /*public void MecanumLocalization() {
         List<Double> wheelPositions = stack.drive.getWheelPositions();
         Double extHeading = useExternalHeading ? stack.drive.getExternalHeading() : Double.NaN;
         if (lastWheelPositions.size() > 0) {
@@ -436,7 +436,7 @@ public class CameraLocalizer implements Localizer {
 
         lastWheelPositions = (ArrayList<Double>) wheelPositions;
         lastExtHeading = extHeading;
-    }
+    }*/
 
     /**
      * Add telemetry about TensorFlow Object Detection (TFOD) recognitions.
@@ -462,31 +462,6 @@ public class CameraLocalizer implements Localizer {
         visionPortal.setProcessorEnabled(tfod, false);
         visionPortal.setProcessorEnabled(aprilTag, true);
     }   // end method telemetryTfod()
-
-    public int propTfod(boolean playingBlue) {
-        visionPortal.setProcessorEnabled(aprilTag, false);
-        visionPortal.setProcessorEnabled(tfod, true);
-
-        List<Recognition> currentRecognitions = tfod.getRecognitions();
-
-        // Step through the list of recognitions and display info for each one.
-        for (Recognition recognition : currentRecognitions) {
-
-            double angle = Math.atan2((recognition.getBottom() + recognition.getTop()) / 2, (recognition.getLeft() + recognition.getRight()) / 2 - MIDDLE_X);
-            t.addData("Angle", Math.toDegrees(angle));
-            t.update();
-            visionPortal.setProcessorEnabled(tfod, false);
-            visionPortal.setProcessorEnabled(aprilTag, true);
-            if (recognition.getLabel() == LABELS[playingBlue ? 0 : 1] && recognition.getWidth() < WIDTH_LIMIT) {
-                return (angle - 90 > ANGLE_THRESHOLD) ? 2 : ((angle - 90 > -ANGLE_THRESHOLD) ? 1 : 0);
-            }
-
-        }   // end for() loop
-
-        visionPortal.setProcessorEnabled(tfod, false);
-        visionPortal.setProcessorEnabled(aprilTag, true);
-        return -1;
-    }
 
     public boolean detectedTfod(boolean playingBlue) {
         visionPortal.setProcessorEnabled(aprilTag, false);

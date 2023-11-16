@@ -29,6 +29,7 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.checkerframework.checker.units.qual.C;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
@@ -37,6 +38,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotParkingLocation;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -47,6 +49,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 @Config
 public class FSM_Auto_Fullstack extends LinearOpMode {
     private SampleMecanumDrive drive;
+    private CameraLocalizer camLoc;
     private FSM_Auto autoState = FSM_Auto.PLAY;
     private FSM_Outtake outtakeState = FSM_Outtake.IDLE;
     private VisionPropPipeline.Randomization randomization;
@@ -393,6 +396,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
+        camLoc = new CameraLocalizer(hardwareMap, "Webcam 1", "Webcam 2", START_POSE, telemetry);
+
         Delay(100);
     }
 
@@ -401,6 +406,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addData("Autonomous Clockspeed", autoTimer.seconds());
         telemetry.addData("Robot X", drive.getPoseEstimate().getX());
         telemetry.addData("Robot Y", drive.getPoseEstimate().getY());
+        telemetry.addData("Visual Pose", camLoc.getPoseEstimate());
         telemetry.addData("Robot Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
         telemetry.update();
     }
