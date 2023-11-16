@@ -10,6 +10,8 @@ import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.*;
+
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
@@ -46,41 +48,6 @@ public class RR_AutoBase2 extends FSM_Fullstack {
     public Point r1;
     public Point r2;
     public Point r3;
-
-    public static final double INCHES_PER_TILE = 24;
-
-    public static final Pose2d[] RED_STARTING_POSES = {
-            new Pose2d(11.5, -60, Math.toRadians(90)),
-            new Pose2d(-35, -60, Math.toRadians(90)),
-    };
-    public static final Pose2d[] BLUE_STARTING_POSES = {
-            new Pose2d(11.5, 60, Math.toRadians(270)),
-            new Pose2d(-35, 60, Math.toRadians(270)),
-    };
-    public static final Pose2d[] RED_PARKING_POSES = {
-            // note: inner is first
-            new Pose2d(50, -8.5, Math.toRadians(90)),
-            new Pose2d(50, -53.5, Math.toRadians(90)),
-    };
-    public static final Pose2d[] BLUE_PARKING_POSES = {
-            new Pose2d(50, 8.5, Math.toRadians(270)),
-            new Pose2d(50, 53.5, Math.toRadians(270))
-    };
-    public static final Pose2d[] BACKBOARD_CENTER_POSES = {
-            // note: red first
-            new Pose2d(53.5, -36.5, Math.toRadians(180)),
-            new Pose2d(53.5, 36.5, Math.toRadians(180)),
-    };
-    public static final double[] YELLOW_PIXEL_VARIANCE = {
-            1.2,
-            1,
-            0.8,
-    };
-    public static final double[] PURPLE_PIXEL_VARIANCE = {
-            1.5,
-            1,
-            0.5,
-    };
 
     // note: custom behaviour -----------------------------------------------------------
     public RR_AutoBase2(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
@@ -295,76 +262,8 @@ public class RR_AutoBase2 extends FSM_Fullstack {
                 .forward(tiles * INCHES_PER_TILE)
                 .build();
     }
+
     public void ExecuteRotation(double heading) {
         drive.turn(Math.toRadians(heading) - drive.getPoseEstimate().getHeading());
-    }
-
-    public Trajectory path(Pose2d start, Pose2d end) {
-        // Same side of the truss
-        if (start.getX() * end.getX() >= 0) {
-            return drive.trajectoryBuilder(start)
-                    .splineTo(end.vec(), end.getHeading())
-                    .build();
-        } else {
-            double avgY = (start.getY() + end.getY()) / 2;
-            Double[] diffY = RobotConstants.PATH_Y;
-            for (int i = 0; i < diffY.length; i++) {
-                diffY[i] = Math.abs(diffY[i] - avgY);
-            }
-
-            Function<Double, Double> cmpFn = (Double x) -> x;
-
-            double pathValue = RobotConstants.PATH_Y[CameraLocalizer.maxOfArr(diffY, cmpFn, false)];
-            return drive.trajectoryBuilder(start)
-                    .splineTo(new Vector2d(((start.getX() >= 0) ? 1 : -1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
-                            ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
-                    .splineTo(new Vector2d(((start.getX() >= 0) ? -1 : 1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
-                            ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
-                    .splineTo(end.vec(), end.getHeading())
-                    .build();
-        }
-    }
-
-    public Trajectory path(Pose2d[] points) {
-        TrajectoryBuilder currentTrajectory = drive.trajectoryBuilder(points[0]);
-        for (int i = 0; i < points.length - 1; i++) {
-            Pose2d start = points[i];
-            Pose2d end = points[i + 1];
-            // Same side of the truss
-            if (start.getX() * end.getX() >= 0) {
-                currentTrajectory = currentTrajectory.splineTo(end.vec(), end.getHeading());
-            } else {
-                double avgY = (start.getY() + end.getY()) / 2;
-                Double[] diffY = RobotConstants.PATH_Y;
-                for (int j = 0; j < diffY.length; j++) {
-                    diffY[j] = Math.abs(diffY[j] - avgY);
-                }
-
-                Function<Double, Double> cmpFn = (Double x) -> x;
-
-                double pathValue = RobotConstants.PATH_Y[CameraLocalizer.maxOfArr(diffY, cmpFn, false)];
-                currentTrajectory = currentTrajectory
-                        .splineTo(new Vector2d(((start.getX() >= 0) ? 1 : -1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
-                                ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
-                        .splineTo(new Vector2d(((start.getX() >= 0) ? -1 : 1) * RobotConstants.TRUSS_WIDTH / 2, pathValue),
-                                ((start.getX() >= 0) ? 1 : -1) * RobotConstants.HEADING)
-                        .splineTo(end.vec(), end.getHeading());
-            }
-
-        }
-        return currentTrajectory.build();
-    }
-
-    public TFPropPipeline.Randomisation convert(VisionPropPipeline.Randomization x) {
-        switch (x) {
-            case LOCATION_1:
-                return TFPropPipeline.Randomisation.LOCATION_1;
-            case LOCATION_2:
-                return TFPropPipeline.Randomisation.LOCATION_2;
-            case LOCATION_3:
-                return TFPropPipeline.Randomisation.LOCATION_3;
-            default:
-                return TFPropPipeline.Randomisation.NONE;
-        }
     }
 }
