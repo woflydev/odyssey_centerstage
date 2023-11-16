@@ -154,14 +154,9 @@ public class Abstract {
         stack.drive.turn(spikeMark * TURN_AUTO_ANGLE);*/
         stack.Delay(2000);
 
-        int spikeMark = -1;
-        while (spikeMark == -1) {
-            spikeMark = localizer.propTfod(PLAYING_BLUE);
-        }
-
 
         Pose2d spikePose = PLAYING_BLUE ?
-                BLUE_SPIKE_MARK_LOCATIONS[spikeMark] : RED_SPIKE_MARK_LOCATIONS[spikeMark];
+                BLUE_SPIKE_MARK_LOCATIONS[1] : RED_SPIKE_MARK_LOCATIONS[1];
 
         stack.drive.followTrajectory(path(STARTING_POSE, spikePose));
 
@@ -174,7 +169,7 @@ public class Abstract {
 
         // Placing yellow pixel
         Pose2d pixelPose = (PLAYING_BLUE ? BLUE_BACKDROP_LOCATION : RED_BACKDROP_LOCATION)
-                .plus(PIXEL_OFFSET.times(spikeMark * 2 + 1));
+                .plus(PIXEL_OFFSET.times(1));
         stack.drive.followTrajectory(path(spikePose, pixelPose));
 
         // FIXME: BREAKING API CHANGES IN FULLSTACK
