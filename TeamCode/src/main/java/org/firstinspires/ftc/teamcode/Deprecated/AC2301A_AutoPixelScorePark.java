@@ -2,18 +2,17 @@ package org.firstinspires.ftc.teamcode.Deprecated;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants.ENCODER_TICKS_PER_TILE;
 
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_TeleOp_Fullstack;
 
 //@Autonomous(name="AutoRed1", group="Final")
 @Deprecated
-public class AC2301A_AutoPixelScorePark extends FSM_Fullstack {
+public class AC2301A_AutoPixelScorePark extends FSM_TeleOp_Fullstack {
     public ElapsedTime autoTimer = new ElapsedTime();
 
     public boolean detected = false;

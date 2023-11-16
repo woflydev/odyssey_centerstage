@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo;
 
 public enum FSM_Outtake {
     IDLE,
+    ACTIVATED,
     FLAP_OPENING,
     WRIST_PICKING,
     ELBOW_PICKING,
@@ -10,4 +11,5 @@ public enum FSM_Outtake {
     PRIMED_FOR_DEPOSIT,
     CLAW_OPENING,
     OUTTAKE_RESET,
+    OUTTAKE_RESET_HARD,
 }

@@ -21,7 +21,7 @@ import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 //@Autonomous(name="NationalsAutoBase", group="Final")
-public class AutoBase extends FSM_Fullstack {
+public class AutoBase extends FSM_TeleOp_Fullstack {
     private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public RobotAlliance alliance;

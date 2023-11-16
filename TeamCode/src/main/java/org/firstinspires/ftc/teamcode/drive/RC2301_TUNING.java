@@ -2,10 +2,10 @@ package org.firstinspires.ftc.teamcode.drive;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Fullstack;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_TeleOp_Fullstack;
 
 @TeleOp(name="Manual Drive Tuning", group="~tuning")
-public class RC2301_TUNING extends FSM_Fullstack {
+public class RC2301_TUNING extends FSM_TeleOp_Fullstack {
     @Override
     public void loop() {
         double y = gamepad1.left_stick_y;

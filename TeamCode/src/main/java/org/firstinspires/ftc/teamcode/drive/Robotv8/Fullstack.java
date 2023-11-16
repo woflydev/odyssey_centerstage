@@ -65,7 +65,7 @@ public class Fullstack extends OpMode {
     public Abstract handler;
 
     public RobotState state = RobotState.IDLE;
-    public FSM_Outtake outtakeState = FSM_Outtake.IDLE;
+    public FSM_Outtake outtakeState = FSM_Outtake.ACTIVATED;
     public FSM_PlaneLauncher planeLauncherState = FSM_PlaneLauncher.IDLE;
     public FSM_Drivetrain drivetrainState = FSM_Drivetrain.MANUAL;
 
@@ -341,7 +341,7 @@ public class Fullstack extends OpMode {
     public void OuttakeSubsystem() {
         // NOTE: statemachine for outtake sequences
         switch (outtakeState) {
-            case IDLE:
+            case ACTIVATED:
                 if (gamepad1.left_bumper) {
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);
                     outtakeFSMTimer.reset();
@@ -408,7 +408,7 @@ public class Fullstack extends OpMode {
                     targetOuttakePosition = 10;
                     UpdateOuttake(true, 0);
 
-                    outtakeState = FSM_Outtake.IDLE;
+                    outtakeState = FSM_Outtake.ACTIVATED;
                 }
                 break;
         }
