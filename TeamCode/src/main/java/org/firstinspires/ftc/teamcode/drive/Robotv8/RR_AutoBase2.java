@@ -172,7 +172,7 @@ public class RR_AutoBase2 extends FSM_Fullstack {
         }
 
         ExecuteRotation(180); // note: robot has to be backwards to deposit
-        drive.followTrajectory(CalcKinematics(1.45)); AutoWait();
+        drive.followTrajectory(CalcKinematics(-1.45)); AutoWait();
         DropAndReset(); AutoWait();
         CenterRobotAtBackboard();
     }
