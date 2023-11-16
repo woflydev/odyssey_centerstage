@@ -222,7 +222,8 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
                 .build();
     }
     public void ExecuteRotation(double heading) {
-        drive.turn(Math.toRadians(heading) - drive.getPoseEstimate().getHeading());
+        double diff = Math.toRadians(heading) - drive.getPoseEstimate().getHeading();
+        drive.turn(diff > 180 ? -(360 - diff) : diff);
     }
 
     public Trajectory path(Pose2d start, Pose2d end) {
