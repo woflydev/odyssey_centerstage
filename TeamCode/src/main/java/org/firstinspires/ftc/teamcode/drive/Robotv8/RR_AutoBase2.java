@@ -171,27 +171,27 @@ public class RR_AutoBase2 extends FSM_Fullstack {
                 break;
         }
 
-        drive.followTrajectory(CalcRotation(180)); // note: robot has to be backwards to deposit
+        ExecuteRotation(180); // note: robot has to be backwards to deposit
         drive.followTrajectory(CalcKinematics(1.45)); AutoWait();
         DropAndReset(); AutoWait();
         CenterRobotAtBackboard();
     }
 
     private void HandlePurplePixel() {
-        drive.followTrajectory(CalcRotation(0));
+        ExecuteRotation(0);
 
         GrabAndReady();
         PrimePurple();
 
         switch (randomization) {
             case LOCATION_1:
-                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[0]));
+                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[0]));
                 break;
             case LOCATION_2:
-                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[1]));
+                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[1]));
                 break;
             case LOCATION_3:
-                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[2]));
+                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[2]));
                 break;
         }
 
@@ -201,15 +201,16 @@ public class RR_AutoBase2 extends FSM_Fullstack {
     private void ParkRobotAtBackboard() {
         Trajectory parking = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
-                .lineToLinearHeading(PARKING_POSE).build();
+                .splineToConstantHeading(PARKING_POSE.vec(),PARKING_POSE.getHeading()).build();
 
         drive.followTrajectory(parking);
+        ExecuteRotation(alliance == RobotAlliance.RED ? 90 : 270); // note: ensure field centric heading on finish
     }
 
     public void CenterRobotAtBackboard() {
         Trajectory center = drive
-                .trajectoryBuilder(new Pose2d(53.5, -35.5, Math.toRadians(180)))
-                .lineToLinearHeading(BACKBOARD_CENTER_POSES[allianceIndex]).build();
+                .trajectoryBuilder(drive.getPoseEstimate())
+                .splineToConstantHeading(BACKBOARD_CENTER_POSES[allianceIndex].vec(), BACKBOARD_CENTER_POSES[allianceIndex].getHeading()).build();
 
         drive.followTrajectory(center);
     }
@@ -293,13 +294,8 @@ public class RR_AutoBase2 extends FSM_Fullstack {
                 .forward(tiles * INCHES_PER_TILE)
                 .build();
     }
-
-    public Trajectory CalcRotation(double deg) {
-        double x = drive.getPoseEstimate().getX();
-        double y = drive.getPoseEstimate().getY();
-        return drive.trajectoryBuilder(drive.getPoseEstimate())
-                .lineToLinearHeading(new Pose2d(x, y, Math.toRadians(deg)))
-                .build();
+    public void ExecuteRotation(double heading) {
+        drive.turn(Math.toRadians(heading) - drive.getPoseEstimate().getHeading());
     }
 
     public Trajectory path(Pose2d start, Pose2d end) {

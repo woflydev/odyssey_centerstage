@@ -171,13 +171,13 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
 
         switch (randomization) {
             case LOCATION_1:
-                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[0]));
+                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[0])); // note: has to drive backwards
                 break;
             case LOCATION_2:
-                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[1]));
+                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[1]));
                 break;
             case LOCATION_3:
-                drive.followTrajectory(CalcKinematics(PURPLE_PIXEL_VARIANCE[2]));
+                drive.followTrajectory(CalcKinematics(-PURPLE_PIXEL_VARIANCE[2]));
                 break;
         }
 
@@ -199,7 +199,6 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
                 .splineToConstantHeading(BACKBOARD_CENTER_POSES[allianceIndex].vec(), BACKBOARD_CENTER_POSES[allianceIndex].getHeading()).build();
 
         drive.followTrajectory(center);
-
     }
 
     // note: helper functions -----------------------------------------------------------
