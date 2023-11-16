@@ -224,8 +224,9 @@ public class RR_AutoBase2 extends FSM_Fullstack {
     private void ExpelPurple() {
         MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+        Delay(800);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(500);
+        Delay(1000);
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.*;
+
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -43,41 +45,6 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     public Point r1;
     public Point r2;
     public Point r3;
-
-    public static final double INCHES_PER_TILE = 24;
-
-    public static final Pose2d[] RED_STARTING_POSES = {
-            new Pose2d(11, -63, Math.toRadians(90)),
-            new Pose2d(-35, -63, Math.toRadians(90)),
-    };
-    public static final Pose2d[] BLUE_STARTING_POSES = {
-            new Pose2d(11.5, 63, Math.toRadians(270)),
-            new Pose2d(-35, 63, Math.toRadians(270)),
-    };
-    public static final Pose2d[] RED_PARKING_POSES = {
-            // note: inner is first
-            new Pose2d(50, -8.5, Math.toRadians(90)),
-            new Pose2d(50, -53.5, Math.toRadians(90)),
-    };
-    public static final Pose2d[] BLUE_PARKING_POSES = {
-            new Pose2d(50, 8.5, Math.toRadians(270)),
-            new Pose2d(50, 53.5, Math.toRadians(270))
-    };
-    public static final Pose2d[] BACKBOARD_CENTER_POSES = {
-            // note: red is first
-            new Pose2d(48.5, -36.5, Math.toRadians(180)),
-            new Pose2d(48.5, 36.5, Math.toRadians(180)),
-    };
-    public static final double[] YELLOW_PIXEL_VARIANCE = {
-            1,
-            1.2,
-            1.4,
-    };
-    public static final double[] PURPLE_PIXEL_VARIANCE = {
-            1.3,
-            0.8,
-            0.3,
-    };
 
     // note: custom behaviour -----------------------------------------------------------
     public RR_DRIVE_ONLY_AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
@@ -206,8 +173,9 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     private void ExpelPurple() {
         MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+        Delay(800);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(500);
+        Delay(1000);
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
     }
