@@ -34,18 +34,18 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double FLAP_CLOSE = 0.8;
+    public static final double FLAP_CLOSE = 0.793;
     public static final double FLAP_OPEN = 0.44;
     public static final double CLAW_CLOSE = 0.79;
     public static final double CLAW_OPEN = 0.585;
     public static final double WRIST_PICKUP = 0;
-    public static final double WRIST_STANDBY_BACK = 0.86;
+    public static final double WRIST_STANDBY_BACK = 0.95;
     public static final double WRIST_STANDBY = 0.3; // 0.48
     public static final double WRIST_ACTIVE = 0.83;
-    public static final double ELBOW_PICKUP = 0.05;
-    public static final double ELBOW_STANDBY = 0.25;
-    public static final double ELBOW_STANDBY_BACK = 1;
-    public static final double ELBOW_ACTIVE = 0.9;
+    public static final double ELBOW_PICKUP = 0.265;
+    public static final double ELBOW_STANDBY = 0.363;
+    public static final double ELBOW_STANDBY_BACK = 0.845;
+    public static final double ELBOW_ACTIVE = 0.72;
     public static final double PLANE_STANDBY = 0.38;
     public static final double PLANE_ACTIVE = 0.19;
 
@@ -60,9 +60,9 @@ public class RobotConstants {
 
 
     // -------------------------------------------------------------- RR
-    public static final double RR_LATERAL_MULTI = -1.89831257;
-    public static final double RR_HEADING_PID_kP = 9;
-    public static final double RR_TRANSLATIONAL_PID_kP = 35;
+    public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.31460328144
+    public static final double RR_HEADING_PID_kP = 6;
+    public static final double RR_TRANSLATIONAL_PID_kP = 30;
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
@@ -81,7 +81,7 @@ public class RobotConstants {
 
     public static final boolean USE_BACK = true;
 
-    public static final boolean USE_LOCALISER = true;
+    public static final boolean USE_LOCALISER = false;
 
     public static final double FIELD_LENGTH = 3.58;
     public static final double CAMERA_HEIGHT = 0.313;

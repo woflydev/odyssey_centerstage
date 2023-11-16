@@ -1,78 +1,29 @@
 package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_ACCEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_ANG_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MAX_VEL;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.MOTOR_VELO_PID;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.RUN_USING_ENCODER;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.TRACK_WIDTH;
-import static org.firstinspires.ftc.teamcode.drive.DriveConstants.encoderTicksToInches;
 import static java.lang.Thread.sleep;
 
-import androidx.annotation.NonNull;
-
-import com.acmerobotics.roadrunner.control.PIDCoefficients;
-import com.acmerobotics.roadrunner.drive.DriveSignal;
-import com.acmerobotics.roadrunner.drive.MecanumDrive;
-import com.acmerobotics.roadrunner.followers.HolonomicPIDVAFollower;
-import com.acmerobotics.roadrunner.followers.TrajectoryFollower;
-import com.acmerobotics.roadrunner.geometry.Pose2d;
-import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.acmerobotics.roadrunner.trajectory.constraints.AngularVelocityConstraint;
-import com.acmerobotics.roadrunner.trajectory.constraints.MecanumVelocityConstraint;
-import com.acmerobotics.roadrunner.trajectory.constraints.MinVelocityConstraint;
-import com.acmerobotics.roadrunner.trajectory.constraints.ProfileAccelerationConstraint;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryAccelerationConstraint;
-import com.acmerobotics.roadrunner.trajectory.constraints.TrajectoryVelocityConstraint;
-import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
-import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
-import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Drivetrain;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_PlaneLauncher;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotState;
-import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.StandardTrackingWheelLocalizer;
-import org.firstinspires.ftc.teamcode.drive.vision.FieldPipeline;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
-import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
-import org.firstinspires.ftc.teamcode.util.LynxModuleUtil;
-import org.openftc.easyopencv.OpenCvCamera;
-import org.openftc.easyopencv.OpenCvCameraFactory;
-import org.openftc.easyopencv.OpenCvCameraRotation;
-import org.openftc.easyopencv.OpenCvWebcam;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-public class FSM_Fullstack extends OpMode {
-    //public AutoMecanumDrive drive;
-    public Abstract handler;
-
+public class FSM_TeleOp_Fullstack extends OpMode {
     public RobotState state = RobotState.IDLE;
-    public FSM_Outtake outtakeState = FSM_Outtake.IDLE;
+    public FSM_Outtake outtakeState = FSM_Outtake.ACTIVATED;
     public FSM_PlaneLauncher planeLauncherState = FSM_PlaneLauncher.IDLE;
     public FSM_Drivetrain drivetrainState = FSM_Drivetrain.MANUAL;
 
@@ -120,9 +71,6 @@ public class FSM_Fullstack extends OpMode {
     public double driveSpeedModifier = 1;
     public boolean adjustmentAllowed = true;
     public boolean fieldCentricRed = true;
-
-    public OpenCvWebcam backCamera;
-    public FieldPipeline backPipeline;
 
     public void InitializeBlock() {
         // NOTE: giant initialization block stored here instead of directly in init.
@@ -206,45 +154,6 @@ public class FSM_Fullstack extends OpMode {
         imu.resetYaw();
 
         Delay(100);
-    }
-
-    public void InitCameras() {
-
-        backPipeline = new FieldPipeline(0);
-
-        // note: viewport disabled for now
-        if (RobotConstants.USE_CAMERA_STREAM) {
-            int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA), cameraMonitorViewId);
-        } else {
-            backCamera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class,  RobotConstants.BACK_CAMERA));
-        }
-
-
-        backCamera.setMillisecondsPermissionTimeout(RobotConstants.PERMISSION_TIMEOUT);
-
-        backCamera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener()
-        {
-            @Override
-            public void onOpened()
-            {
-                telemetry.addLine("Back Camera Opened...");
-                telemetry.update();
-                backCamera.setPipeline(backPipeline);
-                if (RobotConstants.USE_CAMERA_STREAM) {
-                    backCamera.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
-                }
-
-                telemetry.addLine("ALL SYSTEMS GO FOR LAUNCH");
-            }
-
-            @Override
-            public void onError(int errorCode)
-            {
-                telemetry.addData("pain", "pain");
-                telemetry.update();
-            }
-        });
     }
 
     // NOTE: SYSTEM METHODS ------------------------------------------------------------------
@@ -392,7 +301,7 @@ public class FSM_Fullstack extends OpMode {
     public void OuttakeSubsystem() {
         // NOTE: statemachine for outtake sequences
         switch (outtakeState) {
-            case IDLE:
+            case ACTIVATED:
                 if (gamepad1.left_bumper) {
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);
                     outtakeFSMTimer.reset();
@@ -460,7 +369,7 @@ public class FSM_Fullstack extends OpMode {
                     targetOuttakePosition = 10;
                     UpdateOuttake(true, 0);
 
-                    outtakeState = FSM_Outtake.IDLE;
+                    outtakeState = FSM_Outtake.ACTIVATED;
                 }
                 break;
         }
@@ -491,7 +400,7 @@ public class FSM_Fullstack extends OpMode {
         if (adjustmentAllowed) {
             // slow down driving with analog trigger
             if (gamepad1.right_trigger >= 0.2) {
-                driveSpeedModifier = gamepad1.right_trigger + 1.3;
+                driveSpeedModifier = gamepad1.right_trigger + 1.6;
             } else {
                 driveSpeedModifier = 1;
             }
@@ -672,6 +581,11 @@ public class FSM_Fullstack extends OpMode {
         }
     }
 
+    public void MoveElbow(double targetPos) {
+        servoElbowR.setPosition(targetPos);
+        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
+    }
+
     public void TurnToDirection(double speed, double desiredHeading) {
         backLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontLM.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -762,10 +676,4 @@ public class FSM_Fullstack extends OpMode {
     public double GetHeadingRaw() {
         return imu.getRobotOrientation(AxesReference.EXTRINSIC, AxesOrder.XYZ, AngleUnit.DEGREES).thirdAngle;
     }
-
-    public void MoveElbow(double targetPos) {
-        servoElbowR.setPosition(targetPos);
-        servoElbowL.setPosition(1 - targetPos); // Set to the opposite position
-    }
-
 }

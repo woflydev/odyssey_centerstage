@@ -8,7 +8,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvPipeline;
-public class PropPipeline extends OpenCvPipeline {
+public class VisionPropPipeline extends OpenCvPipeline {
     private final Point region1Pos;
     private final Point region2Pos;
     private final Point region3Pos;
@@ -33,9 +33,9 @@ public class PropPipeline extends OpenCvPipeline {
 
     private Randomization randomization = Randomization.LOCATION_2;
 
-    public PropPipeline(RobotAlliance alliance, Point region1Pos,
-                                       Point region2Pos,
-                                       Point region3Pos) {
+    public VisionPropPipeline(RobotAlliance alliance, Point region1Pos,
+                              Point region2Pos,
+                              Point region3Pos) {
         this.alliance = alliance;
         this.region1Pos = region1Pos;
         this.region2Pos = region2Pos;

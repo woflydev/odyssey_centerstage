@@ -1,9 +1,7 @@
 package org.firstinspires.ftc.teamcode.drive.vision2;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.BuiltinCameraDirection;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.CameraName;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -11,7 +9,7 @@ import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 import java.util.List;
 
-public class PropDetection {
+public class TFPropPipeline {
 
     // TFOD_MODEL_ASSET points to a model file stored in the project Asset location,
     // this is only used for Android Studio when using models in Assets.
@@ -49,7 +47,7 @@ public class PropDetection {
         NONE
     }
 
-    public PropDetection(CameraName camera, RobotAlliance alliance, Telemetry t) {
+    public TFPropPipeline(CameraName camera, RobotAlliance alliance, Telemetry t) {
         this.alliance = alliance;
         this.cameraName = camera;
         initTfod();
