@@ -3,16 +3,13 @@ package org.firstinspires.ftc.teamcode.drive.Robotv8;
 import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.acmerobotics.roadrunner.trajectory.TrajectoryBuilder;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotParkingLocation;
@@ -47,7 +44,7 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     public Point r2;
     public Point r3;
 
-    public static final double INCHES_PER_TILE = 24;
+    public static final double INCHES_PER_TILE = 26;
 
     public static final Pose2d[] RED_STARTING_POSES = {
             new Pose2d(11.5, -60, Math.toRadians(90)),
@@ -72,9 +69,9 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
             new Pose2d(53.5, 36.5, Math.toRadians(180)),
     };
     public static final double[] YELLOW_PIXEL_VARIANCE = {
+            1.6,
+            1.4,
             1.2,
-            1,
-            0.8,
     };
     public static final double[] PURPLE_PIXEL_VARIANCE = {
             1.5,
@@ -84,9 +81,9 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
 
     // note: custom behaviour -----------------------------------------------------------
     public RR_DRIVE_ONLY_AutoBase(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
-        this.alliance = RobotAlliance.RED;
-        this.startingPosition = RobotStartingPosition.BACKDROP;
-        this.parkingLocation = RobotParkingLocation.INNER;
+        this.alliance = alliance;
+        this.startingPosition = startPos;
+        this.parkingLocation = parkLoc;
         this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
         this.r2 = r2;
@@ -164,13 +161,13 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
                 break;
         }
 
-        drive.followTrajectory(CalcRotation(180)); // note: robot has to be backwards to deposit
+        ExecuteRotation(180); // note: robot has to be backwards to deposit
         drive.followTrajectory(CalcKinematics(-1.45)); AutoWait();
         CenterRobotAtBackboard();
     }
 
     private void HandlePurplePixel() {
-        drive.followTrajectory(CalcRotation(0));
+        ExecuteRotation(0);
 
         switch (randomization) {
             case LOCATION_1:
@@ -190,17 +187,19 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
     private void ParkRobotAtBackboard() {
         Trajectory parking = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
-                .lineToLinearHeading(PARKING_POSE).build();
+                .splineToConstantHeading(PARKING_POSE.vec(),PARKING_POSE.getHeading()).build();
 
         drive.followTrajectory(parking);
+        ExecuteRotation(alliance == RobotAlliance.RED ? 90 : 270); // note: ensure field centric heading on finish
     }
 
     public void CenterRobotAtBackboard() {
         Trajectory center = drive
-                .trajectoryBuilder(new Pose2d(53.5, -35.5, Math.toRadians(180)))
-                .lineToLinearHeading(BACKBOARD_CENTER_POSES[allianceIndex]).build();
+                .trajectoryBuilder(drive.getPoseEstimate())
+                .splineToConstantHeading(BACKBOARD_CENTER_POSES[allianceIndex].vec(), BACKBOARD_CENTER_POSES[allianceIndex].getHeading()).build();
 
         drive.followTrajectory(center);
+
     }
 
     // note: helper functions -----------------------------------------------------------
@@ -223,14 +222,8 @@ public class RR_DRIVE_ONLY_AutoBase extends FSM_Fullstack {
                 .forward(tiles * INCHES_PER_TILE)
                 .build();
     }
-
-    public Trajectory CalcRotation(double deg) {
-        double x = drive.getPoseEstimate().getX();
-        double y = drive.getPoseEstimate().getY();
-        Pose2d current = drive.getPoseEstimate();
-        return drive.trajectoryBuilder(current)
-                .lineToLinearHeading(new Pose2d(current.getX(), current.getY(), Math.toRadians(deg)))
-                .build();
+    public void ExecuteRotation(double heading) {
+        drive.turn(Math.toRadians(heading) - drive.getPoseEstimate().getHeading());
     }
 
     public Trajectory path(Pose2d start, Pose2d end) {
