@@ -29,9 +29,9 @@ public class RobotAutoConstants {
             new Pose2d(50.5, 36.00, Math.toRadians(180))
     };
     public static final Pose2d[] SPIKEMARK_CENTER_POSES = {
-            // note: red is first
-            new Pose2d(48.5, -30, Math.toRadians(180)),
-            new Pose2d(48.5, 30, Math.toRadians(180)),
+            // note: red is first, must be backwards to deposit
+            new Pose2d(48.5, -30, Math.toRadians(0)),
+            new Pose2d(48.5, 30, Math.toRadians(0)),
     };
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first

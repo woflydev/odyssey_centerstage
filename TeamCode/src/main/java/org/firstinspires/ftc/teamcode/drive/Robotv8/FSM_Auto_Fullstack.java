@@ -187,6 +187,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case DEPOSIT_YELLOW:
                 if (!drive.isBusy()) {
+                    servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                    drive.followTrajectory(CalcKinematics(0.1, DriveConstants.MAX_VEL));
                     DropAndReset();
 
                     autoTimer.reset();
@@ -239,12 +241,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     TrajectorySequence cycleTrajectory = alliance == RobotAlliance.RED ?
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                     // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
-                                    .lineToLinearHeading(STAGE_DOOR_POSES[0])
+                                    .lineToSplineHeading(STAGE_DOOR_POSES[0])
+                                    .waitSeconds(0.05)
                                     .splineTo(CYCLING_STACK_INNER_POSES[0].vec(), CYCLING_STACK_INNER_POSES[0].getHeading())
                                     .build()
                             :
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .lineToLinearHeading(STAGE_DOOR_POSES[1])
+                                    .lineToSplineHeading(STAGE_DOOR_POSES[1])
+                                    .waitSeconds(0.05)
                                     .splineTo(CYCLING_STACK_INNER_POSES[1].vec(), CYCLING_STACK_INNER_POSES[1].getHeading())
                                     .build()
                             ;
@@ -329,7 +333,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void CenterRobotForSpikemark() {
         Trajectory center = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
-                .splineToConstantHeading(SPIKEMARK_CENTER_POSES[allianceIndex].vec(), SPIKEMARK_CENTER_POSES[allianceIndex].getHeading())
+                .lineToSplineHeading(SPIKEMARK_CENTER_POSES[allianceIndex])
                 .build();
 
         drive.followTrajectoryAsync(center);
@@ -568,7 +572,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public void DropAndReset() {
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(950); // wait for claw to open
+        Delay(700); // wait for claw to open
 
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
