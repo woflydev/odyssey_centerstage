@@ -28,9 +28,13 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.typecontainers.MotorConfigurationType;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceBuilder;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequenceRunner;
@@ -82,7 +86,7 @@ public class SampleMecanumDrive extends MecanumDrive {
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
 
-    public SampleMecanumDrive(HardwareMap hardwareMap) {
+    public SampleMecanumDrive(HardwareMap hardwareMap, Pose2d startPose, Telemetry t, boolean useCameraLoc) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
@@ -138,6 +142,9 @@ public class SampleMecanumDrive extends MecanumDrive {
 
         // TODO: if desired, use setLocalizer() to change the localization method
         //setLocalizer(new CameraLocalizer(hardwareMap, FRONT_CAMERA, BACK_CAMERA, new Pose2d(0, 0, 0)));
+        if (useCameraLoc) {
+            setLocalizer(new CameraLocalizer(hardwareMap, "Webcam 1", "Webcam 2", startPose, t));
+        }
 
         trajectorySequenceRunner = new TrajectorySequenceRunner(
                 follower, HEADING_PID, batteryVoltageSensor,

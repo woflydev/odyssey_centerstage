@@ -283,7 +283,9 @@ public class CameraLocalizer implements Localizer {
         // Choose a camera resolution. Not all cameras support all resolutions.
         builder.setCameraResolution(new Size(1280, 720));
 
-        if (RobotConstants.USE_LIVE_VIEW) {
+        builder.enableLiveView(false);
+
+        /*if (RobotConstants.USE_LIVE_VIEW) {
             // Enable the RC preview (LiveView).  Set "false" to omit camera monitoring.
             builder.enableLiveView(true);
 
@@ -295,8 +297,8 @@ public class CameraLocalizer implements Localizer {
             // If set "false", monitor shows camera view without annotations.
             builder.setAutoStopLiveView(false);
         } else {
-            builder.enableLiveView(false);
-        }
+
+        }*/
         // Create the TensorFlow processor by using a builder.
 
         tfod = new TfodProcessor.Builder()

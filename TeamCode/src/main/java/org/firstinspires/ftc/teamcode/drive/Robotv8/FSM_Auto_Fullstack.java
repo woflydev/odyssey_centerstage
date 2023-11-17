@@ -115,7 +115,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         Delay(2000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
-        drive = new SampleMecanumDrive(hardwareMap);
+        drive = new SampleMecanumDrive(hardwareMap, START_POSE, telemetry, true);
         drive.setPoseEstimate(START_POSE);
 
         VisionPropDetection(300);
