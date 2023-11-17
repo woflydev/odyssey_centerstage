@@ -133,7 +133,7 @@ public class OdysseyMecanumDrive extends MecanumDrive {
         rightRear.setDirection(DcMotorEx.Direction.FORWARD);
         leftFront.setDirection(DcMotorSimple.Direction.REVERSE);
         leftRear.setDirection(DcMotorSimple.Direction.REVERSE);
-        
+
         List<Integer> lastTrackingEncPositions = new ArrayList<>();
         List<Integer> lastTrackingEncVels = new ArrayList<>();
 
