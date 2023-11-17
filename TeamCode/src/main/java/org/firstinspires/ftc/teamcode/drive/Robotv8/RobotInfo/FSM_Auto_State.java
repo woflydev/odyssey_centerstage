@@ -17,6 +17,12 @@ public class FSM_Auto_State {
         PARKED,
     }
 
+    public enum RobotAlliance {
+        BLUE,
+        RED,
+        NONE,
+    }
+
     public enum RobotStartingPosition {
         BACKDROP,
         AUDIENCE,

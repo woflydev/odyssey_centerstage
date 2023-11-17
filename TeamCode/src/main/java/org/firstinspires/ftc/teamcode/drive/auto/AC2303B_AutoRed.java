@@ -5,8 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Auto_Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotParkingLocation;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.opencv.core.Point;
 
@@ -22,9 +20,9 @@ public class AC2303B_AutoRed extends FSM_Auto_Fullstack {
 
     public AC2303B_AutoRed() {
         super(
-                RobotAlliance.RED,
+                FSM_Auto_State.RobotAlliance.RED,
                 RobotStartingPosition.BACKDROP,
-                RobotParkingLocation.INNER,
+                FSM_Auto_State.RobotParkingLocation.INNER,
                 FSM_Auto_State.RobotTaskFinishBehaviour.CYCLE,
                 new Point(r1x, r1y),
                 new Point(r2x, r2y),
