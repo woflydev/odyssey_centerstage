@@ -5,6 +5,7 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_YELLOW_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_PARKING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_STARTING_POSES;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CAUTION_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CENTER_SPIKEMARK_ALIGN_TURN;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLING_STACK_INNER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.INCHES_PER_TILE;
@@ -20,6 +21,7 @@ import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.drive.Drive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
@@ -33,9 +35,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -47,7 +51,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 @Config
 public class FSM_Auto_Fullstack extends LinearOpMode {
-    private SampleMecanumDrive drive;
+    private OdysseyMecanumDrive drive;
     private FSM_RootAutoState autoState = FSM_RootAutoState.PLAY;
     private FSM_Outtake outtakeState = FSM_Outtake.IDLE;
     private VisionPropPipeline.Randomization randomization;
@@ -115,7 +119,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         Delay(2000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
-        drive = new SampleMecanumDrive(hardwareMap, START_POSE, telemetry, true);
+        drive = new OdysseyMecanumDrive(hardwareMap, START_POSE, telemetry, false);
         drive.setPoseEstimate(START_POSE);
 
         VisionPropDetection(300);
@@ -153,14 +157,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 autoTimer.reset();
                 switch (randomization) {
                     case LOCATION_1:
-                        drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[0])); AutoWait();
+                        drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[0], DriveConstants.MAX_VEL)); AutoWait();
                         break;
                     default:
                     case LOCATION_2:
-                        drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[1])); AutoWait();
+                        drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[1], DriveConstants.MAX_VEL)); AutoWait();
                         break;
                     case LOCATION_3:
-                        drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[2])); AutoWait();
+                        drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[2], DriveConstants.MAX_VEL)); AutoWait();
                         break;
                 }
                 outtakeState = FSM_Outtake.IDLE;
@@ -168,14 +172,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case TURNING_TO_BACKDROP:
                 if (!drive.isBusy()) {
-                    RaiseAndPrime(100); // note: no delay here
+                    RaiseAndPrime(150); // note: no delay here
                     ExecuteRotation(180,  true);
                     autoState = FSM_RootAutoState.MOVING_TO_BACKDROP;
                 }
                 break;
             case MOVING_TO_BACKDROP:
                 if (!drive.isBusy()) {
-                    drive.followTrajectoryAsync(CalcKinematics(-SPIKE_TO_BACKBOARD_TRANSIT));
+                    drive.followTrajectoryAsync(CalcKinematics(-SPIKE_TO_BACKBOARD_TRANSIT, DriveConstants.MAX_VEL));
                     autoState = FSM_RootAutoState.DEPOSIT_YELLOW;
                 }
                 break;
@@ -203,18 +207,19 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     switch (randomization) {
                         case LOCATION_1:
                             // has to drive backwards
-                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[0]));
+                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[0], DriveConstants.MAX_VEL));
                             ExpelPurple();
                             break;
                         default:
                         case LOCATION_2:
-                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[1]));
+                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[1], DriveConstants.MAX_VEL));
                             drive.turn(Math.toRadians(-CENTER_SPIKEMARK_ALIGN_TURN * dir)); // note: always turns counterclockwise
                             ExpelPurple();
                             drive.turn(Math.toRadians(CENTER_SPIKEMARK_ALIGN_TURN * dir));
                             break;
                         case LOCATION_3:
-                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[2]));
+                            Delay(400); // note: purple has to prime first to push prop
+                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[2], DriveConstants.MAX_VEL));
                             ExpelPurple();
                             break;
                     }
@@ -232,12 +237,12 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     TrajectorySequence cycleTrajectory = alliance == RobotAlliance.RED ?
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                     // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
-                                    .splineTo(STAGE_DOOR_POSES[0].vec(), STAGE_DOOR_POSES[0].getHeading())
+                                    .lineToLinearHeading(STAGE_DOOR_POSES[0])
                                     .splineTo(CYCLING_STACK_INNER_POSES[0].vec(), CYCLING_STACK_INNER_POSES[0].getHeading())
                                     .build()
                             :
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .splineTo(STAGE_DOOR_POSES[1].vec(), STAGE_DOOR_POSES[1].getHeading())
+                                    .lineToLinearHeading(STAGE_DOOR_POSES[1])
                                     .splineTo(CYCLING_STACK_INNER_POSES[1].vec(), CYCLING_STACK_INNER_POSES[1].getHeading())
                                     .build()
                             ;
@@ -249,40 +254,48 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
-                    intake.setPower(0.8);
-                    ExecuteRotation(190, false);
-                    ExecuteRotation(170, false); AutoWait();
-                    ExecuteRotation(180, false); AutoWait();
+                    intake.setPower(0.55);
+                    drive.followTrajectory(CalcKinematics(0.3, CAUTION_SPEED));
+                    ExecuteRotation(180, false);
+                    Delay(2000);
                     intake.setPower(0);
 
                     TrajectorySequence toBackdropTrajectory = alliance == RobotAlliance.RED ?
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                     // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
                                     .lineToConstantHeading(STAGE_DOOR_POSES[0].vec())
+                                    .waitSeconds(0.05)
                                     .splineToConstantHeading(BACKDROP_CENTER_POSES[0].vec(), BACKDROP_CENTER_POSES[0].getHeading())
                                     .build()
                             :
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                     .lineToConstantHeading(STAGE_DOOR_POSES[1].vec())
+                                    .waitSeconds(0.05)
                                     .splineToConstantHeading(BACKDROP_CENTER_POSES[1].vec(), BACKDROP_CENTER_POSES[1].getHeading())
                                     .build()
                             ;
+
+                    outtakeState = FSM_Outtake.ACTIVATED;
+                    Delay(500); // note: allow for some time for flap to open and claw to grab
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
                     autoState = FSM_RootAutoState.MOVING_BACK_FROM_CYCLE;
                 }
                 break;
             case MOVING_BACK_FROM_CYCLE:
-                outtakeState = FSM_Outtake.ACTIVATED;
+                // note: empty for now
                 autoState = FSM_RootAutoState.DEPOSIT_WHITE;
                 break;
             case DEPOSIT_WHITE:
                 // note: if it has stopped at backboard AND is grabbed and ready
                 if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
                     ExecuteRotation(180, false);
-                    RaiseAndPrime(250); AutoWait();
-                    outtakeState = FSM_Outtake.IDLE;
+                    RaiseAndPrime(600);
+                    Delay(300);
+                    servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+                    drive.followTrajectory(CalcKinematics(0.1, DriveConstants.MAX_VEL));
                     DropAndReset();
+                    outtakeState = FSM_Outtake.IDLE;
                     autoState = FSM_RootAutoState.MOVING_TO_PARKING;
                 }
             case MOVING_TO_PARKING:
@@ -358,7 +371,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeTimer.milliseconds() >= 350) {
+                if (outtakeTimer.milliseconds() >= 450) {
                     outtakeTimer.reset();
                     //servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);
@@ -551,7 +564,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public void DropAndReset() {
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(800); // wait for claw to open
+        Delay(950); // wait for claw to open
 
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
@@ -567,9 +580,11 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         Delay(400);
     }
 
-    public Trajectory CalcKinematics(double tiles) {
+    public Trajectory CalcKinematics(double tiles, double speed) {
         return drive.trajectoryBuilder(drive.getPoseEstimate())
-                .forward(tiles * INCHES_PER_TILE)
+                .forward(tiles * INCHES_PER_TILE,
+                        OdysseyMecanumDrive.getVelocityConstraint(speed, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                        OdysseyMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                 .build();
     }
 
