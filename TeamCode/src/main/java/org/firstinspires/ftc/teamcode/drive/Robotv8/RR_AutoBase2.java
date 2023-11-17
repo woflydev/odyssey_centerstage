@@ -11,10 +11,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.*;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.drive.vision2.CameraLocalizer2;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -25,6 +27,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 @Config
 public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
     private SampleMecanumDrive drive;
+    private CameraLocalizer2 localizer;
     private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public static Pose2d START_POSE = new Pose2d();
@@ -59,6 +62,8 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
     }
 
     public void MainInit() {
+        localizer = new CameraLocalizer2(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
+        drive.setLocalizer(localizer);
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         Delay(2000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
@@ -166,7 +171,7 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
                 .splineToConstantHeading(PARKING_POSE.vec(),PARKING_POSE.getHeading()).build();
 
         drive.followTrajectory(parking);
-        ExecuteRotation(alliance == RobotAlliance.RED ? 90 : 270); // note: ensure field centric heading on finish
+        ExecuteRotation(alliance == FSM_Auto_State.RobotAlliance.RED ? 90 : 270); // note: ensure field centric heading on finish
     }
 
     public void CenterRobotAtBackboard() {
