@@ -416,11 +416,13 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                     UpdateOuttake(false, 0);
                 }
             } else if (gamepad2.dpad_down) {
-                targetOuttakePosition = 30;
-                UpdateOuttake(true, 0);
+                targetWristPosition -= 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
             } else if (gamepad2.dpad_up) {
-                targetOuttakePosition = RobotConstants.MAX_OUTTAKE_HEIGHT;
-                UpdateOuttake(false, 0);
+                targetWristPosition += 0.02;
+                servoWrist.setPosition(targetWristPosition);
+                Delay(50);
             }
 
             // claw
