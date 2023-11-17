@@ -244,7 +244,6 @@ public class Fullstack extends OpMode {
     }
     public void StatusTelemetry() {
         // NOTE: Basic robot telemetry is handled here, instead of child classes.
-        telemetry.addData("SPIKEMARK: ", handler.localizer.propTfod(true));
         telemetry.addData("Arm Left: ", armL.getCurrentPosition());
         telemetry.addData("Arm Right: ", armR.getCurrentPosition());
         telemetry.addData("IMU Raw: ", GetHeadingRaw());

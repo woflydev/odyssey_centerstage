@@ -4,7 +4,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.drive.Robotv8.FSM_Auto_Fullstack;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RR_AutoBase2;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotParkingLocation;
@@ -12,8 +11,8 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosit
 import org.opencv.core.Point;
 
 @Config
-@Autonomous(name="NAT_BlueBackdropAuto", group="Final")
-public class AC2303B_AutoBlue extends FSM_Auto_Fullstack {
+@Autonomous(name="NAT_RedBackdropAuto", group="Final")
+public class AC2303B_AutoRed extends FSM_Auto_Fullstack {
     public static double r1x = 25;
     public static double r1y = 90;
     public static double r2x = 150;
@@ -21,9 +20,9 @@ public class AC2303B_AutoBlue extends FSM_Auto_Fullstack {
     public static double r3x = 260;
     public static double r3y = 90;
 
-    public AC2303B_AutoBlue() {
+    public AC2303B_AutoRed() {
         super(
-                RobotAlliance.BLUE,
+                RobotAlliance.RED,
                 RobotStartingPosition.BACKDROP,
                 RobotParkingLocation.INNER,
                 FSM_Auto_State.RobotTaskFinishBehaviour.CYCLE,

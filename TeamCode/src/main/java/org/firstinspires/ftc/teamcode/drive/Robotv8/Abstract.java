@@ -156,7 +156,7 @@ public class Abstract {
 
         int spikeMark = -1;
         while (spikeMark == -1) {
-            spikeMark = localizer.propTfod(PLAYING_BLUE);
+            //spikeMark = localizer.propTfod(PLAYING_BLUE);
         }
 
 

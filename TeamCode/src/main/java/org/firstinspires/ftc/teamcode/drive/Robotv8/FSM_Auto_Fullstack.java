@@ -5,11 +5,13 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_PARKING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_STARTING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CENTER_SPIKEMARK_ALIGN_TURN;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLING_STACK_INNER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.INCHES_PER_TILE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.RED_PARKING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.RED_STARTING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.SPIKEMARK_CENTER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.SPIKE_TO_BACKBOARD_TRANSIT;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.STAGE_DOOR_POSES;
 
 import static java.lang.Thread.sleep;
 
@@ -29,17 +31,16 @@ import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.checkerframework.checker.units.qual.C;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAlliance;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotParkingLocation;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotStartingPosition;
 import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.vision.CameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
@@ -49,8 +50,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 @Config
 public class FSM_Auto_Fullstack extends LinearOpMode {
     private SampleMecanumDrive drive;
-    private CameraLocalizer camLoc;
-    private FSM_Auto autoState = FSM_Auto.PLAY;
+    private FSM_RootAutoState autoState = FSM_RootAutoState.PLAY;
     private FSM_Outtake outtakeState = FSM_Outtake.IDLE;
     private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
@@ -62,10 +62,12 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public RobotAlliance alliance;
     public RobotStartingPosition startingPosition;
     public RobotParkingLocation parkingLocation;
+    public RobotTaskFinishBehaviour taskFinishBehaviour;
     public int allianceIndex;
     public int startingPositionIndex;
     public int parkingLocationIndex;
     public int dir;
+    public double[] workingPurpleVariance;
     public Point r1;
     public Point r2;
     public Point r3;
@@ -90,10 +92,11 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public int targetOuttakePosition = 0;
 
     // note: constructor ----------------------------------------------------------------
-    public FSM_Auto_Fullstack(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
+    public FSM_Auto_Fullstack(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, RobotTaskFinishBehaviour finishBehaviour, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
         this.startingPosition = startPos;
         this.parkingLocation = parkLoc;
+        this.taskFinishBehaviour = finishBehaviour;
         this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
         this.r2 = r2;
@@ -126,6 +129,16 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         // note: MAIN START
         waitForStart();
 
+        workingPurpleVariance = alliance == RobotAlliance.RED ? new double[] {
+                BACKDROP_PURPLE_PIXEL_VARIANCE[0],
+                BACKDROP_PURPLE_PIXEL_VARIANCE[1],
+                BACKDROP_PURPLE_PIXEL_VARIANCE[2]
+        } : new double[] {
+                BACKDROP_PURPLE_PIXEL_VARIANCE[2],
+                BACKDROP_PURPLE_PIXEL_VARIANCE[1],
+                BACKDROP_PURPLE_PIXEL_VARIANCE[0]
+        };
+
         while (!isStopRequested() && opModeIsActive()) {
             MainLoop();
         }
@@ -153,19 +166,19 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         break;
                 }
                 outtakeState = FSM_Outtake.IDLE;
-                autoState = FSM_Auto.TURNING_TO_BACKDROP;
+                autoState = FSM_RootAutoState.TURNING_TO_BACKDROP;
                 break;
             case TURNING_TO_BACKDROP:
                 if (!drive.isBusy()) {
                     RaiseAndPrime(100); // note: no delay here
-                    ExecuteRotationAsync(180);
-                    autoState = FSM_Auto.MOVING_TO_BACKDROP;
+                    ExecuteRotation(180,  true);
+                    autoState = FSM_RootAutoState.MOVING_TO_BACKDROP;
                 }
                 break;
             case MOVING_TO_BACKDROP:
                 if (!drive.isBusy()) {
                     drive.followTrajectoryAsync(CalcKinematics(-SPIKE_TO_BACKBOARD_TRANSIT));
-                    autoState = FSM_Auto.DEPOSIT_YELLOW;
+                    autoState = FSM_RootAutoState.DEPOSIT_YELLOW;
                 }
                 break;
             case DEPOSIT_YELLOW:
@@ -173,49 +186,113 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     DropAndReset();
 
                     autoTimer.reset();
-                    CenterRobotAtBackboard();
-                    autoState = FSM_Auto.TURNING_TO_SPIKEMARK;
+                    CenterRobotForSpikemark();
+                    autoState = FSM_RootAutoState.TURNING_TO_SPIKEMARK;
                 }
                 break;
             case TURNING_TO_SPIKEMARK:
                 if (!drive.isBusy()) {
                     outtakeState = FSM_Outtake.ACTIVATED; // activates the grab and deploy sequence on next iteration
-                    ExecuteRotationAsync(0);
+                    ExecuteRotation(0, true);
+
+                    autoState = FSM_RootAutoState.MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE;
                 }
                 break;
             case MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE:
                 // note: this bit can be synchronous
-                if (!drive.isBusy()) {
+                if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
                     PrimePurple(); // note: takes over from outtake subsystem and forces prime purple position
                     switch (randomization) {
                         case LOCATION_1:
                             // has to drive backwards
-                            drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[0]));
+                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[0]));
                             ExpelPurple();
                             break;
                         default:
                         case LOCATION_2:
-                            drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[1]));
+                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[1]));
                             drive.turn(Math.toRadians(-CENTER_SPIKEMARK_ALIGN_TURN * dir)); // note: always turns counterclockwise
                             ExpelPurple();
                             drive.turn(Math.toRadians(CENTER_SPIKEMARK_ALIGN_TURN * dir));
                             break;
                         case LOCATION_3:
-                            drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[2]));
+                            drive.followTrajectory(CalcKinematics(-workingPurpleVariance[2]));
                             ExpelPurple();
                             break;
                     }
                     outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
-                    autoState = FSM_Auto.MOVING_TO_PARKING;
+
+                    if (taskFinishBehaviour == RobotTaskFinishBehaviour.DO_NOT_CYCLE) {
+                        autoState = FSM_RootAutoState.MOVING_TO_PARKING;
+                    } else {
+                        autoState = FSM_RootAutoState.MOVING_TO_CYCLE;
+                    }
                 }
                 break;
+            case MOVING_TO_CYCLE:
+                if (!drive.isBusy()) {
+                    TrajectorySequence cycleTrajectory = alliance == RobotAlliance.RED ?
+                            drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                                    // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
+                                    .splineTo(STAGE_DOOR_POSES[0].vec(), STAGE_DOOR_POSES[0].getHeading())
+                                    .splineTo(CYCLING_STACK_INNER_POSES[0].vec(), CYCLING_STACK_INNER_POSES[0].getHeading())
+                                    .build()
+                            :
+                            drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                                    .splineTo(STAGE_DOOR_POSES[1].vec(), STAGE_DOOR_POSES[1].getHeading())
+                                    .splineTo(CYCLING_STACK_INNER_POSES[1].vec(), CYCLING_STACK_INNER_POSES[1].getHeading())
+                                    .build()
+                            ;
+
+                    drive.followTrajectorySequence(cycleTrajectory); // note: blocking
+                    ExecuteRotation(180, true);
+                    autoState = FSM_RootAutoState.INTAKE_PIXELS_FROM_STACK;
+                }
+                break;
+            case INTAKE_PIXELS_FROM_STACK:
+                if (!drive.isBusy()) {
+                    intake.setPower(0.8);
+                    ExecuteRotation(190, false);
+                    ExecuteRotation(170, false);
+                    ExecuteRotation(180, false);
+                    intake.setPower(0);
+
+                    TrajectorySequence toBackdropTrajectory = alliance == RobotAlliance.RED ?
+                            drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                                    // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
+                                    .splineTo(STAGE_DOOR_POSES[0].vec(), STAGE_DOOR_POSES[0].getHeading())
+                                    .splineTo(CYCLING_STACK_INNER_POSES[0].vec(), CYCLING_STACK_INNER_POSES[0].getHeading())
+                                    .build()
+                            :
+                            drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                                    .splineTo(STAGE_DOOR_POSES[1].vec(), STAGE_DOOR_POSES[1].getHeading())
+                                    .splineTo(CYCLING_STACK_INNER_POSES[1].vec(), CYCLING_STACK_INNER_POSES[1].getHeading())
+                                    .build()
+                            ;
+
+                    drive.followTrajectorySequenceAsync(toBackdropTrajectory);
+                    autoState = FSM_RootAutoState.MOVING_BACK_FROM_CYCLE;
+                }
+                break;
+            case MOVING_BACK_FROM_CYCLE:
+                outtakeState = FSM_Outtake.ACTIVATED;
+                autoState = FSM_RootAutoState.DEPOSIT_WHITE;
+                break;
+            case DEPOSIT_WHITE:
+                // note: if it has stopped at backboard AND is grabbed and ready
+                if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
+                    RaiseAndPrime(150); AutoWait();
+                    DropAndReset();
+                    autoState = FSM_RootAutoState.MOVING_TO_PARKING;
+                }
             case MOVING_TO_PARKING:
                 if (!drive.isBusy()) {
                     ParkRobotAtBackboard();
-                    autoState = FSM_Auto.PARKED;
+                    autoState = FSM_RootAutoState.PARKED;
                 }
                 break;
             case PARKED:
+                // other custom logic if parked
                 break;
         }
 
@@ -230,11 +307,11 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 .trajectoryBuilder(drive.getPoseEstimate())
                 .splineToConstantHeading(PARKING_POSE.vec(),PARKING_POSE.getHeading()).build();
 
-        drive.followTrajectoryAsync(parking);
-        ExecuteRotationAsync(alliance == RobotAlliance.RED ? 90 : 270); // note: ensure field centric heading on finish
+        drive.followTrajectory(parking);
+        ExecuteRotation(alliance == RobotAlliance.RED ? 90 : 270, true); // note: ensure field centric heading on finish
     }
 
-    private void CenterRobotAtBackboard() {
+    private void CenterRobotForSpikemark() {
         Trajectory center = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
                 .splineToConstantHeading(SPIKEMARK_CENTER_POSES[allianceIndex].vec(), SPIKEMARK_CENTER_POSES[allianceIndex].getHeading())
@@ -396,8 +473,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         imu.initialize(parameters);
         imu.resetYaw();
 
-        camLoc = new CameraLocalizer(hardwareMap, "Webcam 1", "Webcam 2", START_POSE, telemetry);
-
         Delay(100);
     }
 
@@ -406,7 +481,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addData("Autonomous Clockspeed", autoTimer.seconds());
         telemetry.addData("Robot X", drive.getPoseEstimate().getX());
         telemetry.addData("Robot Y", drive.getPoseEstimate().getY());
-        telemetry.addData("Visual Pose", camLoc.getPoseEstimate());
         telemetry.addData("Robot Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
         telemetry.update();
     }
@@ -469,8 +543,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
         MoveElbow(RobotConstants.ELBOW_ACTIVE);
-
-        outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         Delay(50); // debounce
 
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
@@ -501,9 +573,15 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 .build();
     }
 
-    public void ExecuteRotationAsync(double heading) {
+    public void ExecuteRotation(double heading, boolean async) {
         double diff = heading - Math.toDegrees(drive.getPoseEstimate().getHeading());
-        drive.turnAsync(diff > 180 ? Math.toRadians(-(360 - diff)) : Math.toRadians(diff));
+        double amt = diff > 180 ? Math.toRadians(-(360 - diff)) : Math.toRadians(diff);
+        if (async) {
+            drive.turnAsync(amt);
+        } else {
+            drive.turn(amt);
+        }
+
     }
 
     public void UpdateOuttake(boolean reset, double delay) { // test new function
