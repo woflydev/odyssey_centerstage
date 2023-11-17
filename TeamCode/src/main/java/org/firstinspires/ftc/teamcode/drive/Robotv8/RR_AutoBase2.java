@@ -12,9 +12,11 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.vision2.CameraLocalizer2;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
@@ -26,7 +28,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 
 @Config
 public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
-    private SampleMecanumDrive drive;
+    private OdysseyMecanumDrive drive;
     private CameraLocalizer2 localizer;
     private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
@@ -68,7 +70,7 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
         Delay(2000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
-        drive = new SampleMecanumDrive(hardwareMap);
+        drive = new OdysseyMecanumDrive(hardwareMap, START_POSE, telemetry, false);
         drive.setPoseEstimate(START_POSE);
 
         VisionPropDetection(); // note: assert where the prop is
