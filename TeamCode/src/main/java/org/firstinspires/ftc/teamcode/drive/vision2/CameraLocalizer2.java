@@ -25,6 +25,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
+import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
 import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
@@ -67,7 +68,7 @@ public class CameraLocalizer2 implements Localizer {
 
     public boolean useCamera;
 
-    private SampleMecanumDrive drive;
+    private OdysseyMecanumDrive drive;
 
     /**
      * {@link #aprilTag} is the variable to store our instance of the AprilTag processor.
@@ -166,7 +167,7 @@ public class CameraLocalizer2 implements Localizer {
         return poseVelocity;
     }
 
-    public CameraLocalizer2(HardwareMap map, String front, Pose2d startingPose, Telemetry t, SampleMecanumDrive d, boolean useCamera) {
+    public CameraLocalizer2(HardwareMap map, String front, Pose2d startingPose, Telemetry t, OdysseyMecanumDrive d, boolean useCamera) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
         this.poseVelocity = new Pose2d(0, 0, 0);

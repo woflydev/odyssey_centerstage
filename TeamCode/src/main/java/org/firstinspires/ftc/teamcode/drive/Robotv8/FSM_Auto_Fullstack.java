@@ -423,7 +423,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         backRM = hardwareMap.get(DcMotorEx.class, RobotConstants.BACK_RIGHT);
 
         frontLM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_LEFT);
-        frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT); //frontRM.setDirection(DcMotorSimple.Direction.REVERSE); // weird workaround Stanley put in
+        frontRM = hardwareMap.get(DcMotorEx.class, RobotConstants.FRONT_RIGHT);
         intake = hardwareMap.get(DcMotorEx.class, RobotConstants.INTAKE_MOTOR);
 
         backLM.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
