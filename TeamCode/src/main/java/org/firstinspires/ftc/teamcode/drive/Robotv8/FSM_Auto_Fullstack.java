@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_PURPLE_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_YELLOW_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_PARKING_POSES;
@@ -250,20 +251,20 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 if (!drive.isBusy()) {
                     intake.setPower(0.8);
                     ExecuteRotation(190, false);
-                    ExecuteRotation(170, false);
-                    ExecuteRotation(180, false);
+                    ExecuteRotation(170, false); AutoWait();
+                    ExecuteRotation(180, false); AutoWait();
                     intake.setPower(0);
 
                     TrajectorySequence toBackdropTrajectory = alliance == RobotAlliance.RED ?
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                     // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
-                                    .splineTo(STAGE_DOOR_POSES[0].vec(), STAGE_DOOR_POSES[0].getHeading())
-                                    .splineTo(CYCLING_STACK_INNER_POSES[0].vec(), CYCLING_STACK_INNER_POSES[0].getHeading())
+                                    .lineToConstantHeading(STAGE_DOOR_POSES[0].vec())
+                                    .splineToConstantHeading(BACKDROP_CENTER_POSES[0].vec(), BACKDROP_CENTER_POSES[0].getHeading())
                                     .build()
                             :
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                                    .splineTo(STAGE_DOOR_POSES[1].vec(), STAGE_DOOR_POSES[1].getHeading())
-                                    .splineTo(CYCLING_STACK_INNER_POSES[1].vec(), CYCLING_STACK_INNER_POSES[1].getHeading())
+                                    .lineToConstantHeading(STAGE_DOOR_POSES[1].vec())
+                                    .splineToConstantHeading(BACKDROP_CENTER_POSES[1].vec(), BACKDROP_CENTER_POSES[1].getHeading())
                                     .build()
                             ;
 
@@ -278,7 +279,9 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             case DEPOSIT_WHITE:
                 // note: if it has stopped at backboard AND is grabbed and ready
                 if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
-                    RaiseAndPrime(150); AutoWait();
+                    ExecuteRotation(180, false);
+                    RaiseAndPrime(250); AutoWait();
+                    outtakeState = FSM_Outtake.IDLE;
                     DropAndReset();
                     autoState = FSM_RootAutoState.MOVING_TO_PARKING;
                 }
