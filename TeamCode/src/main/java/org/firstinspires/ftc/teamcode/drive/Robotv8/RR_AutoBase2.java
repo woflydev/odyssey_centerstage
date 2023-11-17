@@ -11,7 +11,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.*;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State;
+
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
@@ -32,9 +33,9 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
     public static Pose2d START_POSE = new Pose2d();
     public static Pose2d PARKING_POSE = new Pose2d();
 
-    public FSM_Auto_State.RobotAlliance alliance;
-    public FSM_Auto_State.RobotStartingPosition startingPosition;
-    public FSM_Auto_State.RobotParkingLocation parkingLocation;
+    public RobotAlliance alliance;
+    public RobotStartingPosition startingPosition;
+    public RobotParkingLocation parkingLocation;
     public int allianceIndex;
     public int startingPositionIndex;
     public int parkingLocationIndex;
@@ -44,20 +45,20 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
     public Point r3;
 
     // note: custom behaviour -----------------------------------------------------------
-    public RR_AutoBase2(FSM_Auto_State.RobotAlliance alliance, FSM_Auto_State.RobotStartingPosition startPos, FSM_Auto_State.RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
+    public RR_AutoBase2(RobotAlliance alliance, RobotStartingPosition startPos, RobotParkingLocation parkLoc, Point r1, Point r2, Point r3) {
         this.alliance = alliance;
         this.startingPosition = startPos;
         this.parkingLocation = parkLoc;
-        this.dir = alliance == FSM_Auto_State.RobotAlliance.RED ? 1 : -1;
+        this.dir = alliance == RobotAlliance.RED ? 1 : -1;
         this.r1 = r1;
         this.r2 = r2;
         this.r3 = r3;
 
-        allianceIndex = this.alliance == FSM_Auto_State.RobotAlliance.RED ? 0 : 1;
-        startingPositionIndex = this.startingPosition == FSM_Auto_State.RobotStartingPosition.BACKDROP ? 0 : 1;
-        parkingLocationIndex = this.parkingLocation == FSM_Auto_State.RobotParkingLocation.INNER ? 0 : 1;
-        START_POSE = this.alliance == FSM_Auto_State.RobotAlliance.RED ? RED_STARTING_POSES[startingPositionIndex] : BLUE_STARTING_POSES[startingPositionIndex];
-        PARKING_POSE = this.alliance == FSM_Auto_State.RobotAlliance.RED ? RED_PARKING_POSES[parkingLocationIndex] : BLUE_PARKING_POSES[parkingLocationIndex];
+        allianceIndex = this.alliance == RobotAlliance.RED ? 0 : 1;
+        startingPositionIndex = this.startingPosition == RobotStartingPosition.BACKDROP ? 0 : 1;
+        parkingLocationIndex = this.parkingLocation == RobotParkingLocation.INNER ? 0 : 1;
+        START_POSE = this.alliance == RobotAlliance.RED ? RED_STARTING_POSES[startingPositionIndex] : BLUE_STARTING_POSES[startingPositionIndex];
+        PARKING_POSE = this.alliance == RobotAlliance.RED ? RED_PARKING_POSES[parkingLocationIndex] : BLUE_PARKING_POSES[parkingLocationIndex];
     }
 
     public void MainInit() {

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Deprecated;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 
 //@Autonomous(name="AutoBlue1", group="Final")
 @Deprecated

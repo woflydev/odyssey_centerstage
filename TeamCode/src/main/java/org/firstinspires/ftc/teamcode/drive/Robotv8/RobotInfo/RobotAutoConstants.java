@@ -24,7 +24,7 @@ public class RobotAutoConstants {
             new Pose2d(45, 15, Math.toRadians(270)),
             new Pose2d(45, 53.5, Math.toRadians(270))
     };
-    public static final Pose2d[] BACKBOARD_CENTER_POSES = {
+    public static final Pose2d[] BACKDROP_CENTER_POSES = {
             new Pose2d(48.00, -36.00, Math.toRadians(180)),
             new Pose2d(48.00, 36.00, Math.toRadians(180))
     };
@@ -35,8 +35,8 @@ public class RobotAutoConstants {
     };
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first
-            new Pose2d(new Vector2d(-61.62, -11.02), Math.toRadians(180.00)),
-            new Pose2d(new Vector2d(-61.62, 11.02), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-61.5, -11.02), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-61.5, 11.02), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
             new Pose2d(new Vector2d(23.81, -11.73), Math.toRadians(173.04)),
