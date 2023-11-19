@@ -464,6 +464,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                                 break;
                         }
                         outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
+                        OuttakeSubsystem(); // force call, since next is blocking
 
                         if (taskFinishBehaviour == RobotTaskFinishBehaviour.DO_NOT_CYCLE) {
                             autoState = FSM_RootAutoState.MOVING_TO_PARKING;
@@ -550,8 +551,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
-                    intake.setPower(0.55);
-                    drive.followTrajectory(CalcKinematics(0.3, CAUTION_SPEED));
+                    intake.setPower(0.65);
+                    drive.followTrajectory(CalcKinematics(0.15, CAUTION_SPEED));
                     ExecuteRotation(180, false);
                     Delay(2000);
                     intake.setPower(0);
@@ -561,13 +562,13 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                                     // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
                                     .lineToConstantHeading(STAGE_DOOR_POSES[0].vec())
                                     .waitSeconds(0.05)
-                                    .splineToConstantHeading(BACKDROP_CENTER_POSES[0].vec(), BACKDROP_CENTER_POSES[0].getHeading())
+                                    .lineToConstantHeading(BACKDROP_CENTER_POSES[0].vec())
                                     .build()
                             :
                             drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                     .lineToConstantHeading(STAGE_DOOR_POSES[1].vec())
                                     .waitSeconds(0.05)
-                                    .splineToConstantHeading(BACKDROP_CENTER_POSES[1].vec(), BACKDROP_CENTER_POSES[1].getHeading())
+                                    .lineToConstantHeading(BACKDROP_CENTER_POSES[1].vec())
                                     .build()
                             ;
 
@@ -588,6 +589,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     ExecuteRotation(180, false);
                     RaiseAndPrime(600);
                     Delay(300);
+                    drive.followTrajectory(CalcKinematics(-0.25, DriveConstants.MAX_VEL));
+                    Delay(400);
                     servoClaw.setPosition(RobotConstants.CLAW_OPEN);
                     drive.followTrajectory(CalcKinematics(0.1, DriveConstants.MAX_VEL));
                     DropAndReset();
@@ -782,8 +785,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         imu = hardwareMap.get(IMU.class, RobotConstants.HUB_IMU);
         imu.initialize(parameters);
         imu.resetYaw();
-        localizer = new CameraLocalizer2(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
-        drive.setLocalizer(localizer);
+        //localizer = new CameraLocalizer2(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
+        //drive.setLocalizer(localizer);
 
         Delay(100);
     }

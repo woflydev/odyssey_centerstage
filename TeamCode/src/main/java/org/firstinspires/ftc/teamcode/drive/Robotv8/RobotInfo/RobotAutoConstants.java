@@ -27,8 +27,8 @@ public class RobotAutoConstants {
             new Pose2d(49, 53.5, Math.toRadians(270)),
     };
     public static final Pose2d[] BACKDROP_CENTER_POSES = {
-            new Pose2d(50.5, -36.00, Math.toRadians(180)),
-            new Pose2d(50.5, 36.00, Math.toRadians(180)),
+            new Pose2d(44, -36.00, Math.toRadians(180)),
+            new Pose2d(44, 36.00, Math.toRadians(180)),
     };
     public static final Pose2d[] SPIKEMARK_CENTER_POSES = {
             // note: red is first, must be backwards to deposit
@@ -54,8 +54,8 @@ public class RobotAutoConstants {
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first
             // note: goes forward slowly in FSM_Auto
-            new Pose2d(new Vector2d(-54.5, -12.4), Math.toRadians(180.00)),
-            new Pose2d(new Vector2d(-54.5, 12.4), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-59, -12.4), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-59, 12.4), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
             new Pose2d(new Vector2d(32.5, -8.73), Math.toRadians(173.04)),
@@ -75,7 +75,7 @@ public class RobotAutoConstants {
     // IMPORTANT NOTE: this changes based on alliance.
     // IMPORTANT NOTE: while this is handled automatically, note that this is from perspective of red
     public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
-            1.45,
+            1.55,
             0.85,
             0.5,
     };
@@ -84,7 +84,7 @@ public class RobotAutoConstants {
             2.2,
             2.2,
     };
-    public static final double CAUTION_SPEED = 5;
+    public static final double CAUTION_SPEED = 8;
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 23;
 
     public static final double[] AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE = {
