@@ -86,6 +86,7 @@ public class RobotAutoConstants {
     };
     public static final double CAUTION_SPEED = 8;
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 23;
+    public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.15;
 
     public static final double[] AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE = {
             20,

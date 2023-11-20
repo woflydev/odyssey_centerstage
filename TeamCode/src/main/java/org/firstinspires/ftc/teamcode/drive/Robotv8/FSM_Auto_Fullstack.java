@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.drive.Robotv8;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_POSES;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_DEPOSIT_PUSHBACK_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_PURPLE_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_YELLOW_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_PARKING_POSES;
@@ -373,7 +374,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 case DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
                         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                        drive.followTrajectory(CalcKinematics(0.1, DriveConstants.MAX_VEL));
+                        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
                         Delay(100);
                         DropAndReset();
 
@@ -397,7 +398,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                         // note: this can be synchronous
                         drive.followTrajectory(centerForTransit);
-                        drive.followTrajectory(CalcKinematics(3, DriveConstants.MAX_VEL));
+                        drive.followTrajectory(CalcKinematics(-3, DriveConstants.MAX_VEL));
 
                         RaiseAndPrime(300);
 
@@ -419,7 +420,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 case DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
                         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                        drive.followTrajectory(CalcKinematics(0.1, DriveConstants.MAX_VEL));
+                        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
                         DropAndReset();
 
                         outtakeState = FSM_Outtake.IDLE;
@@ -594,7 +595,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     drive.followTrajectory(CalcKinematics(-0.25, DriveConstants.MAX_VEL));
                     Delay(400);
                     servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                    drive.followTrajectory(CalcKinematics(0.15, DriveConstants.MAX_VEL));
+                    drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
                     DropAndReset();
                     outtakeState = FSM_Outtake.IDLE;
                     autoState = FSM_RootAutoState.MOVING_TO_PARKING;
@@ -863,7 +864,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
     private void ExpelPurple() {
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(800);
+        Delay(400);
     }
 
     public void RaiseAndPrime(int height) {
