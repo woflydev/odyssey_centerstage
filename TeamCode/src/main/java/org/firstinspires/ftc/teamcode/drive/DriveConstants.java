@@ -30,8 +30,8 @@ public class DriveConstants {
     public static double kStatic = 0.13; // note old: 0.09
     public static double wheelBase = TRACK_WIDTH;
 
-    public static double MAX_VEL = 65.9755986904361; // note: old - 74.9755986904361
-    public static double MAX_ACCEL = 65.9755986904361; // note: old - 74.9755986904361
+    public static double MAX_VEL = 70.9755986904361; // note: old - 74.9755986904361
+    public static double MAX_ACCEL = 70.9755986904361; // note: old - 74.9755986904361
     public static double MAX_ANG_VEL = Math.toRadians(105.40001506801428); //135.50002483038097
     public static double MAX_ANG_ACCEL = Math.toRadians(105.9779569697387); //135.9779569697387
 

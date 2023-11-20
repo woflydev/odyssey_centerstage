@@ -374,6 +374,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     if (!drive.isBusy()) {
                         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
                         drive.followTrajectory(CalcKinematics(0.1, DriveConstants.MAX_VEL));
+                        Delay(100);
                         DropAndReset();
 
                         autoTimer.reset();
@@ -518,6 +519,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         }
 
                         outtakeState = FSM_Outtake.ACTIVATED;
+                        DropAndReset();
                         autoState = FSM_RootAutoState.MOVING_TO_BACKDROP;
                     }
             }
@@ -552,9 +554,9 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             case INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
                     intake.setPower(0.65);
-                    drive.followTrajectory(CalcKinematics(0.15, CAUTION_SPEED));
+                    drive.followTrajectory(CalcKinematics(0.135, CAUTION_SPEED));
                     ExecuteRotation(180, false);
-                    Delay(2000);
+                    Delay(1000);
                     intake.setPower(0);
 
                     TrajectorySequence toBackdropTrajectory = alliance == RobotAlliance.RED ?
@@ -592,7 +594,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     drive.followTrajectory(CalcKinematics(-0.25, DriveConstants.MAX_VEL));
                     Delay(400);
                     servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                    drive.followTrajectory(CalcKinematics(0.1, DriveConstants.MAX_VEL));
+                    drive.followTrajectory(CalcKinematics(0.15, DriveConstants.MAX_VEL));
                     DropAndReset();
                     outtakeState = FSM_Outtake.IDLE;
                     autoState = FSM_RootAutoState.MOVING_TO_PARKING;
@@ -618,7 +620,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void ParkRobotAtBackboard() {
         Trajectory parking = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
-                .splineToConstantHeading(PARKING_POSE.vec(),PARKING_POSE.getHeading()).build();
+                .splineToLinearHeading(PARKING_POSE, PARKING_POSE.getHeading()).build();
 
         drive.followTrajectory(parking);
         ExecuteRotation(alliance == RobotAlliance.RED ? 90 : 270, true); // note: ensure field centric heading on finish

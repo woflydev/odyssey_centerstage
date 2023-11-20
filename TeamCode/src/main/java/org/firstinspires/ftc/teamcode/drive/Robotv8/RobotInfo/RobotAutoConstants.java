@@ -58,8 +58,8 @@ public class RobotAutoConstants {
             new Pose2d(new Vector2d(-59, 12.4), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
-            new Pose2d(new Vector2d(32.5, -8.73), Math.toRadians(173.04)),
-            new Pose2d(new Vector2d(32.5, 8.00), Math.toRadians(187.29)),
+            new Pose2d(new Vector2d(28, -12), Math.toRadians(173.04)),
+            new Pose2d(new Vector2d(28, 12), Math.toRadians(187.29)),
     };
     public static final double[] BACKDROP_YELLOW_PIXEL_VARIANCE = {
             1.4,
@@ -76,13 +76,13 @@ public class RobotAutoConstants {
     // IMPORTANT NOTE: while this is handled automatically, note that this is from perspective of red
     public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
             1.55,
-            0.85,
-            0.5,
+            1,
+            0.65,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
-            2.2,
-            2.2,
-            2.2,
+            2.1,
+            2.25,
+            2.1,
     };
     public static final double CAUTION_SPEED = 8;
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 23;
