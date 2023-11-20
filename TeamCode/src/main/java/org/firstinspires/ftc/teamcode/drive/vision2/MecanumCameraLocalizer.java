@@ -21,27 +21,22 @@ import org.firstinspires.ftc.robotcore.external.matrices.VectorF;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.vision.apriltag.AprilTagLibrary;
 import org.firstinspires.ftc.vision.apriltag.AprilTagMetadata;
 import org.firstinspires.ftc.vision.apriltag.AprilTagPoseFtc;
 import org.firstinspires.ftc.vision.apriltag.AprilTagProcessor;
-import org.firstinspires.ftc.vision.tfod.TfodProcessor;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
-public class CameraLocalizer2 implements Localizer {
+public class MecanumCameraLocalizer implements Localizer {
     public Pose2d poseEstimate;
     public Pose2d poseVelocity;
 
@@ -167,7 +162,7 @@ public class CameraLocalizer2 implements Localizer {
         return poseVelocity;
     }
 
-    public CameraLocalizer2(HardwareMap map, String front, Pose2d startingPose, Telemetry t, OdysseyMecanumDrive d, boolean useCamera) {
+    public MecanumCameraLocalizer(HardwareMap map, String front, Pose2d startingPose, Telemetry t, OdysseyMecanumDrive d, boolean useCamera) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
         this.poseVelocity = new Pose2d(0, 0, 0);

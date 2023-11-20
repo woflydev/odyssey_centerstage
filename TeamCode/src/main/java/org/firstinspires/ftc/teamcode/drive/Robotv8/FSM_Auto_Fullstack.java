@@ -45,7 +45,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.vision2.CameraLocalizer2;
+import org.firstinspires.ftc.teamcode.drive.vision2.MecanumCameraLocalizer;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Point;
@@ -66,7 +66,7 @@ This means that different robot setups is required on startup and init. Beware o
 @Config
 public class FSM_Auto_Fullstack extends LinearOpMode {
     private OdysseyMecanumDrive drive;
-    private CameraLocalizer2 localizer;
+    private MecanumCameraLocalizer localizer;
     private FSM_RootAutoState autoState = FSM_RootAutoState.PLAY;
     private FSM_Outtake outtakeState = FSM_Outtake.IDLE;
     private VisionPropPipeline.Randomization randomization;
@@ -138,6 +138,9 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
         drive = new OdysseyMecanumDrive(hardwareMap, START_POSE, telemetry, false);
         drive.setPoseEstimate(START_POSE);
+
+        localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
+        drive.setLocalizer(localizer);
 
         VisionPropDetection(300);
 
@@ -788,8 +791,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         imu = hardwareMap.get(IMU.class, RobotConstants.HUB_IMU);
         imu.initialize(parameters);
         imu.resetYaw();
-        //localizer = new CameraLocalizer2(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
-        //drive.setLocalizer(localizer);
+
 
         Delay(100);
     }
