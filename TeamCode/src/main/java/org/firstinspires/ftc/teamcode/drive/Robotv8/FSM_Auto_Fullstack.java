@@ -538,6 +538,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                     drive.followTrajectorySequence(cycleTrajectory); // note: blocking
                     ExecuteRotation(180, true);
+                    localizer.useCamera = true; // note: TEST THIS TOMORROW
                     autoState = FSM_RootAutoState.INTAKE_PIXELS_FROM_STACK;
                 }
                 break;
@@ -561,6 +562,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                     outtakeState = FSM_Outtake.ACTIVATED;
                     Delay(500); // note: allow for some time for flap to open and claw to grab
+
+                    localizer.useCamera = false;
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
                     autoState = FSM_RootAutoState.MOVING_BACK_FROM_CYCLE;
@@ -787,6 +790,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addData("Robot X", drive.getPoseEstimate().getX());
         telemetry.addData("Robot Y", drive.getPoseEstimate().getY());
         telemetry.addData("Robot Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
+        telemetry.addData("Redundancies Enabled", localizer.useCamera ? "TRUE" : "FALSE");
         telemetry.addData("Target Location",
                 randomization == VisionPropPipeline.Randomization.LOCATION_1 ? "LEFT (LOC_1)" :
                 randomization == VisionPropPipeline.Randomization.LOCATION_2 ? "MIDDLE (LOC_2)" :
