@@ -34,7 +34,7 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double FLAP_CLOSE = 0.797;
+    public static final double FLAP_CLOSE = 0.800;
     public static final double FLAP_OPEN = 0.44;
     public static final double CLAW_CLOSE = 0.79;
     public static final double CLAW_OPEN = 0.585;

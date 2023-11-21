@@ -3,8 +3,6 @@ package org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 
-import org.opencv.core.Mat;
-
 public class RobotAutoConstants {
     // -------------------------------------------------------------- AUTO CONFIG
     public static final double INCHES_PER_TILE = 24;
@@ -32,8 +30,8 @@ public class RobotAutoConstants {
     };
     public static final Pose2d[] SPIKEMARK_CENTER_POSES = {
             // note: red is first, must be backwards to deposit
-            new Pose2d(48.5, -30, Math.toRadians(0)),
-            new Pose2d(48.5, 30, Math.toRadians(0)),
+            new Pose2d(46.5, -30, Math.toRadians(0)),
+            new Pose2d(46.5, 30, Math.toRadians(0)),
     };
     // note: used for aligning robot SPIKEMARK -> BACKDROP when starting from audience side
     public static final Pose2d[] SPIKEMARK_TRANSIT_CENTER_POSES = {
@@ -84,9 +82,9 @@ public class RobotAutoConstants {
             2.25,
             2.1,
     };
-    public static final double CAUTION_SPEED = 8;
+    public static final double CAUTION_SPEED = 10;
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 23;
-    public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.15;
+    public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.17;
 
     public static final double[] AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE = {
             20,
@@ -94,6 +92,6 @@ public class RobotAutoConstants {
             20,
     };
 
-    public static final double SPIKE_TO_BACKBOARD_TRANSIT = 1.525;
+    public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.528;
     public static final double CYCLE_STACK_APPROACH_AMOUNT = 1.5;
 }

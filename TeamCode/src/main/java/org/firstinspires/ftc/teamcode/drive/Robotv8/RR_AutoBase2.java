@@ -137,7 +137,7 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
 
         RaiseAndPrime(100);
         ExecuteRotation(180); // note: robot has to be backwards to deposit
-        drive.followTrajectory(CalcKinematics(-SPIKE_TO_BACKBOARD_TRANSIT)); AutoWait();
+        drive.followTrajectory(CalcKinematics(-DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT)); AutoWait();
         DropAndReset();
         CenterRobotAtBackboard();
     }
