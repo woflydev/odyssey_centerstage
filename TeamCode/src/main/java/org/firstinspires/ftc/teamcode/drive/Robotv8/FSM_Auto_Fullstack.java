@@ -138,7 +138,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         Delay(2000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
-        drive = new OdysseyMecanumDrive(hardwareMap, START_POSE, telemetry, false);
+        drive = new OdysseyMecanumDrive(hardwareMap, telemetry);
         drive.setPoseEstimate(START_POSE);
 
         VisionPropDetection(300);

@@ -59,7 +59,7 @@ public class MecanumCameraLocalizer implements Localizer {
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
-    private boolean useExternalHeading = true;
+    private boolean useExternalHeading = false;
 
     public boolean useCamera;
 
@@ -322,7 +322,7 @@ public class MecanumCameraLocalizer implements Localizer {
                     wheelDeltas,
                     DriveConstants.TRACK_WIDTH,
                     DriveConstants.wheelBase,
-                    Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
+                    RobotConstants.RR_LATERAL_MULTI
             );
             Double finalHeadingDelta = useExternalHeading ?
                     Angle.normDelta(extHeading - lastExtHeading) :
@@ -340,7 +340,7 @@ public class MecanumCameraLocalizer implements Localizer {
                     wheelVelocities,
                     DriveConstants.TRACK_WIDTH,
                     DriveConstants.wheelBase,
-                    Fullstack.AutoMecanumDrive.LATERAL_MULTIPLIER
+                    RobotConstants.RR_LATERAL_MULTI
             );
             if (useExternalHeading && extHeadingVel != null) {
                 if (poseVelocity == null) {
