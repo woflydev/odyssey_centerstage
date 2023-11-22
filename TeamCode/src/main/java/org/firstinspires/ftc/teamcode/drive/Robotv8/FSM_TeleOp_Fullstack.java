@@ -62,6 +62,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
     public boolean wristActive = false;
     public boolean elbowActive = false;
     public boolean transferStageDeployed = false;
+    public boolean hangStabilizationDeployed = false;
 
     public double current_v1 = 0;
     public double current_v2 = 0;
@@ -320,7 +321,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                 }
                 break;
             case WRIST_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 400) {
+                if (outtakeFSMTimer.milliseconds() >= 150) {
                     MoveElbow(RobotConstants.ELBOW_PICKUP);
                     outtakeFSMTimer.reset();
 
@@ -328,7 +329,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                 }
                 break;
             case ELBOW_PICKING:
-                if (outtakeFSMTimer.milliseconds() >= 200) {
+                if (outtakeFSMTimer.milliseconds() >= 100) {
                     servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                     outtakeFSMTimer.reset();
 
@@ -336,7 +337,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeFSMTimer.milliseconds() >= 350) {
+                if (outtakeFSMTimer.milliseconds() >= 150) {
                     outtakeFSMTimer.reset();
                     //servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);
@@ -396,10 +397,15 @@ public class FSM_TeleOp_Fullstack extends OpMode {
     }
 
     public void RuntimeConfig() {
+        // NOTE: hanging stabilization macro
+        if (gamepad1.right_trigger > 0.1 && gamepad1.triangle) {
+            HandleHangStabilization();
+        }
+
         // NOTE: manual control logic. slides / claw / hanging / flap / plane / elbow
-        if (adjustmentAllowed) {
+        else if (adjustmentAllowed) {
             // slow down driving with analog trigger
-            if (gamepad1.right_trigger >= 0.2) {
+            if (gamepad1.right_trigger >= 0.3) {
                 driveSpeedModifier = gamepad1.right_trigger + 1.6;
             } else {
                 driveSpeedModifier = 1;
@@ -487,7 +493,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
         }
 
         // NOTE: MANUAL OUTTAKE RESET
-        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT)) {
+        if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT) && !hangStabilizationDeployed) {
             outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
         }
 
@@ -548,6 +554,23 @@ public class FSM_TeleOp_Fullstack extends OpMode {
     }
 
     // NOTE: HELPER METHODS ------------------------------------------------------------------
+    public void HandleHangStabilization() {
+        if (hangStabilizationDeployed) {
+            servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+            servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
+            hangStabilizationDeployed = false;
+            Delay(500);
+        } else {
+            servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+            MoveElbow(RobotConstants.ELBOW_HANG_STABILIZATION);
+            servoWrist.setPosition(RobotConstants.WRIST_HANG_STABILIZATION);
+            Delay(800);
+            servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
+            hangStabilizationDeployed = true;
+            Delay(500);
+        }
+    }
+
     public void UpdateOuttake(boolean reset, double delay) { // test new function
         if (reset) {
             Delay(delay);

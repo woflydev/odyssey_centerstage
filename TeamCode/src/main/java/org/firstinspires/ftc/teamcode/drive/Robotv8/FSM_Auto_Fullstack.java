@@ -54,6 +54,8 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
+import kotlinx.coroutines.Delay;
+
 /*
 IMPORTANT NOTE:
 Audience and Backdrop sequences are not the same.
@@ -148,8 +150,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         // note: MAIN START
         waitForStart();
 
-        localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
-        drive.setLocalizer(localizer);
+        //localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
+        //drive.setLocalizer(localizer);
 
         workingBackdropPurpleVariance = SortPurpleVariance(); // note: called after, so that randomization is confirmed
         workingAudiencePurpleAlign = SortPurpleAlignVariance();
@@ -377,8 +379,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 case DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
                         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
-                        Delay(100);
+                        Delay(500);
+                        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT + 0.085, DriveConstants.MAX_VEL));
                         DropAndReset();
 
                         autoTimer.reset();
@@ -530,27 +532,27 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         switch (autoState) {
             case MOVING_TO_CYCLE:
                 if (!drive.isBusy()) {
-                    TrajectorySequence cycleTrajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                        .lineToConstantHeading(STAGE_DOOR_POSES[allianceIndex].vec())
+                    TrajectorySequence cycleTrajectory = drive .trajectorySequenceBuilder(drive.getPoseEstimate())
+                        .lineToLinearHeading(STAGE_DOOR_POSES[allianceIndex])
                         .waitSeconds(0.001)
-                        .lineToLinearHeading(CYCLING_STACK_INNER_POSES[allianceIndex])
+                        .splineToLinearHeading(CYCLING_STACK_INNER_POSES[allianceIndex], CYCLING_STACK_INNER_POSES[allianceIndex].getHeading())
                         .build();
 
                     drive.followTrajectorySequence(cycleTrajectory); // note: blocking
                     ExecuteRotation(180, true);
-                    localizer.useCamera = true; // note: TEST THIS TOMORROW
+                    //localizer.useCamera = true; // note: TEST THIS TOMORROW
                     autoState = FSM_RootAutoState.INTAKE_PIXELS_FROM_STACK;
                 }
                 break;
             case INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
                     intake.setPower(-0.65);
-                    drive.followTrajectory(CalcKinematics(0.135, CAUTION_SPEED));
-                    intake.setPower(0.65);
+                    drive.followTrajectory(CalcKinematics(0.148, CAUTION_SPEED));
+                    intake.setPower(0.75);
                     drive.followTrajectory(CalcKinematics(0.08, CAUTION_SPEED));
                     ExecuteRotation(180, false);
-                    Delay(1500);
-                    intake.setPower(-0.4);
+                    Delay(2000);
+                    intake.setPower(-0.2);
                     autoTimer.reset();
 
                     TrajectorySequence toBackdropTrajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
@@ -563,7 +565,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     outtakeState = FSM_Outtake.ACTIVATED;
                     Delay(500); // note: allow for some time for flap to open and claw to grab
 
-                    localizer.useCamera = false;
+                    //localizer.useCamera = false;
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
                     autoState = FSM_RootAutoState.MOVING_BACK_FROM_CYCLE;
@@ -571,7 +573,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case MOVING_BACK_FROM_CYCLE:
                 // note: may conflict with next state transition
-                if (autoTimer.seconds() > 1.5) {
+                if (autoTimer.seconds() > 0.7) {
                     intake.setPower(0);
                     autoState = FSM_RootAutoState.DEPOSIT_WHITE;
                 }
@@ -619,19 +621,18 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     }
 
     private void CenterRobotForSpikemark() {
+        ExecuteRotation(0, false);
         Trajectory center = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
-                .lineToLinearHeading(SPIKEMARK_CENTER_POSES[allianceIndex])
+                .lineToConstantHeading(SPIKEMARK_CENTER_POSES[allianceIndex].vec())
                 .build();
 
         drive.followTrajectoryAsync(center);
     }
 
     public void OuttakeSubsystem() {
-        // NOTE: modified from original to suit Auto
+        // NOTE: statemachine for outtake sequences
         switch (outtakeState) {
-            case IDLE:
-                break;
             case ACTIVATED:
                 servoFlap.setPosition(RobotConstants.FLAP_OPEN);
                 outtakeTimer.reset();
@@ -649,7 +650,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 }
                 break;
             case WRIST_PICKING:
-                if (outtakeTimer.milliseconds() >= 400) {
+                if (outtakeTimer.milliseconds() >= 150) {
                     MoveElbow(RobotConstants.ELBOW_PICKUP);
                     outtakeTimer.reset();
 
@@ -665,7 +666,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeTimer.milliseconds() >= 450) {
+                if (outtakeTimer.milliseconds() >= 300) {
                     outtakeTimer.reset();
                     //servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);
@@ -692,7 +693,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     targetOuttakePosition = 10;
                     UpdateOuttake(true, 0);
 
-                    outtakeState = FSM_Outtake.IDLE;
+                    outtakeState = FSM_Outtake.ACTIVATED;
                 }
                 break;
             case OUTTAKE_RESET_HARD:
@@ -790,7 +791,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addData("Robot X", drive.getPoseEstimate().getX());
         telemetry.addData("Robot Y", drive.getPoseEstimate().getY());
         telemetry.addData("Robot Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
-        telemetry.addData("Redundancies Enabled", localizer.useCamera ? "TRUE" : "FALSE");
+        //telemetry.addData("Redundancies Enabled", localizer.useCamera ? "TRUE" : "FALSE");
         telemetry.addData("Target Location",
                 randomization == VisionPropPipeline.Randomization.LOCATION_1 ? "LEFT (LOC_1)" :
                 randomization == VisionPropPipeline.Randomization.LOCATION_2 ? "MIDDLE (LOC_2)" :
