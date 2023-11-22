@@ -69,7 +69,7 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
         Delay(2000);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
-        drive = new OdysseyMecanumDrive(hardwareMap, START_POSE, telemetry, false);
+        drive = new OdysseyMecanumDrive(hardwareMap, telemetry);
         drive.setPoseEstimate(START_POSE);
 
         VisionPropDetection(); // note: assert where the prop is

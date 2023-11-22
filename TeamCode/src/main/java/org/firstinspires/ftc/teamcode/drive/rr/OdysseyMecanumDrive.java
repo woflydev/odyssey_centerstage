@@ -83,7 +83,7 @@ public class OdysseyMecanumDrive extends MecanumDrive {
     private List<Integer> lastEncPositions = new ArrayList<>();
     private List<Integer> lastEncVels = new ArrayList<>();
 
-    public OdysseyMecanumDrive(HardwareMap hardwareMap, Pose2d startPose, Telemetry t, boolean useCameraLoc) {
+    public OdysseyMecanumDrive(HardwareMap hardwareMap, Telemetry t) {
         super(kV, kA, kStatic, TRACK_WIDTH, TRACK_WIDTH, LATERAL_MULTIPLIER);
 
         follower = new HolonomicPIDVAFollower(TRANSLATIONAL_PID, TRANSLATIONAL_PID, HEADING_PID,
