@@ -37,6 +37,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
     public Servo servoElbowR = null;
     public Servo servoElbowL = null;
     public Servo servoPlane = null;
+    public Servo servoWhateverTheFuckThatThingIs = null;
     public CRServo servoHangR = null;
     public CRServo servoHangL = null;
     public DcMotorEx armR = null;
@@ -120,6 +121,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
         servoClaw = hardwareMap.get(Servo.class, RobotConstants.SERVO_CLAW);
         servoWrist = hardwareMap.get(Servo.class, RobotConstants.SERVO_WRIST);
         servoPlane = hardwareMap.get(Servo.class, RobotConstants.SERVO_PLANE);
+        servoWhateverTheFuckThatThingIs = hardwareMap.get(Servo.class, RobotConstants.SERVO_WHATEVER_THE_FUCK_THAT_THING_IS);
 
         servoHangR = hardwareMap.get(CRServo.class, RobotConstants.SERVO_HANG_R);
         servoHangR.setDirection(DcMotorSimple.Direction.FORWARD);
@@ -136,6 +138,8 @@ public class FSM_TeleOp_Fullstack extends OpMode {
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         servoPlane.setPosition(RobotConstants.PLANE_STANDBY);*/
+
+        servoWhateverTheFuckThatThingIs.setPosition(RobotConstants.WHATEVER_THE_FUCK_THAT_THING_IS_ON);
 
         // -------------------------------------------------------------- IMU INIT
 
@@ -312,7 +316,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                 break;
             case FLAP_OPENING:
                 // amount of time the servo takes to activate from the previous state
-                if (outtakeFSMTimer.milliseconds() >= 700) {
+                if (outtakeFSMTimer.milliseconds() >= 300) {
                     servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
                     outtakeFSMTimer.reset();
@@ -362,6 +366,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                 break;
             case OUTTAKE_RESET:
                 if (outtakeFSMTimer.milliseconds() >= 600 && outtakeFSMTimer.milliseconds() <= 2000) {
+                    servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
                     servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
 
@@ -380,6 +385,8 @@ public class FSM_TeleOp_Fullstack extends OpMode {
         switch (planeLauncherState) {
             case IDLE:
                 if (gamepad2.cross) {
+                    servoWhateverTheFuckThatThingIs.setPosition(RobotConstants.WHATEVER_THE_FUCK_THAT_THING_IS_OFF);
+                    Delay(200);
                     servoPlane.setPosition(RobotConstants.PLANE_ACTIVE);
                     planeLauncherFSMTimer.reset();
 
@@ -388,6 +395,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                 break;
             case ACTIVE:
                 if (planeLauncherFSMTimer.seconds() >= 2) {
+                    servoWhateverTheFuckThatThingIs.setPosition(RobotConstants.WHATEVER_THE_FUCK_THAT_THING_IS_ON);
                     servoPlane.setPosition(RobotConstants.PLANE_STANDBY);
 
                     planeLauncherState = FSM_PlaneLauncher.IDLE;
@@ -528,11 +536,12 @@ public class FSM_TeleOp_Fullstack extends OpMode {
         UpdateOuttake(false, 0);
 
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
 
         outtakeState = FSM_Outtake.PRIMED_FOR_DEPOSIT;
         Delay(50); // debounce
+
+        //servoFlap.setPosition(RobotConstants.FLAP_CLOSE); // note: moved into the subsystem - this has to go later, because axons are fast
     }
 
     public void HandleDrivetrainOverride() {

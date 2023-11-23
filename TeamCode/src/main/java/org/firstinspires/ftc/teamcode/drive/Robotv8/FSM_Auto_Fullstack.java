@@ -445,6 +445,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 case MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE:
                     // note: this bit can be synchronous
                     if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
+                        servoFlap.setPosition(RobotConstants.FLAP_OPEN);
                         PrimePurple(); // note: takes over from outtake subsystem and forces prime purple position
                         switch (randomization) {
                             case LOCATION_1:
@@ -457,7 +458,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                                 drive.followTrajectory(CalcKinematics(-workingBackdropPurpleVariance[1], DriveConstants.MAX_VEL));
                                 drive.turn(Math.toRadians(-BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG * dir)); // note: always turns counterclockwise
                                 ExpelPurple();
-                                drive.turn(Math.toRadians(BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG * dir));
+                                //drive.turn(Math.toRadians(BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG * dir));
                                 break;
                             case LOCATION_3:
                                 Delay(400); // note: purple has to prime first to push prop
@@ -465,6 +466,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                                 ExpelPurple();
                                 break;
                         }
+                        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
                         outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
                         OuttakeSubsystem(); // force call, since next is blocking
 
@@ -547,18 +549,17 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             case INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
                     intake.setPower(-0.65);
-                    drive.followTrajectory(CalcKinematics(0.148, CAUTION_SPEED));
+                    drive.followTrajectory(CalcKinematics(0.175, CAUTION_SPEED));
                     intake.setPower(0.75);
                     drive.followTrajectory(CalcKinematics(0.08, CAUTION_SPEED));
                     ExecuteRotation(180, false);
                     Delay(2000);
-                    intake.setPower(-0.2);
                     autoTimer.reset();
 
                     TrajectorySequence toBackdropTrajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                         // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
                         .lineToConstantHeading(STAGE_DOOR_POSES[allianceIndex].vec())
-                        .waitSeconds(0.05)
+                        .waitSeconds(0.001)
                         .lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
                         .build();
 
@@ -585,12 +586,12 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     ExecuteRotation(180, false);
                     RaiseAndPrime(450);
                     Delay(300);
-                    drive.followTrajectory(CalcKinematics(-0.25, DriveConstants.MAX_VEL));
+                    drive.followTrajectory(CalcKinematics(-0.128, DriveConstants.MAX_VEL));
                     Delay(400);
                     servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                    drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
+                    drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT + 0.05, DriveConstants.MAX_VEL));
                     DropAndReset();
-                    outtakeState = FSM_Outtake.IDLE;
+                    outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
                     autoState = FSM_RootAutoState.MOVING_TO_PARKING;
                 }
         }
@@ -621,10 +622,9 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     }
 
     private void CenterRobotForSpikemark() {
-        ExecuteRotation(0, false);
         Trajectory center = drive
                 .trajectoryBuilder(drive.getPoseEstimate())
-                .lineToConstantHeading(SPIKEMARK_CENTER_POSES[allianceIndex].vec())
+                .lineToLinearHeading(SPIKEMARK_CENTER_POSES[allianceIndex])
                 .build();
 
         drive.followTrajectoryAsync(center);
@@ -641,7 +641,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case FLAP_OPENING:
                 // amount of time the servo takes to activate from the previous state
-                if (outtakeTimer.milliseconds() >= 700) {
+                if (outtakeTimer.milliseconds() >= 300) {
                     servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
                     outtakeTimer.reset();
@@ -685,6 +685,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case OUTTAKE_RESET:
                 if (outtakeTimer.milliseconds() >= 600) {
+                    servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
                     servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
 
@@ -851,8 +852,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void PrimePurple() {
         MoveElbow(RobotConstants.ELBOW_STANDBY_BACK);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY_BACK);
-        Delay(50);
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
     }
 
     private void ExpelPurple() {
@@ -866,7 +865,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         targetOuttakePosition = height;
         UpdateOuttake(false, 0);
 
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
 
@@ -877,9 +875,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     }
 
     public void DropAndReset() {
-        servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(700); // wait for claw to open
+        Delay(800); // wait for claw to open
 
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);

@@ -25,9 +25,9 @@ public class DriveConstants {
      * empirically tuned.
      */
     //public static double kV = 1.0 / rpmToVelocity(MAX_RPM);
-    public static double kV = 0.0118; // note old: 0.0118
-    public static double kA = 0.0025; // note old: 0.003
-    public static double kStatic = 0.12; // note old: 0.09
+    public static double kV = 0.01; // note old: 0.0118
+    public static double kA = 0.002; // note old: 0.003
+    public static double kStatic = 0.16; // note old: 0.09
     public static double wheelBase = TRACK_WIDTH;
 
     public static double MAX_VEL = 70.9755986904361; // note: old - 74.9755986904361

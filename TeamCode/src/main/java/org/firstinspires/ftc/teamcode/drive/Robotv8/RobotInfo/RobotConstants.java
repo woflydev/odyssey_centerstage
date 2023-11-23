@@ -19,6 +19,7 @@ public class RobotConstants {
     public static final String SERVO_ELBOW_L = "elbowL";
     public static final String SERVO_ELBOW_R = "elbowR";
     public static final String SERVO_PLANE = "plane";
+    public static final String SERVO_WHATEVER_THE_FUCK_THAT_THING_IS = "presser";
     public static final String SERVO_HANG_R = "hangR";
     public static final String SERVO_HANG_L = "hangL";
     public static final String HUB_IMU = "imu";
@@ -34,8 +35,8 @@ public class RobotConstants {
     public static final int ARM_BOOST_MODIFIER = 1;
     public static final int ARM_RESET_TIMEOUT = 3;
 
-    public static final double FLAP_CLOSE = 0.798;
-    public static final double FLAP_OPEN = 0.44;
+    public static final double FLAP_CLOSE = 0.398;
+    public static final double FLAP_OPEN = 0.978;
     public static final double CLAW_CLOSE = 0.79;
     public static final double CLAW_OPEN = 0.585;
     public static final double WRIST_PICKUP = 0.405;
@@ -46,8 +47,10 @@ public class RobotConstants {
     public static final double ELBOW_STANDBY = 0.143;
     public static final double ELBOW_STANDBY_BACK = 0.583;
     public static final double ELBOW_ACTIVE = 0.48;
-    public static final double PLANE_STANDBY = 0.38;
+    public static final double PLANE_STANDBY = 0;
     public static final double PLANE_ACTIVE = 0.19;
+    public static final double WHATEVER_THE_FUCK_THAT_THING_IS_OFF = 0.35;
+    public static final double WHATEVER_THE_FUCK_THAT_THING_IS_ON = 0.54;
 
     // hanging
     public static final double ELBOW_HANG_STABILIZATION = 0.31;
@@ -66,8 +69,8 @@ public class RobotConstants {
 
     // -------------------------------------------------------------- RR
     public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.31460328144
-    public static final double RR_HEADING_PID_kP = 7;
-    public static final double RR_TRANSLATIONAL_PID_kP = 30; // note: old - 30
+    public static final double RR_HEADING_PID_kP = 5;
+    public static final double RR_TRANSLATIONAL_PID_kP = 15; // note: old - 30
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
