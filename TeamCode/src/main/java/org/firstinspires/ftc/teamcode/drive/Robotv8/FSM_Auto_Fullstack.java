@@ -150,8 +150,11 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         // note: MAIN START
         waitForStart();
 
-        //localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
-        //drive.setLocalizer(localizer);
+        localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
+        if (DriveConstants.useLocaliser) {
+            drive.setLocalizer(localizer);
+        }
+        localizer.useCamera = true;
 
         workingBackdropPurpleVariance = SortPurpleVariance(); // note: called after, so that randomization is confirmed
         workingAudiencePurpleAlign = SortPurpleAlignVariance();

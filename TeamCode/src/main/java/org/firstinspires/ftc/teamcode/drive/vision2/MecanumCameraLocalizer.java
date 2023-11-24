@@ -59,7 +59,7 @@ public class MecanumCameraLocalizer implements Localizer {
     private ElapsedTime elapsedTime = new ElapsedTime();
     private TimeUnit timeUnit = TimeUnit.MILLISECONDS;
 
-    private boolean useExternalHeading = false;
+    private boolean useExternalHeading = true;
 
     public boolean useCamera;
 
