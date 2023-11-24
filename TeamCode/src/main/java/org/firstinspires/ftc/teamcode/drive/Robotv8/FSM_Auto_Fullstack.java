@@ -365,7 +365,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     break;
                 case TURNING_TO_BACKDROP:
                     if (!drive.isBusy()) {
-                        RaiseAndPrime(150); // note: no delay here
+                        RaiseAndPrime(250); // note: no delay here
                         ExecuteRotation(180,  true);
                         autoState = FSM_RootAutoState.MOVING_TO_BACKDROP;
                     }
@@ -378,9 +378,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     break;
                 case DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
-                        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                        Delay(500);
-                        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT + 0.085, DriveConstants.MAX_VEL));
                         DropAndReset();
 
                         autoTimer.reset();
@@ -419,8 +416,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     }
                 case DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
-                        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
                         DropAndReset();
 
                         outtakeState = FSM_Outtake.IDLE;
@@ -549,8 +544,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             case INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
                     intake.setPower(-0.65);
-                    drive.followTrajectory(CalcKinematics(0.175, CAUTION_SPEED));
-                    intake.setPower(0.75);
+                    drive.followTrajectory(CalcKinematics(0.136, CAUTION_SPEED));
+                    intake.setPower(0.65);
                     drive.followTrajectory(CalcKinematics(0.08, CAUTION_SPEED));
                     ExecuteRotation(180, false);
                     Delay(2000);
@@ -584,12 +579,10 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
                     intake.setPower(0);
                     ExecuteRotation(180, false);
-                    RaiseAndPrime(450);
-                    Delay(300);
-                    drive.followTrajectory(CalcKinematics(-0.128, DriveConstants.MAX_VEL));
+                    RaiseAndPrime(650);
+                    Delay(100);
+                    drive.followTrajectory(CalcKinematics(-0.1345, DriveConstants.MAX_VEL));
                     Delay(400);
-                    servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                    drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT + 0.05, DriveConstants.MAX_VEL));
                     DropAndReset();
                     outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
                     autoState = FSM_RootAutoState.MOVING_TO_PARKING;
@@ -658,7 +651,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 }
                 break;
             case ELBOW_PICKING:
-                if (outtakeTimer.milliseconds() >= 200) {
+                if (outtakeTimer.milliseconds() >= 300) {
                     servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
                     outtakeTimer.reset();
 
@@ -666,7 +659,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 }
                 break;
             case CLAW_CLOSING:
-                if (outtakeTimer.milliseconds() >= 300) {
+                if (outtakeTimer.milliseconds() >= 400) {
                     outtakeTimer.reset();
                     //servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
                     servoFlap.setPosition(RobotConstants.FLAP_OPEN);
@@ -875,6 +868,11 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     }
 
     public void DropAndReset() {
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE + 0.09);
+        MoveElbow(RobotConstants.ELBOW_ACTIVE + 0.01);
+        Delay(100);
+        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT + 0.05, DriveConstants.MAX_VEL));
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         Delay(800); // wait for claw to open
 
