@@ -37,24 +37,24 @@ public class RobotConstants {
 
     public static final double FLAP_CLOSE = 0.398;
     public static final double FLAP_OPEN = 0.978;
-    public static final double CLAW_CLOSE = 0.79;
-    public static final double CLAW_OPEN = 0.585;
-    public static final double WRIST_PICKUP = 0.390;
+    public static final double CLAW_CLOSE = 0.485;//0.79;
+    public static final double CLAW_OPEN = 0.685; //0.585;
+    public static final double WRIST_PICKUP = 0.15;
     public static final double WRIST_STANDBY_BACK = 0.975;
-    public static final double WRIST_STANDBY = 0.615; // 0.48
-    public static final double WRIST_ACTIVE = 0.905;
-    public static final double ELBOW_PICKUP = 0.0215;
+    public static final double WRIST_STANDBY = 0.41; // 0.615
+    public static final double WRIST_ACTIVE = 0.69;
+    public static final double ELBOW_PICKUP = 0.045;
     public static final double ELBOW_STANDBY = 0.143;
     public static final double ELBOW_STANDBY_BACK = 0.583;
     public static final double ELBOW_ACTIVE = 0.48;
-    public static final double PLANE_STANDBY = 0;
-    public static final double PLANE_ACTIVE = 0.19;
+    public static final double PLANE_STANDBY = 0.19;
+    public static final double PLANE_ACTIVE = 0;
     public static final double WHATEVER_THE_FUCK_THAT_THING_IS_OFF = 0.35;
-    public static final double WHATEVER_THE_FUCK_THAT_THING_IS_ON = 0.54;
+    public static final double WHATEVER_THE_FUCK_THAT_THING_IS_ON = 0.6;
 
     // hanging
-    public static final double ELBOW_HANG_STABILIZATION = 0.31;
-    public static final double WRIST_HANG_STABILIZATION = 0.5;
+    public static final double ELBOW_HANG_STABILIZATION = 0.343;
+    public static final double WRIST_HANG_STABILIZATION = 0.19;
 
 
     public static final double MAX_ACCELERATION_DEVIATION = 10; // higher = less smoothing
