@@ -53,5 +53,5 @@ public class DriveConstants {
         return 32767 / ticksPerSecond;
     }
 
-    public static boolean USE_LOCALIZER = true;
+    public static boolean USE_LOCALIZER = false;
 }

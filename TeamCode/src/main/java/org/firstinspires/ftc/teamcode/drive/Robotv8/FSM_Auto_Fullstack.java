@@ -150,7 +150,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
         localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
         if (DriveConstants.USE_LOCALIZER) {
-            localizer.useCamera = true;
+            localizer.useCamera = false;
             drive.setLocalizer(localizer);
         }
 
