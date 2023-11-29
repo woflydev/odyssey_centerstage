@@ -22,7 +22,7 @@ public class AC2303B_AutoRed extends FSM_Auto_Fullstack {
                 RobotAlliance.RED,
                 RobotStartingPosition.BACKDROP,
                 RobotParkingLocation.INNER,
-                RobotTaskFinishBehaviour.CYCLE,
+                RobotTaskFinishBehaviour.DO_NOT_CYCLE,
                 new Point(r1x, r1y),
                 new Point(r2x, r2y),
                 new Point(r3x, r3y)

@@ -361,7 +361,7 @@ public class FSM_TeleOp_Fullstack extends OpMode {
                 break;
             case CLAW_OPENING:
                 servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-                servoWrist.setPosition(RobotConstants.WRIST_ACTIVE * 1.1); // note: wrist down to normalize deposit
+                servoWrist.setPosition(RobotConstants.WRIST_ACTIVE * 1.05); // note: wrist down to normalize deposit
                 Delay(100);
                 outtakeFSMTimer.reset();
                 outtakeState = FSM_Outtake.OUTTAKE_RESET;
