@@ -54,8 +54,6 @@ import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
 
-import kotlinx.coroutines.Delay;
-
 /*
 IMPORTANT NOTE:
 Audience and Backdrop sequences are not the same.
@@ -151,10 +149,10 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         waitForStart();
 
         localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
-        if (DriveConstants.useLocaliser) {
+        if (DriveConstants.USE_LOCALIZER) {
+            localizer.useCamera = true;
             drive.setLocalizer(localizer);
         }
-        localizer.useCamera = true;
 
         workingBackdropPurpleVariance = SortPurpleVariance(); // note: called after, so that randomization is confirmed
         workingAudiencePurpleAlign = SortPurpleAlignVariance();
