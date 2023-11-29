@@ -73,7 +73,7 @@ public class RobotAutoConstants {
     // IMPORTANT NOTE: this changes based on alliance.
     // IMPORTANT NOTE: while this is handled automatically, note that this is from perspective of red
     public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
-            1.5,
+            1.54,
             1.15,
             0.60,
     };
@@ -92,6 +92,6 @@ public class RobotAutoConstants {
             20,
     };
 
-    public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.68;
+    public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.7;
     public static final double CYCLE_STACK_APPROACH_AMOUNT = 1.5;
 }
