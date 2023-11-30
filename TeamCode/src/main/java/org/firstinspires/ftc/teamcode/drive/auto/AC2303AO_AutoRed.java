@@ -11,8 +11,8 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.Rob
 import org.opencv.core.Point;
 
 @Config
-@Autonomous(name="NAT_BlueAudienceAuto", group="Final")
-public class AC2303A_AutoBlue extends FSM_Auto_Fullstack {
+@Autonomous(name="NAT_RedAudienceAuto_OUTER", group="Final")
+public class AC2303AO_AutoRed extends FSM_Auto_Fullstack {
     public static double r1x = 25;
     public static double r1y = 90;
     public static double r2x = 150;
@@ -20,11 +20,11 @@ public class AC2303A_AutoBlue extends FSM_Auto_Fullstack {
     public static double r3x = 260;
     public static double r3y = 90;
 
-    public AC2303A_AutoBlue() {
+    public AC2303AO_AutoRed() {
         super(
-                RobotAlliance.BLUE,
+                RobotAlliance.RED,
                 RobotStartingPosition.AUDIENCE,
-                RobotParkingLocation.INNER,
+                RobotParkingLocation.OUTER,
                 RobotTaskFinishBehaviour.DO_NOT_CYCLE,
                 new Point(r1x, r1y),
                 new Point(r2x, r2y),
