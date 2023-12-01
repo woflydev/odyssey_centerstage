@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Auto_State.*;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.FSM_Outtake;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.vision2.MecanumCameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.vision2.VisualLoc;
 import org.firstinspires.ftc.teamcode.drive.vision2.VisionPropPipeline;
 import org.opencv.core.Point;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -28,7 +28,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 @Config
 public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
     private OdysseyMecanumDrive drive;
-    private MecanumCameraLocalizer localizer;
+    private VisualLoc localizer;
     private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
     public static Pose2d START_POSE = new Pose2d();
@@ -63,7 +63,7 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
     }
 
     public void MainInit() {
-        localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
+        localizer = new VisualLoc(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
         drive.setLocalizer(localizer);
         MoveElbow(RobotConstants.ELBOW_STANDBY);
         Delay(2000);

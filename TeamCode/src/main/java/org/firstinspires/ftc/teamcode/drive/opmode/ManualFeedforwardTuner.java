@@ -24,8 +24,7 @@ import com.qualcomm.robotcore.util.RobotLog;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.rr.SampleMecanumDrive;
-import org.firstinspires.ftc.teamcode.drive.vision2.MecanumCameraLocalizer;
+import org.firstinspires.ftc.teamcode.drive.vision2.VisualLoc;
 
 import java.util.Objects;
 
@@ -76,7 +75,7 @@ public class ManualFeedforwardTuner extends LinearOpMode {
         Telemetry telemetry = new MultipleTelemetry(this.telemetry, dashboard.getTelemetry());
 
         drive = new OdysseyMecanumDrive(hardwareMap, telemetry);
-        MecanumCameraLocalizer localizer = new MecanumCameraLocalizer(hardwareMap, "Webcam 1", new Pose2d(0, 0), telemetry, drive, false);
+        VisualLoc localizer = new VisualLoc(hardwareMap, "Webcam 1", new Pose2d(0, 0), telemetry, drive, false);
         if (DriveConstants.USE_LOCALIZER) {
             drive.setLocalizer(localizer);
         }

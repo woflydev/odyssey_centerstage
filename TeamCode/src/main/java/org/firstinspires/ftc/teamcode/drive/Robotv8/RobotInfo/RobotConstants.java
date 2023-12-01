@@ -68,6 +68,7 @@ public class RobotConstants {
 
 
     // -------------------------------------------------------------- RR
+    public static final boolean STARTUP_USE_LOCALIZER = false;
     public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.31460328144
     public static final double RR_HEADING_PID_kP = 5;
     public static final double RR_TRANSLATIONAL_PID_kP = 15; // note: old - 30
@@ -84,12 +85,7 @@ public class RobotConstants {
 
     public static final boolean USE_LIVE_VIEW = true;
     public static final boolean USE_DRIVE = true;
-
-    // Never make USE_FRONT true
-
     public static final boolean USE_BACK = true;
-
-    public static final boolean USE_LOCALISER = false;
 
     public static final double FIELD_LENGTH = 3.58;
     public static final double CAMERA_HEIGHT = 0.313;

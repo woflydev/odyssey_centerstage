@@ -43,5 +43,10 @@ public class FSM_Auto_State {
         DO_NOT_CYCLE,
         CYCLE,
     }
+
+    public enum RobotLocMode {
+        CAM,
+        MEC,
+    }
 }
 

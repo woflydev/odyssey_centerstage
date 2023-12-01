@@ -58,7 +58,7 @@ public class Abstract {
         TELEMETRY_GIVEN = true;
         stack = parentStack;
 
-        if (RobotConstants.USE_LOCALISER) {
+        if (RobotConstants.STARTUP_USE_LOCALIZER) {
             localizer = new CameraLocalizer(hardwareMap, RobotConstants.FRONT_CAMERA, RobotConstants.BACK_CAMERA, new Pose2d(0, 0, 0), telemetry, stack);
         }
 
@@ -78,7 +78,7 @@ public class Abstract {
     }
 
     public void Update() {
-        if (RobotConstants.USE_LOCALISER) {
+        if (RobotConstants.STARTUP_USE_LOCALIZER) {
             localizer.update();
         }
         telemetry.addLine("Updating!");
@@ -87,7 +87,7 @@ public class Abstract {
     }
 
     public void stop() {
-        if (RobotConstants.USE_LOCALISER) {
+        if (RobotConstants.STARTUP_USE_LOCALIZER) {
             localizer.stop();
         }
     }

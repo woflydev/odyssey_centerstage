@@ -22,7 +22,6 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Quaternion;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
-import org.firstinspires.ftc.teamcode.drive.Robotv8.Fullstack;
 import org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotConstants;
 import org.firstinspires.ftc.teamcode.drive.rr.OdysseyMecanumDrive;
 import org.firstinspires.ftc.vision.VisionPortal;
@@ -36,7 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-public class MecanumCameraLocalizer implements Localizer {
+public class VisualLoc implements Localizer {
     public Pose2d poseEstimate;
     public Pose2d poseVelocity;
 
@@ -162,7 +161,7 @@ public class MecanumCameraLocalizer implements Localizer {
         return poseVelocity;
     }
 
-    public MecanumCameraLocalizer(HardwareMap map, String front, Pose2d startingPose, Telemetry t, OdysseyMecanumDrive d, boolean useCamera) {
+    public VisualLoc(HardwareMap map, String front, Pose2d startingPose, Telemetry t, OdysseyMecanumDrive d, boolean useCamera) {
         this.hardwareMap = map;
         this.poseEstimate = startingPose;
         this.poseVelocity = new Pose2d(0, 0, 0);
@@ -259,60 +258,50 @@ public class MecanumCameraLocalizer implements Localizer {
     // Defaults to Mecanum Localisation if useCamera is false.
     @SuppressLint("DefaultLocale")
     public void analyseDetections() {
-        if (useCamera) {
-            currentDetections = aprilTag.getDetections();
-            //telemetry.addData("# AprilTags Detected", currentDetections.size());
+        currentDetections = aprilTag.getDetections();
+        //telemetry.addData("# AprilTags Detected", currentDetections.size());
 
-            double heading = 0;
-            int notNullTags = 0;
+        double heading = 0;
+        int notNullTags = 0;
 
-            VectorF avgPos = new VectorF(0, 0, 0);
-            //ArrayList<VectorF> positions = new ArrayList<VectorF>();
+        VectorF avgPos = new VectorF(0, 0, 0);
+        //ArrayList<VectorF> positions = new ArrayList<VectorF>();
 
-            //tagTelemetry(currentDetections, this.t);
-            // Step through the list of detections and display info for each one.
-            for (AprilTagDetection detection : currentDetections) {
-                if (detection.metadata != null) {
+        //tagTelemetry(currentDetections, this.t);
+        // Step through the list of detections and display info for each one.
+        for (AprilTagDetection detection : currentDetections) {
+            if (detection.metadata != null) {
 
-                    avgPos.add(vectorFromPose(detection, false));
-                    //positions.add(detection.metadata.fieldPosition.multiplied(FEET_TO_METERS));
-                    heading += yawFromPose(detection);
-                    notNullTags++;
-                }
+                avgPos.add(vectorFromPose(detection, false));
+                //positions.add(detection.metadata.fieldPosition.multiplied(FEET_TO_METERS));
+                heading += yawFromPose(detection);
+                notNullTags++;
+            }
+        }
+
+        if (notNullTags > 0) {
+            avgPos.multiply(1 / (float) notNullTags);
+            heading /= notNullTags;
+            Pose2d roughPose = new Pose2d(avgPos.get(0), avgPos.get(1), heading);
+
+            Pose2d previousAvg = previousPoses.size() > 0 ? new Pose2d(0, 0, 0) : roughPose;
+            for (Pose2d pose : previousPoses) {
+                previousAvg = previousAvg.plus(pose.times(1 / (float) previousPoses.size()));
             }
 
-            if (notNullTags > 0) {
-                avgPos.multiply(1 / (float) notNullTags);
-                heading /= notNullTags;
-                Pose2d roughPose = new Pose2d(avgPos.get(0), avgPos.get(1), heading);
+            poseEstimate = roughPose.plus(previousAvg).times(0.5);
+            previousPoses.add(poseEstimate);
 
-                Pose2d previousAvg = previousPoses.size() > 0 ? new Pose2d(0, 0, 0) : roughPose;
-                for (Pose2d pose : previousPoses) {
-                    previousAvg = previousAvg.plus(pose.times(1 / (float) previousPoses.size()));
-                }
-
-                poseEstimate = roughPose.plus(previousAvg).times(0.5);
-                previousPoses.add(poseEstimate);
-
-                while (previousPoses.size() > AVERAGE_LENGTH) {
-                    previousPoses.remove(0);
-                }
-
-                poseVelocity = poseEstimate.minus(previousPoses.get(previousPoses.size() - 1)).div(SLEEP_TIME);
-                isBlind = false;
-            } else {
-                // Assumes constant velocity if no April tags can be seen
-                if (!isBlind) {
-                    blindTime = elapsedTime.time(timeUnit);
-                    isBlind = true;
-                }
-                MecanumLocalization();
+            while (previousPoses.size() > AVERAGE_LENGTH) {
+                previousPoses.remove(0);
             }
-        } else {
-            MecanumLocalization();
+
+            poseVelocity = poseEstimate.minus(previousPoses.get(previousPoses.size() - 1)).div(SLEEP_TIME);
+            isBlind = false;
         }
     }
 
+    // note: overshoots, need to fix
     public void MecanumLocalization() {
         List<Double> wheelPositions = drive.getWheelPositions();
         Double extHeading = useExternalHeading ? drive.getExternalHeading() : Double.NaN;
@@ -428,6 +417,4 @@ public class MecanumCameraLocalizer implements Localizer {
     public float mod(float n, float m) {
         return (n - m * Math.round(n / m));
     }
-
-
 }

@@ -193,7 +193,7 @@ public class Fullstack extends OpMode {
 
         handler = new Abstract(this, hardwareMap, telemetry);
 
-        if (RobotConstants.USE_DRIVE && RobotConstants.USE_LOCALISER) {
+        if (RobotConstants.USE_DRIVE && RobotConstants.STARTUP_USE_LOCALIZER) {
             drive = new AutoMecanumDrive(handler, hardwareMap, frontLM, frontRM, backLM, backRM, imu);
             if (!handler.localizer.isBlind) {
                 drive.setPoseEstimate(handler.localizer.poseEstimate);
@@ -770,7 +770,7 @@ public class Fullstack extends OpMode {
 
             List<Integer> lastTrackingEncPositions = new ArrayList<>();
             List<Integer> lastTrackingEncVels = new ArrayList<>();
-            if (RobotConstants.USE_LOCALISER) {
+            if (RobotConstants.STARTUP_USE_LOCALIZER) {
                 setLocalizer(handler.localizer);
             }
 
