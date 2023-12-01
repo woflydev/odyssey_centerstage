@@ -150,7 +150,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addData("SELECTED_ALLIANCE", alliance);
         telemetry.update();
 
-        // note: MAIN START
+        // note: WAIT FOR MAIN START
         waitForStart();
 
         // todo: change this to 'webcam 2'
