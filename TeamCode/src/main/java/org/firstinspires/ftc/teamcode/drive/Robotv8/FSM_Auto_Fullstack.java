@@ -430,6 +430,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     }
             }
         }
+        OuttakeSubsystem();
     }
 
     private void HandlePurple() {
@@ -531,6 +532,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     }
             }
         }
+        OuttakeSubsystem();
     }
 
     private void HandleCycle() {
