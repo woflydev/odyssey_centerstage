@@ -31,7 +31,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
-import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -69,7 +68,7 @@ This means that different robot setups is required on startup and init. Beware o
 public class FSM_Auto_Fullstack extends LinearOpMode {
     private OdysseyMecanumDrive drive;
     private MecanumCameraLocalizer localizer;
-    private FSM_RootAutoState autoState = FSM_RootAutoState.PLAY;
+    private FSM_RootAutoState autoState = FSM_RootAutoState.BA_PLAY;
     private FSM_Outtake outtakeState = FSM_Outtake.IDLE;
     private VisionPropPipeline.Randomization randomization;
     private final ElapsedTime autoTimer = new ElapsedTime();
@@ -347,7 +346,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void HandleYellow() {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
             switch (autoState) {
-                case PLAY:
+                case BA_PLAY:
                     EnsureAttachmentNormalization();
 
                     autoTimer.reset();
@@ -364,43 +363,47 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                             break;
                     }
                     outtakeState = FSM_Outtake.IDLE;
-                    autoState = FSM_RootAutoState.TURNING_TO_BACKDROP;
+                    autoState = FSM_RootAutoState.B_TURNING_TO_BACKDROP;
                     break;
-                case TURNING_TO_BACKDROP:
+                case B_TURNING_TO_BACKDROP:
                     if (!drive.isBusy()) {
                         RaiseAndPrime(YELLOW_PIXEL_DEPOSIT_HEIGHT); // note: no delay here
                         ExecuteRotation(180,  true);
-                        autoState = FSM_RootAutoState.MOVING_TO_BACKDROP;
+                        autoState = FSM_RootAutoState.BA_MOVING_TO_BACKDROP;
                     }
                     break;
-                case MOVING_TO_BACKDROP:
+                case BA_MOVING_TO_BACKDROP:
                     if (!drive.isBusy()) {
                         drive.followTrajectoryAsync(CalcKinematics(-DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT, DriveConstants.MAX_VEL));
-                        autoState = FSM_RootAutoState.DEPOSIT_YELLOW;
+                        autoState = FSM_RootAutoState.BA_DEPOSIT_YELLOW;
                     }
                     break;
-                case DEPOSIT_YELLOW:
+                case BA_DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
                         DropAndReset();
 
                         autoTimer.reset();
-                        autoState = FSM_RootAutoState.TURNING_TO_SPIKEMARK;
+                        autoState = FSM_RootAutoState.B_TURNING_TO_SPIKEMARK;
                     }
                     break;
             }
         } else {
             switch (autoState) {
                 // note: outtake is triggered in purple
-                case MOVING_TO_BACKDROP:
+                case BA_MOVING_TO_BACKDROP:
                     if (!drive.isBusy()) {
                         Trajectory centerForTransit = drive.trajectoryBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex])
                             .build();
 
                         // note: this can be synchronous
-                        drive.followTrajectory(centerForTransit);
+                        drive.followTrajectoryAsync(centerForTransit);
+                        autoState = FSM_RootAutoState.A_ALIGNING_WITH_YELLOW_TRANSIT_TRAJECTORY;
+                    }
+                    break;
+                case A_ALIGNING_WITH_YELLOW_TRANSIT_TRAJECTORY:
+                    if (!drive.isBusy()) {
                         drive.followTrajectory(CalcKinematics(-3, DriveConstants.MAX_VEL));
-
                         RaiseAndPrime(YELLOW_PIXEL_DEPOSIT_HEIGHT);
 
                         switch (randomization) {
@@ -415,19 +418,21 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                                 drive.followTrajectory(ConstructYellowBackdropAlign(workingAudienceYellowBackdropAlign[2]));
                                 break;
                         }
-
                         ExecuteRotation(180, false);
-                        autoState = FSM_RootAutoState.DEPOSIT_YELLOW;
+
+                        autoState = FSM_RootAutoState.BA_DEPOSIT_YELLOW;
                     }
-                case DEPOSIT_YELLOW:
+                    break;
+                case BA_DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
 
                         drive.followTrajectory(CalcKinematics(-0.1345, DriveConstants.MAX_VEL));
                         DropAndReset(); // note: NOW INCLUDES PUSHBACK DETECTION BY DEFAULT
 
                         outtakeState = FSM_Outtake.IDLE;
-                        autoState = FSM_RootAutoState.MOVING_TO_PARKING;
+                        autoState = FSM_RootAutoState.BA_MOVING_TO_PARKING;
                     }
+                    break;
             }
         }
         OuttakeSubsystem();
@@ -436,16 +441,16 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void HandlePurple() {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
             switch (autoState) {
-                case TURNING_TO_SPIKEMARK:
+                case B_TURNING_TO_SPIKEMARK:
                     if (!drive.isBusy()) {
                         CenterRobotForSpikemark();
                         outtakeState = FSM_Outtake.ACTIVATED; // activates the grab and deploy sequence on next iteration
                         //ExecuteRotation(0, true); //note: testing linetolinearheading
 
-                        autoState = FSM_RootAutoState.MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE;
+                        autoState = FSM_RootAutoState.BA_MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE;
                     }
                     break;
-                case MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE:
+                case BA_MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE:
                     // note: this bit can be synchronous
                     if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
                         servoFlap.setPosition(RobotConstants.FLAP_OPEN);
@@ -474,9 +479,9 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         OuttakeSubsystem(); // force call, since next is blocking
 
                         if (taskFinishBehaviour == RobotTaskFinishBehaviour.DO_NOT_CYCLE) {
-                            autoState = FSM_RootAutoState.MOVING_TO_PARKING;
+                            autoState = FSM_RootAutoState.BA_MOVING_TO_PARKING;
                         } else {
-                            autoState = FSM_RootAutoState.MOVING_TO_CYCLE;
+                            autoState = FSM_RootAutoState.BA_MOVING_TO_CYCLE;
                         }
                     }
                     break;
@@ -484,7 +489,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         } else {
             switch (autoState) {
                 // important note: this is the autonomous entrypoint for audience init
-                case PLAY:
+                case BA_PLAY:
                     EnsureAttachmentNormalization();
 
                     autoTimer.reset();
@@ -502,8 +507,9 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     }
 
                     // note: no need for outtake state override here, since pixel already grabbed on init
-                    autoState = FSM_RootAutoState.MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE;
-                case MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE:
+                    autoState = FSM_RootAutoState.BA_MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE;
+                    break;
+                case BA_MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE:
                     if (!drive.isBusy()) {
                         PrimePurple(); AutoWait();
 
@@ -528,8 +534,9 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         outtakeState = FSM_Outtake.ACTIVATED; // note: pick up yellow
                         OuttakeSubsystem(); // note: force update
 
-                        autoState = FSM_RootAutoState.MOVING_TO_BACKDROP;
+                        autoState = FSM_RootAutoState.BA_MOVING_TO_BACKDROP;
                     }
+                    break;
             }
         }
         OuttakeSubsystem();
@@ -538,7 +545,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void HandleCycle() {
         // note: we assume we only do cycling if starting at backdrop. however, this is subject to change.
         switch (autoState) {
-            case MOVING_TO_CYCLE:
+            case BA_MOVING_TO_CYCLE:
                 if (!drive.isBusy()) {
                     TrajectorySequence cycleTrajectory = drive .trajectorySequenceBuilder(drive.getPoseEstimate())
                         .lineToLinearHeading(STAGE_DOOR_POSES[allianceIndex])
@@ -549,10 +556,10 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     drive.followTrajectorySequence(cycleTrajectory); // note: blocking
                     ExecuteRotation(180, true);
                     //localizer.useCamera = true; // note: TEST THIS TOMORROW
-                    autoState = FSM_RootAutoState.INTAKE_PIXELS_FROM_STACK;
+                    autoState = FSM_RootAutoState.BA_INTAKE_PIXELS_FROM_STACK;
                 }
                 break;
-            case INTAKE_PIXELS_FROM_STACK:
+            case BA_INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
                     intake.setPower(-0.65);
                     drive.followTrajectory(CalcKinematics(0.136, CAUTION_SPEED));
@@ -575,17 +582,17 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     //localizer.useCamera = false;
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
-                    autoState = FSM_RootAutoState.MOVING_BACK_FROM_CYCLE;
+                    autoState = FSM_RootAutoState.BA_MOVING_BACK_FROM_CYCLE;
                 }
                 break;
-            case MOVING_BACK_FROM_CYCLE:
+            case BA_MOVING_BACK_FROM_CYCLE:
                 // note: may conflict with next state transition
                 if (autoTimer.seconds() > 0.7) {
                     intake.setPower(0);
-                    autoState = FSM_RootAutoState.DEPOSIT_WHITE;
+                    autoState = FSM_RootAutoState.BA_DEPOSIT_WHITE;
                 }
                 break;
-            case DEPOSIT_WHITE:
+            case BA_DEPOSIT_WHITE:
                 // note: if it has stopped at backboard AND is grabbed and ready
                 if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
                     intake.setPower(0);
@@ -596,20 +603,21 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     Delay(400);
                     DropAndReset();
                     outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
-                    autoState = FSM_RootAutoState.MOVING_TO_PARKING;
+                    autoState = FSM_RootAutoState.BA_MOVING_TO_PARKING;
                 }
+                break;
         }
     }
 
     private void HandleFinish() {
         switch (autoState) {
-            case MOVING_TO_PARKING:
+            case BA_MOVING_TO_PARKING:
                 if (!drive.isBusy()) {
                     ParkRobotAtBackboard();
-                    autoState = FSM_RootAutoState.PARKED;
+                    autoState = FSM_RootAutoState.BA_PARKED;
                 }
                 break;
-            case PARKED:
+            case BA_PARKED:
                 // other custom logic if parked
                 break;
         }
