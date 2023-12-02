@@ -305,8 +305,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     if (!drive.isBusy()) {
                         CenterRobotForSpikemark();
                         outtakeState = FSM_Outtake.ACTIVATED; // activates the grab and deploy sequence on next iteration
-                        //ExecuteRotation(0, true); //note: testing linetolinearheading
-
                         autoState = FSM_RootAutoState.BA_MOVING_TO_SPIKEMARK_AND_DEPOSIT_PURPLE;
                     }
                     break;
