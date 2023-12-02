@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_YELLOW_PIXEL_BACKUP_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CAUTION_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLING_STACK_INNER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.INCHES_PER_TILE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.RED_PARKING_POSES;
@@ -84,6 +85,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public RobotParkingLocation parkingLocation;
     public RobotTaskFinishBehaviour taskFinishBehaviour;
     public RobotLocMode locMode;
+    public boolean taskFinishBehaviourSelected;
     public int allianceIndex;
     public int startingPositionIndex;
     public int parkingLocationIndex;
@@ -125,6 +127,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         this.r2 = r2;
         this.r3 = r3;
 
+        taskFinishBehaviourSelected = false;
         allianceIndex = this.alliance == RobotAlliance.RED ? 0 : 1;
         startingPositionIndex = this.startingPosition == RobotStartingPosition.BACKDROP ? 0 : 1;
         parkingLocationIndex = this.parkingLocation == RobotParkingLocation.INNER ? 0 : 1;
@@ -148,12 +151,27 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
         telemetry.addData("TEAM_PROP_LOCATION", randomization);
         telemetry.addData("SELECTED_ALLIANCE", alliance);
+        telemetry.addLine("====================================");
+        telemetry.addLine("PLEASE SELECT TASK FINISH BEHAVIOUR!");
+        telemetry.addLine("X / SQUARE for CYCLE.");
+        telemetry.addLine("B / CIRCLE for DO_NOT_CYCLE.");
+        telemetry.update();
+
+        while (!isStopRequested() && !taskFinishBehaviourSelected) {
+            if (gamepad1.x) {
+                taskFinishBehaviour = RobotTaskFinishBehaviour.CYCLE;
+            } else if (gamepad1.b) {
+                taskFinishBehaviour = RobotTaskFinishBehaviour.DO_NOT_CYCLE;
+            }
+        }
+
+        telemetry.addLine("INITIALIZATION COMPLETE! TASK FINISH BEHAVIOUR SELECTED!");
         telemetry.update();
 
         // note: WAIT FOR MAIN START
         waitForStart();
 
-        // todo: change this to 'webcam 2'
+        // todo: change this to 'webcam 2' when mounted, since camera calib is currently only for C270
         camLoc = new VisualLoc(hardwareMap, "Webcam 1", START_POSE, telemetry, drive, false);
         mecLoc = new MecanumDrive.MecanumLocalizer(drive);
 
@@ -392,16 +410,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                     drive.followTrajectorySequence(cycleTrajectory); // note: blocking
                     ExecuteRotation(180, true);
-                    //localizer.useCamera = true; // note: TEST THIS TOMORROW
                     autoState = FSM_RootAutoState.BA_INTAKE_PIXELS_FROM_STACK;
                 }
                 break;
             case BA_INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
-                    intake.setPower(-0.65);
-                    drive.followTrajectory(CalcKinematics(0.136, CAUTION_SPEED));
+                    drive.followTrajectory(CalcKinematics(CYCLE_STACK_APPROACH_AMOUNT, CAUTION_SPEED));
+                    drive.followTrajectory(CalcKinematics(-CYCLE_STACK_APPROACH_AMOUNT, CAUTION_SPEED));
                     intake.setPower(0.65);
-                    drive.followTrajectory(CalcKinematics(0.08, CAUTION_SPEED));
                     ExecuteRotation(180, false);
                     Delay(2000);
                     autoTimer.reset();
@@ -415,8 +431,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                     outtakeState = FSM_Outtake.ACTIVATED;
                     Delay(500); // note: allow for some time for flap to open and claw to grab
-
-                    //localizer.useCamera = false;
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
                     autoState = FSM_RootAutoState.BA_MOVING_BACK_FROM_CYCLE;
