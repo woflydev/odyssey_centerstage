@@ -157,11 +157,13 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addLine("B / CIRCLE for DO_NOT_CYCLE.");
         telemetry.update();
 
-        while (!isStopRequested() && !taskFinishBehaviourSelected) {
+        while (!isStopRequested() && !taskFinishBehaviourSelected && !isStarted()) {
             if (gamepad1.x) {
                 taskFinishBehaviour = RobotTaskFinishBehaviour.CYCLE;
+                taskFinishBehaviourSelected = true;
             } else if (gamepad1.b) {
                 taskFinishBehaviour = RobotTaskFinishBehaviour.DO_NOT_CYCLE;
+                taskFinishBehaviourSelected = true;
             }
         }
 
