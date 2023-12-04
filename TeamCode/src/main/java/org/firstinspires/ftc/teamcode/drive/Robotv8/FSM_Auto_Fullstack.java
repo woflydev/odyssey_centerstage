@@ -156,6 +156,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addLine("====================================");
         telemetry.addLine("PLEASE SELECT TASK FINISH BEHAVIOUR!");
         telemetry.addLine("X / SQUARE for CYCLE.");
+        telemetry.addLine("Y / TRIANGLE for CYCLE_TWICE.");
         telemetry.addLine("B / CIRCLE for DO_NOT_CYCLE.");
         telemetry.update();
 
