@@ -469,7 +469,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 }
                 break;
             case BA_PARKED:
-                // other custom logic if parked
+                // todo: other custom logic if parked
                 break;
         }
     }
@@ -666,6 +666,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         telemetry.addData("Robot Y", drive.getPoseEstimate().getY());
         telemetry.addData("Robot Heading", Math.toDegrees(drive.getPoseEstimate().getHeading()));
         //telemetry.addData("Redundancies Enabled", localizer.useCamera ? "TRUE" : "FALSE");
+        telemetry.addData("Localizer", drive.getLocalizer());
         telemetry.addData("Target Location",
                 randomization == VisionPropPipeline.Randomization.LOCATION_1 ? "LEFT (LOC_1)" :
                 randomization == VisionPropPipeline.Randomization.LOCATION_2 ? "MIDDLE (LOC_2)" :
