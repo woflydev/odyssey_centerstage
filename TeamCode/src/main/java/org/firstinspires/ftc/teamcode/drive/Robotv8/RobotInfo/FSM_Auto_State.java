@@ -42,6 +42,7 @@ public class FSM_Auto_State {
     public enum RobotTaskFinishBehaviour {
         DO_NOT_CYCLE,
         CYCLE,
+        CYCLE_TWICE_NONONONONO,
     }
 
     public enum RobotLocMode {

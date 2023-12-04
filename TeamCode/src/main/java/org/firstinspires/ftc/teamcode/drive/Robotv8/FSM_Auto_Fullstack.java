@@ -77,6 +77,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private final ElapsedTime autoTimer = new ElapsedTime();
     public final ElapsedTime armTimer = new ElapsedTime();
     public final ElapsedTime outtakeTimer = new ElapsedTime();
+    public final ElapsedTime failsafeTimer = new ElapsedTime();
     public static Pose2d START_POSE = new Pose2d();
     public static Pose2d PARKING_POSE = new Pose2d();
 
@@ -86,6 +87,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public RobotTaskFinishBehaviour taskFinishBehaviour;
     public RobotLocMode locMode;
     public boolean taskFinishBehaviourSelected;
+    public int cycleCounter = 0;
     public int allianceIndex;
     public int startingPositionIndex;
     public int parkingLocationIndex;
@@ -164,10 +166,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             } else if (gamepad1.b) {
                 taskFinishBehaviour = RobotTaskFinishBehaviour.DO_NOT_CYCLE;
                 taskFinishBehaviourSelected = true;
+            } else if (gamepad1.y) {
+                taskFinishBehaviour = RobotTaskFinishBehaviour.CYCLE_TWICE_NONONONONO;
+                taskFinishBehaviourSelected = true;
             }
         }
 
         telemetry.addLine("INITIALIZATION COMPLETE! TASK FINISH BEHAVIOUR SELECTED!");
+        telemetry.addData("Selected Behaviour", taskFinishBehaviour);
         telemetry.update();
 
         // note: WAIT FOR MAIN START
@@ -402,7 +408,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         switch (autoState) {
             case BA_MOVING_TO_CYCLE:
                 if (!drive.isBusy()) {
-                    TrajectorySequence cycleTrajectory = drive .trajectorySequenceBuilder(drive.getPoseEstimate())
+                    TrajectorySequence cycleTrajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                         .lineToLinearHeading(STAGE_DOOR_POSES[allianceIndex])
                         .waitSeconds(0.001)
                         .splineToLinearHeading(CYCLING_STACK_INNER_POSES[allianceIndex], CYCLING_STACK_INNER_POSES[allianceIndex].getHeading())
@@ -419,7 +425,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     drive.followTrajectory(CalcKinematics(-CYCLE_STACK_APPROACH_AMOUNT, CAUTION_SPEED));
                     intake.setPower(0.65);
                     ExecuteRotation(180, false);
-                    Delay(2000);
+                    Delay(1000);
                     autoTimer.reset();
 
                     TrajectorySequence toBackdropTrajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
@@ -430,7 +436,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         .build();
 
                     outtakeState = FSM_Outtake.ACTIVATED;
-                    Delay(500); // note: allow for some time for flap to open and claw to grab
+                    intake.setPower(-0.5);
+                    //Delay(500); // note: allow for some time for flap to open and claw to grab
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
                     autoState = FSM_RootAutoState.BA_MOVING_BACK_FROM_CYCLE;
@@ -438,7 +445,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case BA_MOVING_BACK_FROM_CYCLE:
                 // note: may conflict with next state transition
-                if (autoTimer.seconds() > 0.7) {
+                if (autoTimer.seconds() > 1) {
                     intake.setPower(0);
                     autoState = FSM_RootAutoState.BA_DEPOSIT_WHITE;
                 }
@@ -454,10 +461,17 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     Delay(400);
                     DropAndReset();
                     outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
-                    autoState = FSM_RootAutoState.BA_MOVING_TO_PARKING;
+
+                    cycleCounter++;
+                    if (taskFinishBehaviour == RobotTaskFinishBehaviour.CYCLE_TWICE_NONONONONO && cycleCounter != 2) {
+                        autoState = FSM_RootAutoState.BA_MOVING_TO_CYCLE;
+                    } else {
+                        autoState = FSM_RootAutoState.BA_MOVING_TO_PARKING;
+                    }
                 }
                 break;
         }
+        OuttakeSubsystem();
     }
 
     private void HandleFinish() {
@@ -472,6 +486,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 // todo: other custom logic if parked
                 break;
         }
+        OuttakeSubsystem();
     }
 
     // note: mid level helper functions -------------------------------------------------------
@@ -753,15 +768,15 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE + 0.09);
         MoveElbow(RobotConstants.ELBOW_ACTIVE + 0.01);
         Delay(100);
-        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT + 0.05, DriveConstants.MAX_VEL));
-        servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        Delay(800); // wait for claw to open
+        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
+        servoClaw.setPosition(RobotConstants.CLAW_OPEN); // note: reinforce
+        //Delay(800); // wait for claw to open
 
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
         servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
         MoveElbow(RobotConstants.ELBOW_STANDBY);
 
-        Delay(350); // elbow should come down after the slide is near done
+        //Delay(350); // elbow should come down after the slide is near done
 
         targetOuttakePosition = 10;
         UpdateOuttake(true, 0);

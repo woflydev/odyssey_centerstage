@@ -56,8 +56,8 @@ public class RobotAutoConstants {
             new Pose2d(new Vector2d(-58, 12), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
-            new Pose2d(new Vector2d(28, -8), Math.toRadians(173.04)),
-            new Pose2d(new Vector2d(28, 8), Math.toRadians(187.29)),
+            new Pose2d(new Vector2d(14.5, -5), Math.toRadians(180.0)), // note: old values - (28, 8)
+            new Pose2d(new Vector2d(14.5, 5), Math.toRadians(180.0)),
     };
     public static final double[] BACKDROP_YELLOW_PIXEL_VARIANCE = {
             1.33,
@@ -89,9 +89,9 @@ public class RobotAutoConstants {
     };
     public static final int YELLOW_PIXEL_DEPOSIT_HEIGHT = 250;
 
-    public static final double CAUTION_SPEED = 10;
+    public static final double CAUTION_SPEED = 14;
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 27;
-    public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.17;
+    public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.22;
     public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.7;
     public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.136;
 }
