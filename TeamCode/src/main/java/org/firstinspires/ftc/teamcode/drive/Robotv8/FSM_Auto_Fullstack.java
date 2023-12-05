@@ -769,7 +769,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
         servoWrist.setPosition(RobotConstants.WRIST_ACTIVE + 0.09);
         MoveElbow(RobotConstants.ELBOW_ACTIVE + 0.01);
-        Delay(100);
+        Delay(200);
         drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
         servoClaw.setPosition(RobotConstants.CLAW_OPEN); // note: reinforce
         //Delay(800); // wait for claw to open
