@@ -151,7 +151,16 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         drive = new OdysseyMecanumDrive(hardwareMap, telemetry);
         drive.setPoseEstimate(START_POSE);
 
-        while (!isStopRequested() && !taskFinishBehaviourSelected) {
+        telemetry.addData("TEAM_PROP_LOCATION", randomization);
+        telemetry.addData("SELECTED_ALLIANCE", alliance);
+        telemetry.addLine("====================================");
+        telemetry.addLine("PLEASE SELECT TASK FINISH BEHAVIOUR!");
+        telemetry.addLine("X / SQUARE for CYCLE.");
+        telemetry.addLine("Y / TRIANGLE for CYCLE_TWICE.");
+        telemetry.addLine("B / CIRCLE for DO_NOT_CYCLE.");
+        telemetry.update();
+
+        while (!isStopRequested() && !taskFinishBehaviourSelected && !isStarted()) {
             if (gamepad1.x) {
                 taskFinishBehaviour = RobotTaskFinishBehaviour.CYCLE;
                 taskFinishBehaviourSelected = true;
@@ -164,20 +173,11 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             }
         }
 
-        VisionPropDetection(300);
-
-        telemetry.addData("TEAM_PROP_LOCATION", randomization);
-        telemetry.addData("SELECTED_ALLIANCE", alliance);
-        telemetry.addLine("====================================");
-        telemetry.addLine("PLEASE SELECT TASK FINISH BEHAVIOUR!");
-        telemetry.addLine("X / SQUARE for CYCLE.");
-        telemetry.addLine("Y / TRIANGLE for CYCLE_TWICE.");
-        telemetry.addLine("B / CIRCLE for DO_NOT_CYCLE.");
-        telemetry.update();
-
         telemetry.addLine("INITIALIZATION COMPLETE! TASK FINISH BEHAVIOUR SELECTED!");
         telemetry.addData("Selected Behaviour", taskFinishBehaviour);
         telemetry.update();
+
+        VisionPropDetection(300);
 
         // note: WAIT FOR MAIN START
         waitForStart();
