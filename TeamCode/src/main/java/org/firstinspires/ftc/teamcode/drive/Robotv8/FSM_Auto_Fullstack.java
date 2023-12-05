@@ -11,6 +11,7 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_YELLOW_PIXEL_BACKUP_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CAUTION_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_BACKDROP_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_REVERSE_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLING_STACK_INNER_POSES;
@@ -460,7 +461,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     ExecuteRotation(180, false);
                     RaiseAndPrime(650);
                     Delay(100);
-                    drive.followTrajectory(CalcKinematics(-0.15, DriveConstants.MAX_VEL));
+                    drive.followTrajectory(CalcKinematics(-CYCLE_BACKDROP_APPROACH_AMOUNT, DriveConstants.MAX_VEL));
                     Delay(400);
                     DropAndReset();
                     outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
