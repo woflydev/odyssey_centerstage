@@ -12,6 +12,7 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CAUTION_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_APPROACH_AMOUNT;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_REVERSE_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLING_STACK_INNER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.INCHES_PER_TILE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.RED_PARKING_POSES;
@@ -424,7 +425,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             case BA_INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
                     drive.followTrajectory(CalcKinematics(CYCLE_STACK_APPROACH_AMOUNT, CAUTION_SPEED));
-                    drive.followTrajectory(CalcKinematics(-CYCLE_STACK_APPROACH_AMOUNT, CAUTION_SPEED));
+                    drive.followTrajectory(CalcKinematics(-CYCLE_STACK_REVERSE_AMOUNT, CAUTION_SPEED));
                     intake.setPower(0.65);
                     ExecuteRotation(180, false);
                     Delay(1000);
