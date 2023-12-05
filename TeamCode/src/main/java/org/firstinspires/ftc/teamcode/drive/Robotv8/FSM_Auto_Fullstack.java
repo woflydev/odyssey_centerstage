@@ -459,7 +459,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     ExecuteRotation(180, false);
                     RaiseAndPrime(650);
                     Delay(100);
-                    drive.followTrajectory(CalcKinematics(-0.1345, DriveConstants.MAX_VEL));
+                    drive.followTrajectory(CalcKinematics(-0.15, DriveConstants.MAX_VEL));
                     Delay(400);
                     DropAndReset();
                     outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;

@@ -52,8 +52,8 @@ public class RobotAutoConstants {
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first
             // note: goes forward slowly in FSM_Auto
-            new Pose2d(new Vector2d(-58, -12), Math.toRadians(180.00)),
-            new Pose2d(new Vector2d(-58, 12), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-58, -14), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-58, 14), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
             new Pose2d(new Vector2d(14.5, -5), Math.toRadians(180.0)), // note: old values - (28, 8)
@@ -93,5 +93,5 @@ public class RobotAutoConstants {
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 27;
     public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.22;
     public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.7;
-    public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.136;
+    public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.25;
 }
