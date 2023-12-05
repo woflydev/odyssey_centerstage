@@ -433,6 +433,11 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     Delay(1000);
                     autoTimer.reset();
 
+                    outtakeState = FSM_Outtake.ACTIVATED;
+                    for (int i = 0; i < 5; i++) {
+                        OuttakeSubsystem();
+                    }
+
                     TrajectorySequence toBackdropTrajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                         // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
                         .lineToConstantHeading(STAGE_DOOR_POSES[allianceIndex].vec())
@@ -440,7 +445,6 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         .lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
                         .build();
 
-                    outtakeState = FSM_Outtake.ACTIVATED;
                     intake.setPower(-0.3);
                     //Delay(500); // note: allow for some time for flap to open and claw to grab
 
