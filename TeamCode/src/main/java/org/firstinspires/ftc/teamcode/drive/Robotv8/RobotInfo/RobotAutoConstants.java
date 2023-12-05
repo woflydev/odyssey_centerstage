@@ -75,6 +75,7 @@ public class RobotAutoConstants {
     public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
             1.54,
             1.15,
+            1.15,
             0.60,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
@@ -93,7 +94,7 @@ public class RobotAutoConstants {
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 27;
     public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.22;
     public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.7;
-    public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.35;
-    public static final double CYCLE_STACK_REVERSE_AMOUNT = CYCLE_STACK_APPROACH_AMOUNT - 0.10;
+    public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.45;
+    public static final double CYCLE_STACK_REVERSE_AMOUNT = CYCLE_STACK_APPROACH_AMOUNT - 0.15;
     public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
 }
