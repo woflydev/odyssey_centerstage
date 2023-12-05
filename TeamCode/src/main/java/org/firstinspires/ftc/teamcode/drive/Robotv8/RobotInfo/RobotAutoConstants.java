@@ -75,7 +75,6 @@ public class RobotAutoConstants {
     public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
             1.54,
             1.15,
-            1.15,
             0.60,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
