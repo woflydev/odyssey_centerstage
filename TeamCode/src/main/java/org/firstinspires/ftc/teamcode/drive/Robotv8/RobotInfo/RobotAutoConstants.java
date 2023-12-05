@@ -95,4 +95,5 @@ public class RobotAutoConstants {
     public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.7;
     public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.35;
     public static final double CYCLE_STACK_REVERSE_AMOUNT = CYCLE_STACK_APPROACH_AMOUNT - 0.10;
+    public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
 }
