@@ -425,6 +425,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case BA_INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
+                    intake.setPower(-0.4);
                     drive.followTrajectory(CalcKinematics(CYCLE_STACK_APPROACH_AMOUNT, CAUTION_SPEED));
                     drive.followTrajectory(CalcKinematics(-CYCLE_STACK_REVERSE_AMOUNT, CAUTION_SPEED));
                     intake.setPower(0.65);
@@ -440,7 +441,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         .build();
 
                     outtakeState = FSM_Outtake.ACTIVATED;
-                    intake.setPower(-0.5);
+                    intake.setPower(-0.3);
                     //Delay(500); // note: allow for some time for flap to open and claw to grab
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
@@ -449,7 +450,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case BA_MOVING_BACK_FROM_CYCLE:
                 // note: may conflict with next state transition
-                if (autoTimer.seconds() > 1) {
+                if (autoTimer.milliseconds() > 800) {
                     intake.setPower(0);
                     autoState = FSM_RootAutoState.BA_DEPOSIT_WHITE;
                 }
