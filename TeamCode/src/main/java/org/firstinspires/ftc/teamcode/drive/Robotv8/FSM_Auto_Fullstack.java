@@ -31,7 +31,6 @@ import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.roadrunner.drive.Drive;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -97,7 +96,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public int dir;
     public double[] workingBackdropPurpleVariance;
     public double[] workingAudiencePurpleAlign;
-    public Pose2d[] workingAudienceYellowBackdropAlign;
+    public Pose2d[] workingYellowBackdropAlign;
     public Point r1;
     public Point r2;
     public Point r3;
@@ -191,7 +190,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
         workingBackdropPurpleVariance = SortPurpleVariance(); // note: called after, so that randomization is confirmed
         workingAudiencePurpleAlign = SortPurpleAlignVariance();
-        workingAudienceYellowBackdropAlign = SortYellowBackdropAlign();
+        workingYellowBackdropAlign = SortYellowBackdropAlign();
 
         while (!isStopRequested() && opModeIsActive()) {
             MainLoop();
@@ -213,48 +212,87 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     // note: high level behaviors -------------------------------------------------------------
     private void HandleYellow() {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
-            switch (autoState) {
-                case BA_PLAY:
-                    EnsureAttachmentNormalization();
-
-                    autoTimer.reset();
-                    switch (randomization) {
-                        case LOCATION_1:
-                            drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[0], DriveConstants.MAX_VEL)); AutoWait();
-                            break;
-                        default:
-                        case LOCATION_2:
-                            drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[1], DriveConstants.MAX_VEL)); AutoWait();
-                            break;
-                        case LOCATION_3:
-                            drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[2], DriveConstants.MAX_VEL)); AutoWait();
-                            break;
-                    }
-                    outtakeState = FSM_Outtake.IDLE;
-                    autoState = FSM_RootAutoState.B_TURNING_TO_BACKDROP;
-                    break;
-                case B_TURNING_TO_BACKDROP:
-                    if (!drive.isBusy()) {
-                        RaiseAndPrime(YELLOW_PIXEL_DEPOSIT_HEIGHT); // note: no delay here
-                        ExecuteRotation(180,  true);
-                        autoState = FSM_RootAutoState.BA_MOVING_TO_BACKDROP;
-                    }
-                    break;
-                case BA_MOVING_TO_BACKDROP:
-                    if (!drive.isBusy()) {
-                        drive.followTrajectoryAsync(CalcKinematics(-DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT, DriveConstants.MAX_VEL));
-                        autoState = FSM_RootAutoState.BA_DEPOSIT_YELLOW;
-                    }
-                    break;
-                case BA_DEPOSIT_YELLOW:
-                    if (!drive.isBusy()) {
-                        DropAndReset();
+            if (taskFinishBehaviour != RobotTaskFinishBehaviour.CYCLE_TWICE_NONONONONO) { // note: default to high-precision if only cycling once
+                switch (autoState) {
+                    case BA_PLAY:
+                        EnsureAttachmentNormalization();
 
                         autoTimer.reset();
-                        autoState = FSM_RootAutoState.B_TURNING_TO_SPIKEMARK;
-                    }
-                    break;
+                        switch (randomization) {
+                            case LOCATION_1:
+                                drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[0], DriveConstants.MAX_VEL)); AutoWait();
+                                break;
+                            default:
+                            case LOCATION_2:
+                                drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[1], DriveConstants.MAX_VEL)); AutoWait();
+                                break;
+                            case LOCATION_3:
+                                drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[2], DriveConstants.MAX_VEL)); AutoWait();
+                                break;
+                        }
+                        outtakeState = FSM_Outtake.IDLE;
+                        autoState = FSM_RootAutoState.B_TURNING_TO_BACKDROP;
+                        break;
+                    case B_TURNING_TO_BACKDROP:
+                        if (!drive.isBusy()) {
+                            RaiseAndPrime(YELLOW_PIXEL_DEPOSIT_HEIGHT); // note: no delay here
+                            ExecuteRotation(180,  true);
+                            autoState = FSM_RootAutoState.BA_MOVING_TO_BACKDROP;
+                        }
+                        break;
+                    case BA_MOVING_TO_BACKDROP:
+                        if (!drive.isBusy()) {
+                            drive.followTrajectoryAsync(CalcKinematics(-DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT, DriveConstants.MAX_VEL));
+                            autoState = FSM_RootAutoState.BA_DEPOSIT_YELLOW;
+                        }
+                        break;
+                    case BA_DEPOSIT_YELLOW:
+                        if (!drive.isBusy()) {
+                            DropAndReset();
+
+                            autoTimer.reset();
+                            autoState = FSM_RootAutoState.B_TURNING_TO_SPIKEMARK;
+                        }
+                        break;
+                }
+            } else { // note: only risk loss of visual if cycling twice
+                switch (autoState) {
+                    case BA_PLAY:
+                        EnsureAttachmentNormalization();
+
+                        switch (randomization) {
+                            case LOCATION_1:
+                                drive.followTrajectoryAsync(CalculateVisualTrajectory(workingYellowBackdropAlign[0], false));
+                                break;
+                            case LOCATION_2:
+                                drive.followTrajectoryAsync(CalculateVisualTrajectory(workingYellowBackdropAlign[1], false));
+                                break;
+                            case LOCATION_3:
+                                drive.followTrajectoryAsync(CalculateVisualTrajectory(workingYellowBackdropAlign[2], false));
+                                break;
+                        }
+                        autoTimer.reset(); // note: raise and prime preparation
+
+                        outtakeState = FSM_Outtake.IDLE;
+                        autoState = FSM_RootAutoState.BA_MOVING_TO_BACKDROP;
+                        break;
+                    case BA_MOVING_TO_BACKDROP:
+                        if (autoTimer.milliseconds() >= 800) {
+                            RaiseAndPrime(YELLOW_PIXEL_DEPOSIT_HEIGHT);
+                            autoState = FSM_RootAutoState.BA_DEPOSIT_YELLOW;
+                        }
+                        break;
+                    case BA_DEPOSIT_YELLOW:
+                        if (!drive.isBusy()) {
+                            DropAndReset();
+
+                            autoTimer.reset();
+                            autoState = FSM_RootAutoState.B_TURNING_TO_SPIKEMARK; // note: handoff to HandlePurple
+                        }
+                        break;
+                }
             }
+
         } else {
             switch (autoState) {
                 // note: outtake is triggered in purple
@@ -278,14 +316,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                         switch (randomization) {
                             case LOCATION_1:
-                                drive.followTrajectory(ConstructYellowBackdropAlign(workingAudienceYellowBackdropAlign[0]));
+                                drive.followTrajectory(CalculateVisualTrajectory(workingYellowBackdropAlign[0], true));
                                 break;
                             default:
                             case LOCATION_2:
-                                drive.followTrajectory(ConstructYellowBackdropAlign(workingAudienceYellowBackdropAlign[1]));
+                                drive.followTrajectory(CalculateVisualTrajectory(workingYellowBackdropAlign[1], true));
                                 break;
                             case LOCATION_3:
-                                drive.followTrajectory(ConstructYellowBackdropAlign(workingAudienceYellowBackdropAlign[2]));
+                                drive.followTrajectory(CalculateVisualTrajectory(workingYellowBackdropAlign[2], true));
                                 break;
                         }
                         ExecuteRotation(180, false);
@@ -834,10 +872,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 RED_YELLOW_PIXEL_BACKDROP_POSES : BLUE_YELLOW_PIXEL_BACKUP_POSES;
     }
 
-    private Trajectory ConstructYellowBackdropAlign(Pose2d target) {
-        return
+    private Trajectory CalculateVisualTrajectory(Pose2d target, boolean constantHeading) {
+        return constantHeading ?
                 drive.trajectoryBuilder(drive.getPoseEstimate())
                         .lineToConstantHeading(target.vec())
+                        .build()
+                :
+                drive.trajectoryBuilder(drive.getPoseEstimate())
+                        .lineToLinearHeading(target)
                         .build();
     }
 
