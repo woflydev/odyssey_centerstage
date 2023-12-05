@@ -29,6 +29,7 @@ import android.annotation.SuppressLint;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.roadrunner.drive.Drive;
 import com.acmerobotics.roadrunner.drive.MecanumDrive;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
@@ -593,10 +594,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void HandleLocalization() {
         if (locMode == RobotLocMode.CAM) {
             drive.setLocalizer(camLoc);
-            locMode = RobotLocMode.CAM;
         } else {
-            drive.setLocalizer(mecLoc);
-            locMode = RobotLocMode.MEC;
+            //drive.setLocalizer(mecLoc);
         }
     }
 
