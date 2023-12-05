@@ -70,8 +70,8 @@ public class RobotConstants {
     // -------------------------------------------------------------- RR
     public static final boolean STARTUP_USE_LOCALIZER = false;
     public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.31460328144
-    public static final double RR_HEADING_PID_kP = 6;
-    public static final double RR_TRANSLATIONAL_PID_kP = 17; // note: old - 30
+    public static final double RR_HEADING_PID_kP = 5;
+    public static final double RR_TRANSLATIONAL_PID_kP = 15; // note: old - 30
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 

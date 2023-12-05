@@ -60,7 +60,7 @@ public class RobotAutoConstants {
             new Pose2d(new Vector2d(14.5, 5), Math.toRadians(180.0)),
     };
     public static final double[] BACKDROP_YELLOW_PIXEL_VARIANCE = {
-            1.33,
+            1.49,
             1.26,
             0.98,
     };
