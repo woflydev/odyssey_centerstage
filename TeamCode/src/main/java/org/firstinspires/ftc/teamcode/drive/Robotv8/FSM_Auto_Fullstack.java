@@ -151,7 +151,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         drive = new OdysseyMecanumDrive(hardwareMap, telemetry);
         drive.setPoseEstimate(START_POSE);
 
-        while (!isStopRequested() && !taskFinishBehaviourSelected && !isStarted()) {
+        while (!isStopRequested() && !taskFinishBehaviourSelected) {
             if (gamepad1.x) {
                 taskFinishBehaviour = RobotTaskFinishBehaviour.CYCLE;
                 taskFinishBehaviourSelected = true;
