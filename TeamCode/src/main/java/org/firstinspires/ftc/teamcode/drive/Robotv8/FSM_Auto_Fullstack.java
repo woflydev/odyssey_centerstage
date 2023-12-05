@@ -345,7 +345,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         }
         OuttakeSubsystem();
     }
-
+    
     private void HandlePurple() {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
             switch (autoState) {
