@@ -489,7 +489,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         //.lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
                         .build();
 
-                    intake.setPower(-0.3);
+                    intake.setPower(-0.6);
                     //Delay(500); // note: allow for some time for flap to open and claw to grab
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
@@ -498,7 +498,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case BA_MOVING_BACK_FROM_CYCLE:
                 // note: may conflict with next state transition
-                if (autoTimer.milliseconds() > 800) {
+                if (autoTimer.milliseconds() > 600) {
                     intake.setPower(0);
                     autoState = FSM_RootAutoState.BA_DEPOSIT_WHITE;
                 }
