@@ -102,5 +102,5 @@ public class RobotAutoConstants {
     public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
 
     public static final double AUDIENCE_PURPLE_APPROACH_SPEED = 20;
-    public static final double AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT = 0.34;
+    public static final double AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT = 0.4;
 }
