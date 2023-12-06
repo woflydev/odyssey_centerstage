@@ -42,12 +42,12 @@ public class RobotAutoConstants {
             // note: starts with LOC_1
             new Pose2d(46, -30, Math.toRadians(180)),
             new Pose2d(46, -36, Math.toRadians(180)),
-            new Pose2d(46, -42, Math.toRadians(180)),
+            new Pose2d(46, -40, Math.toRadians(180)),
     };
     public static final Pose2d[] BLUE_YELLOW_PIXEL_BACKUP_POSES = {
             new Pose2d(46, 30, Math.toRadians(180)),
             new Pose2d(46, 36, Math.toRadians(180)),
-            new Pose2d(46, 42, Math.toRadians(180)),
+            new Pose2d(46, 40, Math.toRadians(180)),
     };
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first
@@ -102,5 +102,5 @@ public class RobotAutoConstants {
     public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
 
     public static final double AUDIENCE_PURPLE_APPROACH_SPEED = 20;
-    public static final double AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT = 0.34;
+    public static final double AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT = 0.4;
 }
