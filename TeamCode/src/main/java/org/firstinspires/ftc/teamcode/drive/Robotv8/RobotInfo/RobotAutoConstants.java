@@ -97,5 +97,5 @@ public class RobotAutoConstants {
     public static final double CYCLE_STACK_REVERSE_AMOUNT = CYCLE_STACK_APPROACH_AMOUNT - 0.22;
     public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
 
-    public static final Pose2d CYCLE_CHECK = new Pose2d(10, 0, 0);
+    public static final Pose2d CYCLE_CHECK = new Pose2d(10, 0, Math.toRadians(180));
 }
