@@ -335,7 +335,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 case BA_DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
 
-                        drive.followTrajectory(CalcKinematics(-0.1345, DriveConstants.MAX_VEL));
+                        drive.followTrajectory(CalcKinematics(-0.28, DriveConstants.MAX_VEL));
                         DropAndReset(); // note: NOW INCLUDES PUSHBACK DETECTION BY DEFAULT
 
                         outtakeState = FSM_Outtake.IDLE;

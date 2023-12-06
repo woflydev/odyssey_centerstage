@@ -83,7 +83,7 @@ public class RobotAutoConstants {
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
             2.1,
-            2.25,
+            2.17,
             2.1,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE = {
