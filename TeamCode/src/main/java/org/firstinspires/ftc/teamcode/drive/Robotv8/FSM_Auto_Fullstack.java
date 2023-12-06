@@ -300,7 +300,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         } else {
             switch (autoState) {
                 case BA_MOVING_TO_BACKDROP:
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy() && outtakeState == FSM_Outtake.IDLE) {
                         Trajectory centerForTransit = drive.trajectoryBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex])
                             .build();
