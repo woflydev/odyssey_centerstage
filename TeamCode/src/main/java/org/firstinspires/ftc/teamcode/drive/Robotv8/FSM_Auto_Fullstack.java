@@ -301,6 +301,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             switch (autoState) {
                 case BA_MOVING_TO_BACKDROP:
                     if (!drive.isBusy() && outtakeState == FSM_Outtake.IDLE) {
+                        intake.setPower(0);
                         Trajectory centerForTransit = drive.trajectoryBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex])
                             .build();
@@ -313,6 +314,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     break;
                 case A_ALIGNING_WITH_YELLOW_TRANSIT_TRAJECTORY:
                     if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
+                        ExecuteRotation(180, false);
                         drive.followTrajectory(CalcKinematics(-3, DriveConstants.MAX_VEL));
                         RaiseAndPrime(YELLOW_PIXEL_DEPOSIT_HEIGHT);
 
