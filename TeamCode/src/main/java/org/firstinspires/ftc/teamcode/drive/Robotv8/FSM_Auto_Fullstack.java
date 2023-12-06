@@ -296,14 +296,12 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
         } else {
             switch (autoState) {
-                // note: outtake is triggered in purple
                 case BA_MOVING_TO_BACKDROP:
                     if (!drive.isBusy()) {
                         Trajectory centerForTransit = drive.trajectoryBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex])
                             .build();
 
-                        // note: this can be synchronous
                         drive.followTrajectoryAsync(centerForTransit);
                         outtakeState = FSM_Outtake.ACTIVATED;
                         OuttakeSubsystem(); // note: force update
@@ -438,6 +436,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                                 break;
                         }
 
+                        outtakeState = FSM_Outtake.OUTTAKE_RESET_HARD;
                         autoState = FSM_RootAutoState.BA_MOVING_TO_BACKDROP;
                     }
                     break;
@@ -560,6 +559,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void OuttakeSubsystem() {
         // NOTE: statemachine for outtake sequences
         switch (outtakeState) {
+            case IDLE:
+                break;
             case ACTIVATED:
                 servoFlap.setPosition(RobotConstants.FLAP_OPEN);
                 outtakeTimer.reset();
