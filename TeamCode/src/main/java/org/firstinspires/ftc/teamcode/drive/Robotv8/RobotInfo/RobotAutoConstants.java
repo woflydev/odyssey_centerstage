@@ -30,8 +30,8 @@ public class RobotAutoConstants {
     };
     public static final Pose2d[] SPIKEMARK_CENTER_POSES = {
             // note: red is first, must be backwards to deposit
-            new Pose2d(46.5, -30, Math.toRadians(0)),
-            new Pose2d(46.5, 30, Math.toRadians(0)),
+            new Pose2d(44.5, -30, Math.toRadians(0)),
+            new Pose2d(44.5, 30, Math.toRadians(0)),
     };
     // note: used for aligning robot SPIKEMARK -> BACKDROP when starting from audience side
     public static final Pose2d[] SPIKEMARK_TRANSIT_CENTER_POSES = {
@@ -56,8 +56,8 @@ public class RobotAutoConstants {
             new Pose2d(new Vector2d(-57.5, 13.5), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
-            new Pose2d(new Vector2d(14.5, -5), Math.toRadians(180.0)), // note: old values - (28, 8)
-            new Pose2d(new Vector2d(14.5, 5), Math.toRadians(180.0)),
+            new Pose2d(new Vector2d(16, -4), Math.toRadians(180.0)), // note: old values - (28, 8)
+            new Pose2d(new Vector2d(16, 4), Math.toRadians(180.0)),
     };
     public static final Pose2d[] CYCLE_RETURN_POSES = {
             new Pose2d(new Vector2d(30, -5), Math.toRadians(180.0)),
