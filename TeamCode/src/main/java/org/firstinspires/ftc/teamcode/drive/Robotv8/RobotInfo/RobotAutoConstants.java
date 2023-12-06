@@ -17,11 +17,11 @@ public class RobotAutoConstants {
     };
     public static final Pose2d[] RED_PARKING_POSES = {
             // note: inner is first
-            new Pose2d(49, -15, Math.toRadians(90)),
+            new Pose2d(47, -15, Math.toRadians(90)),
             new Pose2d(46.5, -53.5, Math.toRadians(90)),
     };
     public static final Pose2d[] BLUE_PARKING_POSES = {
-            new Pose2d(49, 15, Math.toRadians(270)),
+            new Pose2d(47, 15, Math.toRadians(270)),
             new Pose2d(46.5, 53.5, Math.toRadians(270)),
     };
     public static final Pose2d[] BACKDROP_CENTER_POSES = {
@@ -64,7 +64,7 @@ public class RobotAutoConstants {
             new Pose2d(new Vector2d(30, 5), Math.toRadians(180.0)),
     };
     public static final double[] BACKDROP_YELLOW_PIXEL_VARIANCE = {
-            1.49,
+            1.45,
             1.26,
             1.05,
     };
@@ -94,13 +94,13 @@ public class RobotAutoConstants {
     public static final int YELLOW_PIXEL_DEPOSIT_HEIGHT = 200; // todo: test if new val works - old was 250
 
     public static final double CAUTION_SPEED = 14;
-    public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 28;
+    public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 29.5;
     public static final double BACKDROP_DEPOSIT_PUSHBACK_AMOUNT = 0.22;
     public static final double DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT = 1.7;
     public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.32;
     public static final double CYCLE_STACK_REVERSE_AMOUNT = CYCLE_STACK_APPROACH_AMOUNT - 0.22;
     public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
 
-    public static final double AUDIENCE_YELLOW_APPROACH_SPEED = 40;
+    public static final double AUDIENCE_PURPLE_APPROACH_SPEED = 20;
     public static final double AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT = 0.34;
 }

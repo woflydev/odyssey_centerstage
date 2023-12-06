@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_PIXEL_VARIANCE;
-import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_APPROACH_SPEED;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_APPROACH_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_DEPOSIT_PUSHBACK_AMOUNT;
@@ -404,14 +404,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     intake.setPower(-0.3);
                     switch (randomization) {
                         case LOCATION_1:
-                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[0], AUDIENCE_YELLOW_APPROACH_SPEED)); AutoWait();
+                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[0], AUDIENCE_PURPLE_APPROACH_SPEED)); AutoWait();
                             break;
                         default:
                         case LOCATION_2:
-                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[1], AUDIENCE_YELLOW_APPROACH_SPEED)); AutoWait();
+                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[1], AUDIENCE_PURPLE_APPROACH_SPEED)); AutoWait();
                             break;
                         case LOCATION_3:
-                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[2], AUDIENCE_YELLOW_APPROACH_SPEED)); AutoWait();
+                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[2], AUDIENCE_PURPLE_APPROACH_SPEED)); AutoWait();
                             break;
                     }
 
@@ -488,7 +488,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         .lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
                         .build();
 
-                    intake.setPower(-0.6);
+                    //intake.setPower(-0.6);
                     //Delay(500); // note: allow for some time for flap to open and claw to grab
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);
