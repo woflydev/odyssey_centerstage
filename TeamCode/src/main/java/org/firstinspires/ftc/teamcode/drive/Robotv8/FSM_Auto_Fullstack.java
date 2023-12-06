@@ -481,6 +481,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         .lineToConstantHeading(STAGE_DOOR_POSES[allianceIndex].vec())
                         .waitSeconds(0.001)
                         .lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
+                        .waitSeconds(0.001)
                         .build();
 
                     intake.setPower(-0.6);
