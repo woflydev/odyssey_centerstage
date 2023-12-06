@@ -42,12 +42,12 @@ public class RobotAutoConstants {
             // note: starts with LOC_1
             new Pose2d(46, -30, Math.toRadians(180)),
             new Pose2d(46, -36, Math.toRadians(180)),
-            new Pose2d(46, -42, Math.toRadians(180)),
+            new Pose2d(46, -40, Math.toRadians(180)),
     };
     public static final Pose2d[] BLUE_YELLOW_PIXEL_BACKUP_POSES = {
             new Pose2d(46, 30, Math.toRadians(180)),
             new Pose2d(46, 36, Math.toRadians(180)),
-            new Pose2d(46, 42, Math.toRadians(180)),
+            new Pose2d(46, 40, Math.toRadians(180)),
     };
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first
@@ -82,14 +82,14 @@ public class RobotAutoConstants {
             0.68,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
-            2.02,
+            1.95,
             2.17,
-            2.02,
+            1.95,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE = {
-            48,
+            50,
             0,
-            48,
+            50,
     };
     public static final int YELLOW_PIXEL_DEPOSIT_HEIGHT = 200; // todo: test if new val works - old was 250
 

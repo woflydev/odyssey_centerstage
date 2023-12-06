@@ -303,7 +303,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     if (!drive.isBusy() && outtakeState == FSM_Outtake.IDLE) {
                         intake.setPower(0);
                         Trajectory centerForTransit = drive.trajectoryBuilder(drive.getPoseEstimate())
-                            .lineToLinearHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex])
+                            .lineToConstantHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex].vec())
                             .build();
 
                         drive.followTrajectoryAsync(centerForTransit);
