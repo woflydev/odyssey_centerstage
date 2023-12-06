@@ -59,6 +59,10 @@ public class RobotAutoConstants {
             new Pose2d(new Vector2d(14.5, -5), Math.toRadians(180.0)), // note: old values - (28, 8)
             new Pose2d(new Vector2d(14.5, 5), Math.toRadians(180.0)),
     };
+    public static final Pose2d[] CYCLE_RETURN_POSES = {
+            new Pose2d(new Vector2d(30, -5), Math.toRadians(180.0)),
+            new Pose2d(new Vector2d(30, 5), Math.toRadians(180.0)),
+    };
     public static final double[] BACKDROP_YELLOW_PIXEL_VARIANCE = {
             1.49,
             1.26,
@@ -96,6 +100,4 @@ public class RobotAutoConstants {
     public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.32;
     public static final double CYCLE_STACK_REVERSE_AMOUNT = CYCLE_STACK_APPROACH_AMOUNT - 0.22;
     public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
-
-    public static final Pose2d CYCLE_CHECK = new Pose2d(10, 0, 0);
 }
