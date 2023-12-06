@@ -307,7 +307,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                         drive.followTrajectoryAsync(centerForTransit);
                         outtakeState = FSM_Outtake.ACTIVATED;
-                        OuttakeSubsystem(); // note: force update
+                        //OuttakeSubsystem(); // note: force update
                         autoState = FSM_RootAutoState.A_ALIGNING_WITH_YELLOW_TRANSIT_TRAJECTORY;
                     }
                     break;
@@ -334,7 +334,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     }
                     break;
                 case BA_DEPOSIT_YELLOW:
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
 
                         drive.followTrajectory(CalcKinematics(-AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT, DriveConstants.MAX_VEL));
                         DropAndReset(); // note: NOW INCLUDES PUSHBACK DETECTION BY DEFAULT
