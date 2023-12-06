@@ -66,7 +66,7 @@ public class RobotAutoConstants {
     public static final double[] BACKDROP_YELLOW_PIXEL_VARIANCE = {
             1.45,
             1.26,
-            1.05,
+            0.98,
     };
     public static final double[] AUDIENCE_YELLOW_PIXEL_VARIANCE = {
             1.4,
@@ -82,14 +82,14 @@ public class RobotAutoConstants {
             0.68,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
-            2.02,
+            1.95,
             2.17,
-            2.02,
+            1.95,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE = {
-            48,
+            50,
             0,
-            48,
+            50,
     };
     public static final int YELLOW_PIXEL_DEPOSIT_HEIGHT = 200; // todo: test if new val works - old was 250
 

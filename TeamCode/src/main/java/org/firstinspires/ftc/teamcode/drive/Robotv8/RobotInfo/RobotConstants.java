@@ -46,7 +46,7 @@ public class RobotConstants {
     public static final double ELBOW_PICKUP = 0.050;
     public static final double ELBOW_STANDBY = 0.143;
     public static final double ELBOW_STANDBY_BACK = 0.583;
-    public static final double ELBOW_ACTIVE = 0.48;
+    public static final double ELBOW_ACTIVE = 0.49;
     public static final double PLANE_STANDBY = 0.19;
     public static final double PLANE_ACTIVE = 0;
     public static final double WHATEVER_THE_FUCK_THAT_THING_IS_OFF = 0.6;

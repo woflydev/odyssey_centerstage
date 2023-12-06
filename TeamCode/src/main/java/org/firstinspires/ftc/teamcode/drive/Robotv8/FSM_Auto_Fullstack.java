@@ -4,6 +4,7 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_APPROACH_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_DEPOSIT_PUSHBACK_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_PURPLE_PIXEL_VARIANCE;
@@ -97,6 +98,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     public int startingPositionIndex;
     public int parkingLocationIndex;
     public int dir;
+    public double[] workingBackdropYellowVariance;
     public double[] workingBackdropPurpleVariance;
     public double[] workingAudiencePurpleAlign;
     public Pose2d[] workingYellowBackdropAlign;
@@ -191,7 +193,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
         HandleLocalization();
 
-        workingBackdropPurpleVariance = SortPurpleVariance(); // note: called after, so that randomization is confirmed
+        workingBackdropYellowVariance = SortBackdropValueVariance(BACKDROP_YELLOW_PIXEL_VARIANCE, AUDIENCE_YELLOW_PIXEL_VARIANCE);
+        workingBackdropPurpleVariance = SortBackdropValueVariance(BACKDROP_PURPLE_PIXEL_VARIANCE, AUDIENCE_PURPLE_PIXEL_VARIANCE); // note: called after, so that randomization is confirmed
         workingAudiencePurpleAlign = SortPurpleAlignVariance();
         workingYellowBackdropAlign = SortYellowBackdropAlign();
 
@@ -223,14 +226,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         autoTimer.reset();
                         switch (randomization) {
                             case LOCATION_1:
-                                drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[0], DriveConstants.MAX_VEL)); AutoWait();
+                                drive.followTrajectoryAsync(CalcKinematics(workingBackdropYellowVariance[0], DriveConstants.MAX_VEL)); AutoWait();
                                 break;
                             default:
                             case LOCATION_2:
-                                drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[1], DriveConstants.MAX_VEL)); AutoWait();
+                                drive.followTrajectoryAsync(CalcKinematics(workingBackdropYellowVariance[1], DriveConstants.MAX_VEL)); AutoWait();
                                 break;
                             case LOCATION_3:
-                                drive.followTrajectoryAsync(CalcKinematics(BACKDROP_YELLOW_PIXEL_VARIANCE[2], DriveConstants.MAX_VEL)); AutoWait();
+                                drive.followTrajectoryAsync(CalcKinematics(workingBackdropYellowVariance[2], DriveConstants.MAX_VEL)); AutoWait();
                                 break;
                         }
                         outtakeState = FSM_Outtake.IDLE;
@@ -303,7 +306,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     if (!drive.isBusy() && outtakeState == FSM_Outtake.IDLE) {
                         intake.setPower(0);
                         Trajectory centerForTransit = drive.trajectoryBuilder(drive.getPoseEstimate())
-                            .lineToLinearHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex])
+                            .lineToConstantHeading(SPIKEMARK_TRANSIT_CENTER_POSES[allianceIndex].vec())
                             .build();
 
                         drive.followTrajectoryAsync(centerForTransit);
@@ -840,7 +843,31 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         Delay(400);
     }
 
-    private double[] SortPurpleVariance() {
+    private double[] SortBackdropValueVariance(double[] backdropIn, double[] audienceIn) {
+        if (startingPosition == RobotStartingPosition.BACKDROP) {
+            return alliance == RobotAlliance.RED ? new double[] {
+                    backdropIn[0],
+                    backdropIn[1],
+                    backdropIn[2]
+            } : new double[] {
+                    backdropIn[2],
+                    backdropIn[1],
+                    backdropIn[0]
+            };
+        } else {
+            return alliance == RobotAlliance.RED ? new double[] {
+                    audienceIn[0],
+                    audienceIn[1],
+                    audienceIn[2]
+            } : new double[] {
+                    audienceIn[2],
+                    audienceIn[1],
+                    audienceIn[0]
+            };
+        }
+    }
+
+    private double[] OldSortPurpleVariance() {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
             return alliance == RobotAlliance.RED ? new double[] {
                     BACKDROP_PURPLE_PIXEL_VARIANCE[0],
