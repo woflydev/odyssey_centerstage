@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.drive.Robotv8;
 
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_PIXEL_ALIGN_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_PIXEL_VARIANCE;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_APPROACH_SPEED;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_DEPOSIT_PUSHBACK_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_PURPLE_PIXEL_VARIANCE;
@@ -333,7 +335,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 case BA_DEPOSIT_YELLOW:
                     if (!drive.isBusy()) {
 
-                        drive.followTrajectory(CalcKinematics(-0.28, DriveConstants.MAX_VEL));
+                        drive.followTrajectory(CalcKinematics(-AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT, DriveConstants.MAX_VEL));
                         DropAndReset(); // note: NOW INCLUDES PUSHBACK DETECTION BY DEFAULT
 
                         outtakeState = FSM_Outtake.IDLE;
@@ -398,16 +400,17 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     EnsureAttachmentNormalization();
 
                     autoTimer.reset();
+                    intake.setPower(-0.3);
                     switch (randomization) {
                         case LOCATION_1:
-                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[0], DriveConstants.MAX_VEL)); AutoWait();
+                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[0], AUDIENCE_YELLOW_APPROACH_SPEED)); AutoWait();
                             break;
                         default:
                         case LOCATION_2:
-                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[1], DriveConstants.MAX_VEL)); AutoWait();
+                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[1], AUDIENCE_YELLOW_APPROACH_SPEED)); AutoWait();
                             break;
                         case LOCATION_3:
-                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[2], DriveConstants.MAX_VEL)); AutoWait();
+                            drive.followTrajectoryAsync(CalcKinematics(AUDIENCE_PURPLE_PIXEL_VARIANCE[2], AUDIENCE_YELLOW_APPROACH_SPEED)); AutoWait();
                             break;
                     }
 
@@ -463,7 +466,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case BA_INTAKE_PIXELS_FROM_STACK:
                 if (!drive.isBusy()) {
-                    intake.setPower(-0.4);
+                    intake.setPower(-0.8);
                     drive.followTrajectory(CalcKinematics(CYCLE_STACK_APPROACH_AMOUNT, CAUTION_SPEED));
                     drive.followTrajectory(CalcKinematics(-CYCLE_STACK_REVERSE_AMOUNT, CAUTION_SPEED));
                     intake.setPower(0.65);
@@ -569,7 +572,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                 break;
             case FLAP_OPENING:
                 // amount of time the servo takes to activate from the previous state
-                if (outtakeTimer.milliseconds() >= 300) {
+                if (outtakeTimer.milliseconds() >= 450) {
                     servoWrist.setPosition(RobotConstants.WRIST_PICKUP);
                     MoveElbow(RobotConstants.ELBOW_STANDBY);
                     outtakeTimer.reset();
@@ -782,7 +785,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private void EnsureAttachmentNormalization() {
         servoClaw.setPosition(RobotConstants.CLAW_CLOSE);
         servoFlap.setPosition(RobotConstants.FLAP_CLOSE);
-        servoWrist.setPosition(RobotConstants.WRIST_STANDBY);
+        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE);
         MoveElbow(RobotConstants.ELBOW_STANDBY);
     }
 
