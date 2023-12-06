@@ -287,6 +287,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         break;
                     case BA_DEPOSIT_YELLOW:
                         if (!drive.isBusy()) {
+                            AutoWait();
                             DropAndReset();
 
                             autoTimer.reset();

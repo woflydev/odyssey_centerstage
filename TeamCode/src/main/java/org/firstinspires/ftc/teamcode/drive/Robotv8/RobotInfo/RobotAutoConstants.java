@@ -52,8 +52,8 @@ public class RobotAutoConstants {
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first
             // note: goes forward slowly in FSM_Auto
-            new Pose2d(new Vector2d(-57.5, -13.5), Math.toRadians(180.00)),
-            new Pose2d(new Vector2d(-57.5, 13.5), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-57.5, -14), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-57.5, 14), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
             new Pose2d(new Vector2d(16, -4), Math.toRadians(180.0)), // note: old values - (28, 8)
