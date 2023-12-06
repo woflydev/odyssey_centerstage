@@ -312,7 +312,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     }
                     break;
                 case A_ALIGNING_WITH_YELLOW_TRANSIT_TRAJECTORY:
-                    if (!drive.isBusy()) {
+                    if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
                         drive.followTrajectory(CalcKinematics(-3, DriveConstants.MAX_VEL));
                         RaiseAndPrime(YELLOW_PIXEL_DEPOSIT_HEIGHT);
 
@@ -334,7 +334,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     }
                     break;
                 case BA_DEPOSIT_YELLOW:
-                    if (!drive.isBusy() && outtakeState == FSM_Outtake.GRABBED_AND_READY) {
+                    if (!drive.isBusy()) {
 
                         drive.followTrajectory(CalcKinematics(-AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT, DriveConstants.MAX_VEL));
                         DropAndReset(); // note: NOW INCLUDES PUSHBACK DETECTION BY DEFAULT
