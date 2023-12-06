@@ -35,8 +35,8 @@ public class RobotAutoConstants {
     };
     // note: used for aligning robot SPIKEMARK -> BACKDROP when starting from audience side
     public static final Pose2d[] SPIKEMARK_TRANSIT_CENTER_POSES = {
-            new Pose2d(-36, -9, Math.toRadians(180)),
-            new Pose2d(-36, 9, Math.toRadians(180)),
+            new Pose2d(-36, -7, Math.toRadians(180)),
+            new Pose2d(-36, 7, Math.toRadians(180)),
     };
     public static final Pose2d[] RED_YELLOW_PIXEL_BACKDROP_POSES = {
             // note: starts with LOC_1
