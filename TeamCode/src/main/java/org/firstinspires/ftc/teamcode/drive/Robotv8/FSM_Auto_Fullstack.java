@@ -304,7 +304,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                         drive.followTrajectoryAsync(centerForTransit);
                         outtakeState = FSM_Outtake.ACTIVATED;
-                        //OuttakeSubsystem(); // note: force update
+                        OuttakeSubsystem(); // note: force update
                         autoState = FSM_RootAutoState.A_ALIGNING_WITH_YELLOW_TRANSIT_TRAJECTORY;
                     }
                     break;
