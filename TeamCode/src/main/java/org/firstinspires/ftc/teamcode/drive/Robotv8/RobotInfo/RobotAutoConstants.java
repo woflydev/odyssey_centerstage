@@ -52,8 +52,8 @@ public class RobotAutoConstants {
     public static final Pose2d[] CYCLING_STACK_INNER_POSES = {
             // note: again, red is first
             // note: goes forward slowly in FSM_Auto
-            new Pose2d(new Vector2d(-58, -14), Math.toRadians(180.00)),
-            new Pose2d(new Vector2d(-58, 14), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-58, -13.5), Math.toRadians(180.00)),
+            new Pose2d(new Vector2d(-58, 13.5), Math.toRadians(180.00)),
     };
     public static final Pose2d[] STAGE_DOOR_POSES = {
             new Pose2d(new Vector2d(14.5, -5), Math.toRadians(180.0)), // note: old values - (28, 8)
@@ -75,7 +75,7 @@ public class RobotAutoConstants {
     public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
             1.54,
             1.15,
-            0.63,
+            0.68,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
             2.1,
@@ -96,4 +96,6 @@ public class RobotAutoConstants {
     public static final double CYCLE_STACK_APPROACH_AMOUNT = 0.32;
     public static final double CYCLE_STACK_REVERSE_AMOUNT = CYCLE_STACK_APPROACH_AMOUNT - 0.22;
     public static final double CYCLE_BACKDROP_APPROACH_AMOUNT = 0.25;
+
+    public static final Pose2d CYCLE_CHECK = new Pose2d(10, 0, 0);
 }

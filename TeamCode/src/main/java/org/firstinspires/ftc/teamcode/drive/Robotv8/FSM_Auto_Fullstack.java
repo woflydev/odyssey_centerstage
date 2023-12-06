@@ -12,6 +12,7 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CAUTION_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_BACKDROP_APPROACH_AMOUNT;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_CHECK;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_REVERSE_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLING_STACK_INNER_POSES;
@@ -478,9 +479,14 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
                     TrajectorySequence toBackdropTrajectory = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                         // note: this ensures robot doesn't crash into truss and goes through stage door on appropriate side
-                        .lineToConstantHeading(STAGE_DOOR_POSES[allianceIndex].vec())
-                        .waitSeconds(0.001)
-                        .lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
+                            // spline to a position that avoids prop and purple pixel
+                            .splineTo(CYCLE_CHECK.vec(), CYCLE_CHECK.getHeading())
+                            .splineTo(STAGE_DOOR_POSES[allianceIndex].vec(), STAGE_DOOR_POSES[allianceIndex].getHeading())
+                            .waitSeconds(0.001)
+                            .lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
+                            //.lineToConstantHeading(STAGE_DOOR_POSES[allianceIndex].vec())
+                        //.waitSeconds(0.001)
+                        //.lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
                         .build();
 
                     intake.setPower(-0.3);
