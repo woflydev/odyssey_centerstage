@@ -12,7 +12,6 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CAUTION_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_BACKDROP_APPROACH_AMOUNT;
-import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_CHECK;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_RETURN_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_REVERSE_AMOUNT;
