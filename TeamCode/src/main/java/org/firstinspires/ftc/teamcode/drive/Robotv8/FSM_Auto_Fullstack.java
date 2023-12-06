@@ -488,7 +488,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         .lineToConstantHeading(BACKDROP_CENTER_POSES[allianceIndex].vec())
                         .build();
 
-                    intake.setPower(-0.6);
+                    //intake.setPower(-0.6);
                     //Delay(500); // note: allow for some time for flap to open and claw to grab
 
                     drive.followTrajectorySequenceAsync(toBackdropTrajectory);

@@ -17,11 +17,11 @@ public class RobotAutoConstants {
     };
     public static final Pose2d[] RED_PARKING_POSES = {
             // note: inner is first
-            new Pose2d(49, -15, Math.toRadians(90)),
+            new Pose2d(47, -15, Math.toRadians(90)),
             new Pose2d(46.5, -53.5, Math.toRadians(90)),
     };
     public static final Pose2d[] BLUE_PARKING_POSES = {
-            new Pose2d(49, 15, Math.toRadians(270)),
+            new Pose2d(47, 15, Math.toRadians(270)),
             new Pose2d(46.5, 53.5, Math.toRadians(270)),
     };
     public static final Pose2d[] BACKDROP_CENTER_POSES = {
