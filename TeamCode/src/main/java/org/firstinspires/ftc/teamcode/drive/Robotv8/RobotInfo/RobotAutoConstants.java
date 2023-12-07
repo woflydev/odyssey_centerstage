@@ -12,7 +12,7 @@ public class RobotAutoConstants {
             new Pose2d(-35, -63, Math.toRadians(90)),
     };
     public static final Pose2d[] BLUE_STARTING_POSES = {
-            new Pose2d(11.5, 63, Math.toRadians(270)),
+            new Pose2d(11, 63, Math.toRadians(270)),
             new Pose2d(-35, 63, Math.toRadians(270)),
     };
     public static final Pose2d[] RED_PARKING_POSES = {
@@ -91,7 +91,7 @@ public class RobotAutoConstants {
             0,
             50,
     };
-    public static final int YELLOW_PIXEL_DEPOSIT_HEIGHT = 200; // todo: test if new val works - old was 250
+    public static final int YELLOW_PIXEL_DEPOSIT_HEIGHT = 100; // todo: test if new val works - old was 250
 
     public static final double CAUTION_SPEED = 14;
     public static final double BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG = 29.5;
