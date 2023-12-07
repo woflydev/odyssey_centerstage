@@ -19,13 +19,14 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLE_STACK_REVERSE_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.CYCLING_STACK_INNER_POSES;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT_BLUE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.INCHES_PER_TILE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.RED_PARKING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.RED_STARTING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.RED_YELLOW_PIXEL_BACKDROP_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.SPIKEMARK_CENTER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.SPIKEMARK_TRANSIT_CENTER_POSES;
-import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT_RED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.STAGE_DOOR_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.YELLOW_PIXEL_DEPOSIT_HEIGHT;
 
@@ -248,7 +249,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         break;
                     case BA_MOVING_TO_BACKDROP:
                         if (!drive.isBusy()) {
-                            drive.followTrajectoryAsync(CalcKinematics(-DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT, DriveConstants.MAX_VEL));
+                            drive.followTrajectoryAsync(CalcKinematics(alliance == RobotAlliance.RED ? -DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT_RED : -DEPOSIT_YELLOW_TO_BACKDROP_TRANSIT_BLUE, DriveConstants.MAX_VEL));
                             autoState = FSM_RootAutoState.BA_DEPOSIT_YELLOW;
                         }
                         break;
