@@ -504,6 +504,10 @@ public class FSM_TeleOp_Fullstack extends OpMode {
 
         // NOTE: MANUAL OUTTAKE RESET
         if (gamepad1.right_bumper && !(outtakeState == FSM_Outtake.PRIMED_FOR_DEPOSIT) && !hangStabilizationDeployed) {
+            intake.setPower(0);
+            servoClaw.setPosition(RobotConstants.CLAW_OPEN);
+            MoveElbow(RobotConstants.ELBOW_STANDBY);
+            Delay(350);
             outtakeState = FSM_Outtake.CLAW_OPENING; // state to open claw and completely reset the outtake
         }
 
