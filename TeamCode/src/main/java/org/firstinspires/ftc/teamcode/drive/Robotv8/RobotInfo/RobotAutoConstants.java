@@ -82,9 +82,9 @@ public class RobotAutoConstants {
             0.68,
     };
     public static final double[] BACKDROP_BLUE_PURPLE_PIXEL_VARIANCE = {
-            1.50,
-            1.11,
-            0.64,
+            1.45,
+            1.03,
+            0.55,
     };
     public static final double[] AUDIENCE_PURPLE_PIXEL_VARIANCE = {
             1.95,

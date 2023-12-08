@@ -61,7 +61,7 @@ public class RobotConstants {
     public static final double BASE_DRIVE_SPEED_MODIFIER = 1; // higher = less speed
     public static final double PRECISION_DRIVE_SPEED_MODIFIER = 3.35;
 
-    public static final double MAX_MANUAL_INTAKE_POWER = 0.55;
+    public static final double MAX_MANUAL_INTAKE_POWER = 0.65; // note: old 0.55
 
     public static final double PPR = 375; // gobuilda motor 85203 Series
     public static final double ENCODER_TICKS_PER_TILE = 640; // in encoder ticks
@@ -71,7 +71,7 @@ public class RobotConstants {
     public static final boolean STARTUP_USE_LOCALIZER = false;
     public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.31460328144
     public static final double RR_HEADING_PID_kP = 5;
-    public static final double RR_TRANSLATIONAL_PID_kP = 16; // note: old - 30
+    public static final double RR_TRANSLATIONAL_PID_kP = 15; // note: old - 30
 
     // -------------------------------------------------------------- JUNCTION PRESETS
 
