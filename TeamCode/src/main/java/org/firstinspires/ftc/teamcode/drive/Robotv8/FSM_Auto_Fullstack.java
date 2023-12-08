@@ -5,9 +5,10 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_PURPLE_APPROACH_SPEED;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_BACKDROP_APPROACH_AMOUNT;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.AUDIENCE_YELLOW_PIXEL_VARIANCE;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_BLUE_PURPLE_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_CENTER_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_DEPOSIT_PUSHBACK_AMOUNT;
-import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_PURPLE_PIXEL_VARIANCE;
+import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_RED_PURPLE_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BACKDROP_YELLOW_PIXEL_VARIANCE;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_PARKING_POSES;
 import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoConstants.BLUE_STARTING_POSES;
@@ -194,8 +195,8 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
         HandleLocalization();
 
-        workingBackdropYellowVariance = SortBackdropValueVariance(BACKDROP_YELLOW_PIXEL_VARIANCE, AUDIENCE_YELLOW_PIXEL_VARIANCE);
-        workingBackdropPurpleVariance = SortBackdropValueVariance(BACKDROP_PURPLE_PIXEL_VARIANCE, AUDIENCE_PURPLE_PIXEL_VARIANCE); // note: called after, so that randomization is confirmed
+        workingBackdropYellowVariance = SortBackdropValueVariance(BACKDROP_YELLOW_PIXEL_VARIANCE, new double[0], AUDIENCE_YELLOW_PIXEL_VARIANCE, false);
+        workingBackdropPurpleVariance = SortBackdropValueVariance(BACKDROP_RED_PURPLE_PIXEL_VARIANCE, BACKDROP_BLUE_PURPLE_PIXEL_VARIANCE, AUDIENCE_PURPLE_PIXEL_VARIANCE, true); // note: called after, so that randomization is confirmed
         workingAudiencePurpleAlign = SortPurpleAlignVariance();
         workingYellowBackdropAlign = SortYellowBackdropAlign();
 
@@ -844,17 +845,30 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
         Delay(400);
     }
 
-    private double[] SortBackdropValueVariance(double[] backdropIn, double[] audienceIn) {
+    private double[] SortBackdropValueVariance(double[] backdropInRed, double[] backdropInBlue, double[] audienceIn, boolean redBlueDifferent) {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
-            return alliance == RobotAlliance.RED ? new double[] {
-                    backdropIn[0],
-                    backdropIn[1],
-                    backdropIn[2]
-            } : new double[] {
-                    backdropIn[2],
-                    backdropIn[1],
-                    backdropIn[0]
-            };
+            if (redBlueDifferent) {
+                return alliance == RobotAlliance.RED ? new double[] {
+                        backdropInRed[0],
+                        backdropInRed[1],
+                        backdropInRed[2]
+                } : new double[] {
+                        backdropInBlue[2],
+                        backdropInBlue[1],
+                        backdropInBlue[0]
+                };
+            } else {
+                return alliance == RobotAlliance.RED ? new double[] {
+                        backdropInRed[0],
+                        backdropInRed[1],
+                        backdropInRed[2],
+                } : new double[] {
+                        backdropInRed[2],
+                        backdropInRed[1],
+                        backdropInRed[0],
+                };
+            }
+
         } else {
             return alliance == RobotAlliance.RED ? new double[] {
                     audienceIn[0],
@@ -871,13 +885,13 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
     private double[] OldSortPurpleVariance() {
         if (startingPosition == RobotStartingPosition.BACKDROP) {
             return alliance == RobotAlliance.RED ? new double[] {
-                    BACKDROP_PURPLE_PIXEL_VARIANCE[0],
-                    BACKDROP_PURPLE_PIXEL_VARIANCE[1],
-                    BACKDROP_PURPLE_PIXEL_VARIANCE[2]
+                    BACKDROP_RED_PURPLE_PIXEL_VARIANCE[0],
+                    BACKDROP_RED_PURPLE_PIXEL_VARIANCE[1],
+                    BACKDROP_RED_PURPLE_PIXEL_VARIANCE[2]
             } : new double[] {
-                    BACKDROP_PURPLE_PIXEL_VARIANCE[2],
-                    BACKDROP_PURPLE_PIXEL_VARIANCE[1],
-                    BACKDROP_PURPLE_PIXEL_VARIANCE[0]
+                    BACKDROP_RED_PURPLE_PIXEL_VARIANCE[2],
+                    BACKDROP_RED_PURPLE_PIXEL_VARIANCE[1],
+                    BACKDROP_RED_PURPLE_PIXEL_VARIANCE[0]
             };
         } else {
             return alliance == RobotAlliance.RED ? new double[] {

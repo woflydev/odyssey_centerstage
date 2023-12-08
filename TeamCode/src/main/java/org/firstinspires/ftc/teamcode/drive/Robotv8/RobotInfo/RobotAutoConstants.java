@@ -76,7 +76,12 @@ public class RobotAutoConstants {
 
     // IMPORTANT NOTE: this changes based on alliance.
     // IMPORTANT NOTE: while this is handled automatically, note that this is from perspective of red
-    public static final double[] BACKDROP_PURPLE_PIXEL_VARIANCE = {
+    public static final double[] BACKDROP_RED_PURPLE_PIXEL_VARIANCE = {
+            1.54,
+            1.15,
+            0.68,
+    };
+    public static final double[] BACKDROP_BLUE_PURPLE_PIXEL_VARIANCE = {
             1.54,
             1.15,
             0.68,

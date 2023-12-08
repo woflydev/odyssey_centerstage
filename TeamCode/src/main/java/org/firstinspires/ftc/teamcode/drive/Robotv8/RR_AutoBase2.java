@@ -150,17 +150,17 @@ public class RR_AutoBase2 extends FSM_TeleOp_Fullstack {
 
         switch (randomization) {
             case LOCATION_1:
-                drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[0])); // note: has to drive backwards
+                drive.followTrajectory(CalcKinematics(-BACKDROP_RED_PURPLE_PIXEL_VARIANCE[0])); // note: has to drive backwards
                 ExpelPurple();
                 break;
             case LOCATION_2:
-                drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[1]));
+                drive.followTrajectory(CalcKinematics(-BACKDROP_RED_PURPLE_PIXEL_VARIANCE[1]));
                 drive.turn(Math.toRadians(-BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG * dir)); // note: always counterclockwise
                 ExpelPurple();
                 drive.turn(Math.toRadians(BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG * dir));
                 break;
             case LOCATION_3:
-                drive.followTrajectory(CalcKinematics(-BACKDROP_PURPLE_PIXEL_VARIANCE[2]));
+                drive.followTrajectory(CalcKinematics(-BACKDROP_RED_PURPLE_PIXEL_VARIANCE[2]));
                 ExpelPurple();
                 break;
         }
