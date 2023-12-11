@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo;
 
+import com.acmerobotics.dashboard.config.Config;
+
+@Config
 public class RobotConstants {
     // -------------------------------------------------------------- CONTROLLER CONFIG
     public static final double JOYSTICK_DEADZONE = 0.03;
@@ -45,7 +48,7 @@ public class RobotConstants {
     public static final double WRIST_ACTIVE = 0.63;
     public static final double ELBOW_PICKUP = 0.050;
     public static final double ELBOW_STANDBY = 0.143;
-    public static final double ELBOW_STANDBY_BACK = 0.583;
+    public static final double ELBOW_STANDBY_BACK = 0.6205;
     public static final double ELBOW_ACTIVE = 0.49;
     public static final double PLANE_STANDBY = 0.19;
     public static final double PLANE_ACTIVE = 0;
@@ -70,7 +73,7 @@ public class RobotConstants {
     // -------------------------------------------------------------- RR
     public static final boolean STARTUP_USE_LOCALIZER = false;
     public static final double RR_LATERAL_MULTI = 1.38460328144; // note: old - -1.31460328144
-    public static final double RR_HEADING_PID_kP = 5;
+    public static final double RR_HEADING_PID_kP = 4;
     public static final double RR_TRANSLATIONAL_PID_kP = 15; // note: old - 30
 
     // -------------------------------------------------------------- JUNCTION PRESETS

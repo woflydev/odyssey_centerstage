@@ -34,6 +34,7 @@ import static org.firstinspires.ftc.teamcode.drive.Robotv8.RobotInfo.RobotAutoCo
 import static java.lang.Thread.sleep;
 
 import android.annotation.SuppressLint;
+import android.hardware.camera2.params.BlackLevelPattern;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
@@ -372,6 +373,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                         PrimePurple(); // note: takes over from outtake subsystem and forces prime purple position
                         switch (randomization) {
                             case LOCATION_1:
+                                if (alliance == RobotAlliance.BLUE) Delay(500);
                                 // has to drive backwards
                                 drive.followTrajectory(CalcKinematics(-workingBackdropPurpleVariance[0], DriveConstants.MAX_VEL));
                                 ExpelPurple();
@@ -384,7 +386,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                                 //drive.turn(Math.toRadians(BACKDROP_CENTER_SPIKEMARK_ALIGN_TURN_DEG * dir));
                                 break;
                             case LOCATION_3:
-                                Delay(400); // note: purple has to prime first to push prop
+                                if (alliance == RobotAlliance.RED) Delay(500); // note: purple has to prime first to push prop
                                 drive.followTrajectory(CalcKinematics(-workingBackdropPurpleVariance[2], DriveConstants.MAX_VEL));
                                 ExpelPurple();
                                 break;
@@ -405,6 +407,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
             switch (autoState) {
                 // important note: this is the autonomous entrypoint for audience init
                 case BA_PLAY:
+                    Delay(3000);
                     EnsureAttachmentNormalization();
 
                     autoTimer.reset();
@@ -480,6 +483,7 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
                     intake.setPower(0.65);
                     ExecuteRotation(180, false);
                     Delay(1000);
+                    intake.setPower(-0.4); // todo: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
                     autoTimer.reset();
 
                     outtakeState = FSM_Outtake.ACTIVATED;
@@ -824,10 +828,10 @@ public class FSM_Auto_Fullstack extends LinearOpMode {
 
     public void DropAndReset() {
         servoClaw.setPosition(RobotConstants.CLAW_OPEN);
-        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE + 0.11);
-        MoveElbow(RobotConstants.ELBOW_ACTIVE + 0.01);
-        Delay(300);
-        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, DriveConstants.MAX_VEL));
+        servoWrist.setPosition(RobotConstants.WRIST_ACTIVE + 0.1);
+        MoveElbow(RobotConstants.ELBOW_ACTIVE + 0.00);
+        Delay(450);
+        drive.followTrajectory(CalcKinematics(BACKDROP_DEPOSIT_PUSHBACK_AMOUNT, CAUTION_SPEED));
         servoClaw.setPosition(RobotConstants.CLAW_OPEN); // note: reinforce
         //Delay(800); // wait for claw to open
 
