@@ -1,4 +1,3 @@
-# Road Runner Quickstart
+# Odyssey (17556)
 
-Check out the [docs](https://rr.brott.dev/docs/v1-0/tuning/).
-
+The repository for the FTC 2023-2024 CenterStage Season, from the Queensland State Championships to the Australian National Championships.
